@@ -49,12 +49,33 @@ test('public event router exposes the generic /:code route', () => {
 test('organizer calendar router registers all calendar admin paths', () => {
   const list = collectRoutes(organizerCalendarRoutes);
   const paths = list.map((r) => `${r.method} ${r.path}`);
+  // Top level
   assert.ok(paths.includes('GET /:eventId/calendar'));
   assert.ok(paths.includes('GET /:eventId/calendar/setup'));
   assert.ok(paths.includes('POST /:eventId/calendar/setup'));
+  // Items CRUD
   assert.ok(paths.includes('GET /:eventId/calendar/items'));
+  assert.ok(paths.includes('GET /:eventId/calendar/items/new'));
+  assert.ok(paths.includes('POST /:eventId/calendar/items'));
+  assert.ok(paths.includes('GET /:eventId/calendar/items/:itemId/edit'));
+  assert.ok(paths.includes('POST /:eventId/calendar/items/:itemId'));
+  assert.ok(paths.includes('POST /:eventId/calendar/items/:itemId/archive'));
+  assert.ok(paths.includes('POST /:eventId/calendar/items/:itemId/unarchive'));
+  // Occurrences CRUD
   assert.ok(paths.includes('GET /:eventId/calendar/occurrences'));
+  assert.ok(paths.includes('GET /:eventId/calendar/occurrences/new'));
+  assert.ok(paths.includes('POST /:eventId/calendar/occurrences'));
+  assert.ok(paths.includes('GET /:eventId/calendar/occurrences/:occurrenceId/edit'));
+  assert.ok(paths.includes('POST /:eventId/calendar/occurrences/:occurrenceId'));
+  assert.ok(paths.includes('POST /:eventId/calendar/occurrences/:occurrenceId/archive'));
+  // Availability CRUD
   assert.ok(paths.includes('GET /:eventId/calendar/availability'));
+  assert.ok(paths.includes('GET /:eventId/calendar/availability/new'));
+  assert.ok(paths.includes('POST /:eventId/calendar/availability'));
+  assert.ok(paths.includes('GET /:eventId/calendar/availability/:ruleId/edit'));
+  assert.ok(paths.includes('POST /:eventId/calendar/availability/:ruleId'));
+  assert.ok(paths.includes('POST /:eventId/calendar/availability/:ruleId/archive'));
+  // Phase 4B.3+
   assert.ok(paths.includes('GET /:eventId/calendar/bookings'));
   assert.ok(paths.includes('GET /:eventId/calendar/export'));
 });
