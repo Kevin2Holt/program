@@ -51,6 +51,7 @@ test('organizer calendar router registers all calendar admin paths', () => {
   const paths = list.map((r) => `${r.method} ${r.path}`);
   assert.ok(paths.includes('GET /:eventId/calendar'));
   assert.ok(paths.includes('GET /:eventId/calendar/setup'));
+  assert.ok(paths.includes('POST /:eventId/calendar/setup'));
   assert.ok(paths.includes('GET /:eventId/calendar/items'));
   assert.ok(paths.includes('GET /:eventId/calendar/occurrences'));
   assert.ok(paths.includes('GET /:eventId/calendar/availability'));
