@@ -1,0 +1,143 @@
+/* progr.am — base stylesheet.
+ *
+ * Dark mode is the default. Light mode is exposed via [data-theme="light"]
+ * on the <html> element. All design tokens are CSS custom properties so
+ * later phases can refine the system without rewriting components.
+ */
+
+:root,
+[data-theme="dark"] {
+  --color-bg:           #0f1115;
+  --color-bg-elevated:  #161922;
+  --color-fg:           #e9ecf2;
+  --color-fg-muted:     #8b93a5;
+  --color-border:       #232838;
+  --color-accent:       #7aa2f7;
+  --color-danger:       #f7768e;
+  --color-success:      #9ece6a;
+
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+}
+
+[data-theme="light"] {
+  --color-bg:           #f7f7fa;
+  --color-bg-elevated:  #ffffff;
+  --color-fg:           #1a1d23;
+  --color-fg-muted:     #5b6172;
+  --color-border:       #d9dde6;
+  --color-accent:       #2e5bff;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+}
+
+a { color: var(--color-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code, pre { font-family: var(--font-mono); }
+
+.muted { color: var(--color-fg-muted); }
+
+.app-header {
+  background: var(--color-bg-elevated);
+  border-bottom: 1px solid var(--color-border);
+}
+.app-header__inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+}
+.app-header__brand {
+  font-weight: 600;
+  color: var(--color-fg);
+  font-size: 1.1rem;
+}
+.app-header__nav a { margin-left: var(--space-4); }
+
+.app-main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4);
+}
+.app-main--public { max-width: 720px; }
+
+.app-footer {
+  border-top: 1px solid var(--color-border);
+  color: var(--color-fg-muted);
+}
+.app-footer__inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.9rem;
+}
+
+.page > header h1 { margin: 0 0 var(--space-2); }
+.page p { margin: var(--space-2) 0; }
+
+.page--message { text-align: center; padding: var(--space-6) 0; }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-3);
+}
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+.data-table th { color: var(--color-fg-muted); font-weight: 500; }
+
+fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+legend { padding: 0 var(--space-2); color: var(--color-fg-muted); }
+
+label {
+  display: block;
+  margin: var(--space-2) 0;
+}
+label.is-disabled { color: var(--color-fg-muted); }
+
+input[type="text"],
+select,
+textarea {
+  background: var(--color-bg-elevated);
+  color: var(--color-fg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+}
+
+.flash-list { list-style: none; padding: 0; }
+.flash { padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); }
+.flash--success { background: rgba(158, 206, 106, 0.12); color: var(--color-success); }
+.flash--error   { background: rgba(247, 118, 142, 0.12); color: var(--color-danger);  }

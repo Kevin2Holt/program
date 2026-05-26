@@ -1,0 +1,61 @@
+/* progr.am — calendar module stylesheet.
+ *
+ * Keeps calendar-specific styling separate from the base theme so the module
+ * can evolve without touching global styles. Uses the shared custom-property
+ * design tokens defined in base.css.
+ */
+
+.item-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 2px var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-elevated);
+  color: var(--color-fg);
+  font-size: 0.9rem;
+}
+.item-indicator__shape {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--item-color, var(--color-accent));
+  color: var(--color-bg);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+.item-indicator--archived {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.item-indicator-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.event-header h1 { margin-bottom: 0; }
+.event-code { color: var(--color-fg-muted); font-family: var(--font-mono); }
+
+.calendar-org__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+.calendar-org__summary { padding-left: var(--space-4); }
+
+.rule-list { padding-left: var(--space-4); }
+.rule-list li { margin: var(--space-2) 0; }
+
+.confirmation-selections { padding-left: var(--space-4); }
+.confirmation-selections li { margin: var(--space-2) 0; }
