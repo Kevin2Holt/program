@@ -13,8 +13,11 @@ const calendarItemService = require('../../services/calendarItemService');
 const calendarOccurrenceService = require('../../services/calendarOccurrenceService');
 const calendarAvailabilityService = require('../../services/calendarAvailabilityService');
 const calendarItemModel = require('../../models/calendarItem');
+const calendarOccurrenceModel = require('../../models/calendarOccurrence');
 const bookingModel = require('../../models/calendarBooking');
 const calendarBookingService = require('../../services/calendarBookingService');
+const calendarExportService = require('../../services/calendarExportService');
+const publicCalendarController = require('../public/calendarController');
 
 exports.index = async function index(req, res, next) {
   try {
@@ -640,20 +643,261 @@ exports.bookingCancel = async function bookingCancel(req, res, next) {
   } catch (err) { return next(err); }
 };
 
-// TODO(phase-4b+): organizer-side edit / reschedule. Spec marks this as
-// optional for Phase 4B.3 — cancel is sufficient for now and frees capacity
-// automatically because countActiveForItemDate/countActiveForOccurrence
-// filter on status='active'.
+/* ------------------------------------------------------------------ */
+/* Booking edit / reschedule                                           */
+/* ------------------------------------------------------------------ */
+
+exports.bookingEdit = async function bookingEdit(req, res, next) {
+  try {
+    const result = await calendarBookingService.getBookingWithSelections(req.params.bookingId);
+    if (!result || !result.booking || Number(result.booking.event_id) !== Number(req.event.id)) {
+      return notFound(res);
+    }
+    if (result.booking.status !== 'active') {
+      // Canceled bookings are intentionally not editable. Bounce back to the
+      // detail page with a clear message rather than rendering an empty form.
+      setFlash(req, 'calendarBookingsFlash', {
+        kind: 'error',
+        message: 'Canceled bookings cannot be edited.',
+      });
+      return res.redirect(`/events/${req.event.id}/calendar/bookings/${result.booking.id}`);
+    }
+    const config = await calendarConfigService.getOrCreateForEvent(req.event.id);
+    const items = await calendarItemModel.listForEvent(req.event.id, { includeArchived: false });
+    const occurrences = (config.time_behavior_mode === 'timed')
+      ? await listOccurrencesForItems(items)
+      : [];
+    return renderBookingEdit(res, {
+      event: req.event,
+      config,
+      booking: result.booking,
+      selections: result.selections,
+      items,
+      occurrences,
+      values: bookingValuesFromExisting(result.booking, result.selections),
+      errors: [],
+      errorsByField: {},
+      csrfToken: req.csrfToken ? req.csrfToken() : null,
+    });
+  } catch (err) { return next(err); }
+};
+
+exports.bookingUpdate = async function bookingUpdate(req, res, next) {
+  try {
+    const result = await calendarBookingService.getBookingWithSelections(req.params.bookingId);
+    if (!result || !result.booking || Number(result.booking.event_id) !== Number(req.event.id)) {
+      return notFound(res);
+    }
+    const booking = result.booking;
+    if (booking.status !== 'active') {
+      setFlash(req, 'calendarBookingsFlash', {
+        kind: 'error',
+        message: 'Canceled bookings cannot be edited.',
+      });
+      return res.redirect(`/events/${req.event.id}/calendar/bookings/${booking.id}`);
+    }
+    const config = await calendarConfigService.getOrCreateForEvent(req.event.id);
+    const items = await calendarItemModel.listForEvent(req.event.id, { includeArchived: false });
+    const occurrences = (config.time_behavior_mode === 'timed')
+      ? await listOccurrencesForItems(items)
+      : [];
+
+    const body = req.body || {};
+    // Parse registrant fields using the same validator as the public flow.
+    const formConfig = config.form_config || {};
+    const parsed = publicCalendarController._internals
+      .parseAndValidateRegistrantForm(body, formConfig);
+    const errors = parsed.errors.slice();
+
+    // Parse selections. The form posts parallel arrays of
+    // selection_type[], item_id[], selected_date[], occurrence_id[].
+    const selections = parseSelectionsFromForm(body);
+    if (selections.length === 0) {
+      errors.push({ field: '_form', message: 'At least one selection is required.' });
+    }
+
+    const values = { ...parsed.values, selections, raw: body };
+
+    if (errors.length > 0) {
+      return renderBookingEditWithErrors(res, {
+        event: req.event, config, booking, oldSelections: result.selections,
+        items, occurrences, values, errors, csrfToken: req.csrfToken ? req.csrfToken() : null,
+      });
+    }
+
+    try {
+      await calendarBookingService.rescheduleBooking({
+        event: req.event,
+        config,
+        booking,
+        selections,
+        registrant: parsed.values.registrant,
+        email: parsed.values.email,
+        notes: parsed.values.notes,
+      });
+    } catch (err) {
+      if (err && err.code && err.status) {
+        return renderBookingEditWithErrors(res, {
+          event: req.event, config, booking, oldSelections: result.selections,
+          items, occurrences, values,
+          errors: [{
+            field: '_form',
+            message: publicCalendarController._internals.humanizeBookingError(err.code, err.message),
+          }],
+          csrfToken: req.csrfToken ? req.csrfToken() : null,
+          status: err.status,
+        });
+      }
+      return next(err);
+    }
+
+    setFlash(req, 'calendarBookingsFlash', {
+      kind: 'success',
+      message: 'Booking updated.',
+    });
+    return res.redirect(`/events/${req.event.id}/calendar/bookings/${booking.id}`);
+  } catch (err) { return next(err); }
+};
+
+function renderBookingEdit(res, opts) {
+  res.render('events/calendar/bookings/edit', {
+    title: 'Edit booking',
+    pageTitle: 'Edit booking',
+    event: opts.event,
+    config: opts.config,
+    booking: opts.booking,
+    selections: opts.selections,
+    items: opts.items,
+    occurrences: opts.occurrences,
+    values: opts.values,
+    errors: opts.errors,
+    errorsByField: opts.errorsByField,
+    csrfToken: opts.csrfToken,
+  });
+}
+
+function renderBookingEditWithErrors(res, opts) {
+  const errorsByField = {};
+  for (const e of opts.errors) {
+    if (!errorsByField[e.field]) errorsByField[e.field] = [];
+    errorsByField[e.field].push(e.message);
+  }
+  res.status(opts.status || 400).render('events/calendar/bookings/edit', {
+    title: 'Edit booking',
+    pageTitle: 'Edit booking',
+    event: opts.event,
+    config: opts.config,
+    booking: opts.booking,
+    selections: opts.oldSelections,
+    items: opts.items,
+    occurrences: opts.occurrences,
+    values: opts.values,
+    errors: opts.errors,
+    errorsByField,
+    csrfToken: opts.csrfToken,
+  });
+}
+
+function parseSelectionsFromForm(body) {
+  const types = toArray(body['selection_type']);
+  const itemIds = toArray(body['item_id']);
+  const dates = toArray(body['selected_date']);
+  const occIds = toArray(body['occurrence_id']);
+  const out = [];
+  const len = Math.max(types.length, itemIds.length, dates.length);
+  for (let i = 0; i < len; i += 1) {
+    const t = types[i];
+    const itemId = Number(itemIds[i]);
+    const date = dates[i];
+    if (!t || !itemId || !date) continue;
+    const sel = { itemId, selectedDate: String(date).slice(0, 10), selectionType: t };
+    if (t === 'occurrence') sel.occurrenceId = Number(occIds[i]);
+    out.push(sel);
+  }
+  return out;
+}
+
+function toArray(v) {
+  if (v === undefined || v === null) return [];
+  return Array.isArray(v) ? v : [v];
+}
+
+function bookingValuesFromExisting(booking, selections) {
+  const reg = booking.registrant || {};
+  return {
+    registrant: reg,
+    email: booking.email || null,
+    notes: booking.notes || null,
+    name: reg.name || '',
+    phone: reg.phone || '',
+    contact_method: reg.contact_method || '',
+    number_type: reg.number_type || '',
+    selections: selections.map((s) => ({
+      itemId: s.item_id,
+      selectedDate: String(s.selected_date).slice(0, 10),
+      selectionType: s.selection_type,
+      occurrenceId: s.occurrence_id || null,
+    })),
+  };
+}
+
+async function listOccurrencesForItems(items) {
+  const out = [];
+  for (const it of items) {
+    try {
+      const list = await calendarOccurrenceModel.listForItem(it.id, { includeArchived: false });
+      for (const o of list) out.push({ ...o, item_name: it.name });
+    } catch (_e) { /* tolerate */ }
+  }
+  return out;
+}
+
+/* ------------------------------------------------------------------ */
+/* Export                                                              */
+/* ------------------------------------------------------------------ */
 
 exports.exportPage = async function exportPage(req, res, next) {
   try {
     const config = await calendarConfigService.getOrCreateForEvent(req.event.id);
+    const items = await calendarItemModel.listForEvent(req.event.id, { includeArchived: true });
     res.render('events/calendar/export', {
       title: 'Export',
       pageTitle: 'Export',
       event: req.event,
       config,
+      items,
+      detailLevels: calendarExportService.DETAIL_LEVELS,
+      allowedFields: calendarExportService.ALLOWED_FIELDS,
+      values: { detail_level: 'names_only', include_fields: ['name'] },
       csrfToken: req.csrfToken ? req.csrfToken() : null,
     });
+  } catch (err) { next(err); }
+};
+
+exports.exportRun = async function exportRun(req, res, next) {
+  try {
+    const body = req.body || {};
+    const detailLevel = String(body.detail_level || 'names_only');
+    const includeFields = toArray(body.include_fields).map((f) => String(f));
+    const itemIdsRaw = toArray(body.item_ids).map((n) => Number(n)).filter((n) => Number.isFinite(n));
+    const itemIds = itemIdsRaw.length > 0 ? itemIdsRaw : null;
+    const start = body.start_date ? String(body.start_date).slice(0, 10) : null;
+    const end = body.end_date ? String(body.end_date).slice(0, 10) : null;
+    const dateRange = (start && end) ? { start, end } : null;
+
+    const result = await calendarExportService.buildExport({
+      eventId: req.event.id,
+      itemIds,
+      dateRange,
+      detailLevel,
+      includeFields,
+    });
+    const csv = calendarExportService.toCsv(result);
+    const fname = `bookings-${req.event.code || req.event.id}-${new Date()
+      .toISOString().slice(0, 10)}.csv`;
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${fname}"`);
+    // Prepend a UTF-8 BOM so Excel opens it with the right encoding.
+    res.send('\uFEFF' + csv);
   } catch (err) { next(err); }
 };

@@ -256,6 +256,120 @@ async function cancelBooking(bookingId, opts = {}) {
   return bookingModel.cancel(bookingId, opts);
 }
 
+/* ------------------------------------------------------------------ */
+/* Reschedule / edit                                                   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Organizer-side reschedule. Replaces the selection set for an existing
+ * active booking, applying the same validation as the public submit path
+ * (window, blocked, capacity, overlap). Optionally updates whitelisted
+ * registrant/notes/email fields in the same transaction.
+ *
+ * Implementation note: we DELETE existing selections first so the booking
+ * can't conflict with itself on capacity, then re-create them inside the
+ * same transaction. If any check fails the transaction is rolled back and
+ * the original selections survive untouched.
+ *
+ * Canceled bookings are not editable here.
+ */
+async function rescheduleBooking({
+  event,
+  config,
+  booking,
+  selections,
+  registrant,
+  email,
+  notes,
+}) {
+  if (!booking || Number(booking.event_id) !== Number(event.id)) {
+    throw bookingError('NOT_FOUND', 'Booking not found.', 404);
+  }
+  if (booking.status !== 'active') {
+    throw bookingError('NOT_EDITABLE', 'Only active bookings can be rescheduled.', 409);
+  }
+  const normalized = normalizeSelections(selections);
+  if (normalized.length === 0) {
+    throw bookingError('NO_SELECTIONS', 'At least one selection is required.', 400);
+  }
+
+  let rules = [];
+  try { rules = await availabilityService.loadHydratedRules(config.id); }
+  catch (_e) { rules = []; }
+  const window = availabilityService.deriveDateWindow(config);
+
+  return withTransaction(async (client) => {
+    // Drop the existing selection rows so capacity counters don't include
+    // the booking being rescheduled.
+    await bookingModel.deleteSelections(booking.id, { client });
+
+    const hydrated = [];
+    const timedForOverlap = [];
+    for (const sel of normalized) {
+      if (window && !availabilityService.isDateInWindow(sel.selectedDate, window)) {
+        throw bookingError('OUT_OF_WINDOW', 'A selection is outside the calendar window.', 409);
+      }
+      const usage = await getCapacityUsage(sel, { client });
+      if (!usage.exists) {
+        throw bookingError('SELECTION_GONE', 'A selection is no longer available.', 409);
+      }
+      if (usage.used >= usage.capacity) {
+        throw bookingError('CAPACITY_FULL', 'A selection is full.', 409);
+      }
+      if (sel.selectionType === 'occurrence') {
+        const occ = await occurrenceModel.findById(sel.occurrenceId, { client });
+        const item = await itemModel.findById(occ.item_id, { client });
+        if (item && availabilityService._internals.isBlockedByRules(item, sel.selectedDate, rules)) {
+          throw bookingError('BLOCKED', 'A selection is blocked.', 409);
+        }
+        hydrated.push({ sel, occ, item });
+        timedForOverlap.push(occ);
+      } else {
+        const item = await itemModel.findById(sel.itemId, { client });
+        if (!item || item.status !== 'active') {
+          throw bookingError('SELECTION_GONE', 'A selection is no longer available.', 409);
+        }
+        if (availabilityService._internals.isBlockedByRules(item, sel.selectedDate, rules)) {
+          throw bookingError('BLOCKED', 'A selection is blocked.', 409);
+        }
+        hydrated.push({ sel, occ: null, item });
+      }
+    }
+
+    const overlap = occurrenceService.detectSameDayOverlap(timedForOverlap);
+    if (overlap.conflict) {
+      throw bookingError('TIMED_OVERLAP', 'Selections overlap in time.', 409);
+    }
+
+    // Recreate selection rows.
+    for (const { sel, occ, item } of hydrated) {
+      await bookingModel.createSelection({
+        booking_id: booking.id,
+        item_id: item.id,
+        selected_date: sel.selectedDate,
+        occurrence_id: occ ? occ.id : null,
+        selection_type: sel.selectionType,
+        item_name_snapshot: item.name,
+        occurrence_label_snapshot: occ ? occ.label : null,
+        occurrence_start_snapshot: occ ? occ.start_time : null,
+        occurrence_end_snapshot: occ ? occ.end_time : null,
+        occurrence_duration_minutes_snapshot: occ ? occ.duration_minutes : null,
+      }, { client });
+    }
+
+    // Optional field updates.
+    const patch = {};
+    if (registrant !== undefined) patch.registrant = registrant;
+    if (email !== undefined) patch.email = email;
+    if (notes !== undefined) patch.notes = notes;
+    const updated = Object.keys(patch).length > 0
+      ? await bookingModel.updateFields(booking.id, patch, { client })
+      : booking;
+
+    return { booking: updated };
+  });
+}
+
 module.exports = {
   SESSION_KEY,
   getPendingSelections,
@@ -267,4 +381,5 @@ module.exports = {
   getBookingWithSelections,
   getBookingByConfirmationRef,
   cancelBooking,
+  rescheduleBooking,
 };

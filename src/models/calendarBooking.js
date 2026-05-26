@@ -128,6 +128,46 @@ async function cancel(id, { client = pool } = {}) {
 }
 
 /**
+ * Update a small whitelist of mutable fields on a booking. Used by the
+ * organizer reschedule flow — capacity-affecting changes go through the
+ * selection re-create path, not this function.
+ */
+async function updateFields(id, patch, { client = pool } = {}) {
+  const allowed = {};
+  if (patch.registrant !== undefined) allowed.registrant = patch.registrant;
+  if (patch.email !== undefined) allowed.email = patch.email;
+  if (patch.notes !== undefined) allowed.notes = patch.notes;
+  const keys = Object.keys(allowed);
+  if (keys.length === 0) {
+    const r = await client.query(
+      `SELECT ${BOOKING_COLUMNS} FROM calendar_bookings WHERE id = $1`, [id],
+    );
+    return r.rows[0] || null;
+  }
+  const sets = keys.map((k, i) => `${k} = $${i + 2}`).join(', ');
+  const values = keys.map((k) => allowed[k]);
+  const r = await client.query(
+    `UPDATE calendar_bookings
+        SET ${sets}, updated_at = NOW()
+      WHERE id = $1
+  RETURNING ${BOOKING_COLUMNS}`,
+    [id, ...values],
+  );
+  return r.rows[0] || null;
+}
+
+/**
+ * Remove every selection row for a booking. Used by the organizer reschedule
+ * flow inside a transaction before recreating the selection set.
+ */
+async function deleteSelections(bookingId, { client = pool } = {}) {
+  await client.query(
+    `DELETE FROM calendar_booking_selections WHERE booking_id = $1`,
+    [bookingId],
+  );
+}
+
+/**
  * Count active capacity usage for a given (item, date) tuple. Used by
  * date-only capacity checks. Counts only bookings with status='active'.
  */
@@ -168,6 +208,8 @@ module.exports = {
   createBooking,
   createSelection,
   cancel,
+  updateFields,
+  deleteSelections,
   countActiveForItemDate,
   countActiveForOccurrence,
 };

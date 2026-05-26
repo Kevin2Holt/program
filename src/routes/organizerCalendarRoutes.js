@@ -77,9 +77,15 @@ router.get('/:eventId/calendar/bookings',
   requireCalendarPermission(PERMISSIONS.VIEW_DETAILS), ctrl.bookings);
 router.get('/:eventId/calendar/bookings/:bookingId',
   requireCalendarPermission(PERMISSIONS.VIEW_DETAILS), ctrl.bookingShow);
+router.get('/:eventId/calendar/bookings/:bookingId/edit',
+  requireCalendarPermission(PERMISSIONS.EDIT_BOOKINGS), ctrl.bookingEdit);
+router.post('/:eventId/calendar/bookings/:bookingId',
+  requireCalendarPermission(PERMISSIONS.EDIT_BOOKINGS), ctrl.bookingUpdate);
 router.post('/:eventId/calendar/bookings/:bookingId/cancel',
   requireCalendarPermission(PERMISSIONS.EDIT_BOOKINGS), ctrl.bookingCancel);
 router.get('/:eventId/calendar/export',
   requireCalendarPermission(PERMISSIONS.EXPORT), ctrl.exportPage);
+router.post('/:eventId/calendar/export',
+  requireCalendarPermission(PERMISSIONS.EXPORT), ctrl.exportRun);
 
 module.exports = router;

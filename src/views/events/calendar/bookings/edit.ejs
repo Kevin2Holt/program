@@ -1,0 +1,133 @@
+<%- include('../../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--calendar-booking-edit">
+  <header class="page__header">
+    <h1>Edit booking</h1>
+    <p class="muted">
+      <a href="/events/<%= event.id %>/calendar/bookings/<%= booking.id %>">&larr; Back to booking</a>
+    </p>
+  </header>
+
+  <% if (errorsByField && errorsByField._form) { %>
+    <div class="flash flash--error" role="alert">
+      <% errorsByField._form.forEach(function (m) { %><p><%= m %></p><% }) %>
+    </div>
+  <% } %>
+
+  <form method="post" action="/events/<%= event.id %>/calendar/bookings/<%= booking.id %>"
+        class="form form--booking-edit" novalidate>
+    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <% } %>
+
+    <fieldset>
+      <legend>Registrant</legend>
+      <p>
+        <label for="reg-name">Name</label>
+        <input type="text" id="reg-name" name="name" value="<%= values.name || '' %>" required />
+        <% if (errorsByField && errorsByField.name) { %>
+          <% errorsByField.name.forEach(function (m) { %><span class="field-error"><%= m %></span><% }) %>
+        <% } %>
+      </p>
+      <% var fc = (config && config.form_config) || {}; %>
+      <% if (fc.phone && fc.phone.enabled) { %>
+        <p>
+          <label for="reg-phone">Phone</label>
+          <input type="text" id="reg-phone" name="phone" value="<%= values.phone || '' %>" />
+        </p>
+      <% } %>
+      <% if (fc.email && fc.email.enabled) { %>
+        <p>
+          <label for="reg-email">Email</label>
+          <input type="email" id="reg-email" name="email" value="<%= values.email || '' %>" />
+        </p>
+      <% } %>
+      <% if (fc.notes && fc.notes.enabled) { %>
+        <p>
+          <label for="reg-notes">Notes</label>
+          <textarea id="reg-notes" name="notes" rows="3"><%= values.notes || '' %></textarea>
+        </p>
+      <% } %>
+    </fieldset>
+
+    <fieldset>
+      <legend>Selections</legend>
+      <p class="muted">Use the rows below to add, remove, or reschedule selections. Each row is one date or time slot.</p>
+      <table class="data-table data-table--editable">
+        <thead>
+          <tr>
+            <th scope="col">Item</th>
+            <th scope="col">Date</th>
+            <% if (config.time_behavior_mode === 'timed') { %>
+              <th scope="col">Occurrence</th>
+            <% } %>
+            <th scope="col"><span class="visually-hidden">Remove</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (values.selections || []).forEach(function (sel) { %>
+            <tr class="selection-row">
+              <td>
+                <input type="hidden" name="selection_type"
+                       value="<%= sel.selectionType %>" />
+                <select name="item_id" required>
+                  <% items.forEach(function (it) { %>
+                    <option value="<%= it.id %>"
+                            <%= Number(sel.itemId) === Number(it.id) ? 'selected' : '' %>>
+                      <%= it.name %>
+                    </option>
+                  <% }) %>
+                </select>
+              </td>
+              <td>
+                <input type="date" name="selected_date"
+                       value="<%= sel.selectedDate %>" required />
+              </td>
+              <% if (config.time_behavior_mode === 'timed') { %>
+                <td>
+                  <select name="occurrence_id">
+                    <option value="">— date only —</option>
+                    <% occurrences.forEach(function (o) { %>
+                      <option value="<%= o.id %>"
+                              <%= Number(sel.occurrenceId) === Number(o.id) ? 'selected' : '' %>>
+                        <%= o.item_name %> · <%= String(o.service_date).slice(0,10) %>
+                        <% if (o.label) { %> · <%= o.label %><% } %>
+                        <% if (o.start_time) { %> · <%= o.start_time %><% } %>
+                      </option>
+                    <% }) %>
+                  </select>
+                </td>
+              <% } %>
+              <td>
+                <!-- Removing a row is done by submitting without it.
+                     Quick & accessible: the user clears the date input. -->
+              </td>
+            </tr>
+          <% }) %>
+          <!-- Empty row for adding a new selection. -->
+          <tr class="selection-row selection-row--new">
+            <td>
+              <input type="hidden" name="selection_type" value="date_only" />
+              <select name="item_id">
+                <option value="">— pick an item —</option>
+                <% items.forEach(function (it) { %>
+                  <option value="<%= it.id %>"><%= it.name %></option>
+                <% }) %>
+              </select>
+            </td>
+            <td><input type="date" name="selected_date" value="" /></td>
+            <% if (config.time_behavior_mode === 'timed') { %>
+              <td><input type="hidden" name="occurrence_id" value="" /></td>
+            <% } %>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </fieldset>
+
+    <div class="form-actions">
+      <button type="submit" class="button button--primary">Save changes</button>
+      <a href="/events/<%= event.id %>/calendar/bookings/<%= booking.id %>" class="button">Cancel</a>
+    </div>
+  </form>
+</section>
+<%- include('../../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

@@ -78,14 +78,19 @@
 
   <section class="booking-detail__actions">
     <% if (booking.status === 'active') { %>
+      <p>
+        <a class="button" href="/events/<%= event.id %>/calendar/bookings/<%= booking.id %>/edit">Edit booking</a>
+      </p>
       <form method="post" action="/events/<%= event.id %>/calendar/bookings/<%= booking.id %>/cancel"
             onsubmit="return confirm('Cancel this booking? Selections will free up capacity.');">
+        <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <% } %>
         <button type="submit" class="button button--danger">Cancel booking</button>
       </form>
     <% } else { %>
       <p class="muted">This booking is already <%= booking.status %>.</p>
     <% } %>
-    <p class="muted">Edit / reschedule lands in a later phase.</p>
   </section>
 </section>
 <%- include('../../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>
