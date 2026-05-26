@@ -31,17 +31,112 @@ exports.index = async function index(req, res, next) {
 exports.setup = async function setup(req, res, next) {
   try {
     const config = await calendarConfigService.getOrCreateForEvent(req.event.id);
-    res.render('events/calendar/setup', {
-      title: 'Calendar setup',
-      pageTitle: 'Calendar setup',
+    // Pull and clear one-shot flash state set by setupSubmit on redirect.
+    const flash = consumeSetupFlash(req);
+    renderSetup(res, {
       event: req.event,
       config,
-      emailConfirmationToggleDisabled:
-        calendarConfigService.isEmailConfirmationToggleDisabled(config),
+      values: null,
+      errors: [],
+      flash,
       csrfToken: req.csrfToken ? req.csrfToken() : null,
     });
   } catch (err) { next(err); }
 };
+
+exports.setupSubmit = async function setupSubmit(req, res, next) {
+  try {
+    const current = await calendarConfigService.getOrCreateForEvent(req.event.id);
+    const { patch, errors } = calendarConfigService.parseAndValidateForm(
+      req.body || {},
+      current,
+    );
+
+    if (errors.length > 0) {
+      // Re-render the form with the user's submitted values + field errors so
+      // the organizer never loses input. We synthesize a "values" view of the
+      // patch merged onto the current config; controllers must keep this
+      // shape stable for the template.
+      const merged = { ...current, ...patch };
+      return res.status(400).render('events/calendar/setup', {
+        title: 'Calendar setup',
+        pageTitle: 'Calendar setup',
+        event: req.event,
+        config: current,
+        values: merged,
+        errors,
+        errorsByField: groupErrors(errors),
+        flash: { kind: 'error', message: 'Please fix the highlighted fields and try again.' },
+        emailConfirmationToggleDisabled:
+          calendarConfigService.isEmailConfirmationToggleDisabled({ form_config: merged.form_config }),
+        csrfToken: req.csrfToken ? req.csrfToken() : null,
+      });
+    }
+
+    await calendarConfigService.updateConfig(req.event.id, patch);
+    setSetupFlash(req, { kind: 'success', message: 'Calendar settings saved.' });
+    return res.redirect(`/events/${req.event.id}/calendar/setup`);
+  } catch (err) {
+    // Treat structured 400s from the service as form errors instead of 500s.
+    if (err && err.status === 400) {
+      try {
+        const current = await calendarConfigService.getOrCreateForEvent(req.event.id);
+        return res.status(400).render('events/calendar/setup', {
+          title: 'Calendar setup',
+          pageTitle: 'Calendar setup',
+          event: req.event,
+          config: current,
+          values: null,
+          errors: [{ field: '_form', message: err.message }],
+          errorsByField: { _form: [err.message] },
+          flash: { kind: 'error', message: err.message },
+          emailConfirmationToggleDisabled:
+            calendarConfigService.isEmailConfirmationToggleDisabled(current),
+          csrfToken: req.csrfToken ? req.csrfToken() : null,
+        });
+      } catch (inner) { return next(inner); }
+    }
+    return next(err);
+  }
+};
+
+function renderSetup(res, opts) {
+  const { event, config, values, errors, flash, csrfToken } = opts;
+  res.render('events/calendar/setup', {
+    title: 'Calendar setup',
+    pageTitle: 'Calendar setup',
+    event,
+    config,
+    values,
+    errors: errors || [],
+    errorsByField: groupErrors(errors || []),
+    flash,
+    emailConfirmationToggleDisabled:
+      calendarConfigService.isEmailConfirmationToggleDisabled(config),
+    csrfToken,
+  });
+}
+
+function groupErrors(errors) {
+  const out = {};
+  for (const e of errors) {
+    if (!out[e.field]) out[e.field] = [];
+    out[e.field].push(e.message);
+  }
+  return out;
+}
+
+function setSetupFlash(req, flash) {
+  if (!req.session) return;
+  req.session.calendarSetupFlash = flash;
+}
+
+function consumeSetupFlash(req) {
+  if (!req.session) return null;
+  const f = req.session.calendarSetupFlash || null;
+  if (f) delete req.session.calendarSetupFlash;
+  return f;
+}
 
 exports.items = async function items(req, res, next) {
   try {

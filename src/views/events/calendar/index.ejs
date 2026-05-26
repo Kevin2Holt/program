@@ -1,19 +1,65 @@
+<%
+  function summarizeWindow(c) {
+    if (c.date_window_mode === 'fixed') {
+      var s = c.fixed_start_date ? new Date(c.fixed_start_date).toISOString().slice(0, 10) : '—';
+      var e = c.fixed_end_date   ? new Date(c.fixed_end_date).toISOString().slice(0, 10)   : '—';
+      return 'Fixed: ' + s + ' → ' + e;
+    }
+    if (c.date_window_mode === 'rolling') {
+      var size = c.rolling_window_size != null ? c.rolling_window_size : '—';
+      var unit = c.rolling_window_unit || '—';
+      return 'Rolling: next ' + size + ' ' + unit;
+    }
+    return c.date_window_mode || '—';
+  }
+  function fcCount(fc) {
+    if (!fc || typeof fc !== 'object') return 0;
+    return Object.keys(fc).filter(function (k) { return fc[k] && fc[k].enabled; }).length;
+  }
+  var windowSummary = summarizeWindow(config);
+  var enabledFieldCount = fcCount(config.form_config);
+  var setupIncomplete =
+    (config.date_window_mode === 'fixed' && (!config.fixed_start_date || !config.fixed_end_date)) ||
+    (config.date_window_mode === 'rolling' && (!config.rolling_window_size || !config.rolling_window_unit));
+%>
 <%- include('../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
 <section class="page page--calendar-organizer">
   <header class="calendar-org__header">
     <h1>Calendar</h1>
-    <p class="muted">Event: <strong><%= event.title || event.code %></strong> <small>(/<%= event.code %>)</small></p>
+    <p class="muted">
+      Event: <strong><%= event.title || event.code %></strong>
+      <small>(/<%= event.code %>)</small>
+    </p>
   </header>
 
-  <ul class="calendar-org__summary">
-    <li>Status: <%= config.enabled ? 'enabled' : 'disabled' %></li>
-    <li>Public visibility: <%= config.public_visibility_state %></li>
-    <li>Date window mode: <%= config.date_window_mode %></li>
-    <li>Time behavior: <%= config.time_behavior_mode %></li>
-    <li>Items: <%= activeItemCount %> active / <%= itemCount %> total</li>
-  </ul>
+  <% if (setupIncomplete) { %>
+    <div class="flash flash--warning">
+      Calendar setup is incomplete. <a href="/events/<%= event.id %>/calendar/setup">Finish setup →</a>
+    </div>
+  <% } %>
 
-  <nav class="calendar-org__nav">
+  <section class="calendar-org__summary-card">
+    <h2>Configuration summary</h2>
+    <dl class="kv">
+      <dt>Public title</dt>            <dd><%= config.title || '—' %></dd>
+      <dt>Module enabled</dt>          <dd><%= config.enabled ? 'yes' : 'no' %></dd>
+      <dt>Public visibility</dt>       <dd><%= config.public_visibility_state %></dd>
+      <dt>Date window</dt>             <dd><%= windowSummary %></dd>
+      <dt>Time behavior</dt>           <dd><%= config.time_behavior_mode %></dd>
+      <dt>Time zone</dt>               <dd><%= config.event_time_zone %></dd>
+      <dt>Public form fields</dt>      <dd><%= enabledFieldCount %> enabled</dd>
+      <dt>Notes</dt>                   <dd><%= config.notes_enabled ? 'enabled' : 'disabled' %></dd>
+      <dt>Email confirmation</dt>      <dd><%= config.email_confirmation_enabled ? 'enabled' : 'disabled' %></dd>
+      <dt>Add-to-calendar</dt>         <dd><%= config.add_to_calendar_enabled ? 'enabled' : 'disabled' %></dd>
+      <dt>Calendar export mode</dt>    <dd><%= config.calendar_export_mode %></dd>
+      <dt>Items</dt>                   <dd><%= activeItemCount %> active / <%= itemCount %> total</dd>
+    </dl>
+    <p>
+      <a class="btn btn--primary" href="/events/<%= event.id %>/calendar/setup">Edit setup</a>
+    </p>
+  </section>
+
+  <nav class="calendar-org__nav" aria-label="Calendar sections">
     <a href="/events/<%= event.id %>/calendar/setup">Setup</a>
     <a href="/events/<%= event.id %>/calendar/items">Items</a>
     <a href="/events/<%= event.id %>/calendar/availability">Availability</a>

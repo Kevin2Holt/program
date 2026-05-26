@@ -26,6 +26,9 @@ router.get('/:eventId/calendar',
 router.get('/:eventId/calendar/setup',
   requireCalendarPermission(PERMISSIONS.EDIT), ctrl.setup);
 
+router.post('/:eventId/calendar/setup',
+  requireCalendarPermission(PERMISSIONS.EDIT), ctrl.setupSubmit);
+
 router.get('/:eventId/calendar/items',
   requireCalendarPermission(PERMISSIONS.EDIT_ITEMS), ctrl.items);
 

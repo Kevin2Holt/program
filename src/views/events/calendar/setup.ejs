@@ -1,58 +1,326 @@
+<%
+  // Resolved values: prefer in-flight `values` (after a failed submit so the
+  // organizer never loses input), else fall back to the persisted `config`.
+  // Both shapes share the same keys at this layer.
+  const v = (typeof values !== 'undefined' && values) ? values : config;
+  const fc = (v && v.form_config) || {};
+  const byField = (typeof errorsByField !== 'undefined' && errorsByField) ? errorsByField : {};
+  function fieldErrors(name) { return byField[name] || []; }
+  function hasError(name)    { return fieldErrors(name).length > 0; }
+  function fieldClass(name)  { return hasError(name) ? 'field field--error' : 'field'; }
+  function fieldVal(name, fallback) {
+    if (v && v[name] !== undefined && v[name] !== null) return v[name];
+    return fallback === undefined ? '' : fallback;
+  }
+  function ff(field) {
+    const x = fc[field] || {};
+    return { enabled: !!x.enabled, required: !!x.required };
+  }
+  const nameFF   = ff('name');
+  const phoneFF  = ff('phone');
+  const cmFF     = ff('contact_method');
+  const ntFF     = ff('number_type');
+  const emailFF  = ff('email');
+  const notesFF  = ff('notes');
+  const emailConfirmationDisabled = !emailFF.enabled;
+%>
 <%- include('../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
 <section class="page page--calendar-setup">
-  <header><h1>Calendar setup</h1></header>
+  <header class="setup__header">
+    <h1>Calendar setup</h1>
+    <p class="muted">
+      Event: <strong><%= event.title || event.code %></strong>
+      <small>(/<%= event.code %>)</small>
+    </p>
+  </header>
 
-  <form method="post" action="/events/<%= event.id %>/calendar/setup">
-    <fieldset>
-      <legend>Module</legend>
-      <label>
-        Title
-        <input type="text" name="title" value="<%= config.title || '' %>" />
-      </label>
-      <label>
-        <input type="checkbox" name="enabled" <%= config.enabled ? 'checked' : '' %> />
-        Enabled
-      </label>
+  <% if (typeof flash !== 'undefined' && flash) { %>
+    <div class="flash flash--<%= flash.kind %>"><%= flash.message %></div>
+  <% } %>
+
+  <% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+    <ul class="form-errors" role="alert">
+      <% errors.forEach(function (e) { %>
+        <li><%= e.message %></li>
+      <% }); %>
+    </ul>
+  <% } %>
+
+  <form method="post" action="/events/<%= event.id %>/calendar/setup" class="setup-form" novalidate>
+    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <% } %>
+
+    <fieldset class="setup-section">
+      <legend>Calendar visibility</legend>
+
+      <div class="<%= fieldClass('title') %>">
+        <label for="title">Public title</label>
+        <input id="title" type="text" name="title" maxlength="200"
+               value="<%= fieldVal('title', 'Calendar') %>" required />
+        <% fieldErrors('title').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="<%= fieldClass('enabled') %>">
+        <label>
+          <input type="checkbox" name="enabled" value="on" <%= v.enabled ? 'checked' : '' %> />
+          Calendar module enabled
+        </label>
+      </div>
+
+      <div class="<%= fieldClass('public_visibility_state') %>">
+        <label for="public_visibility_state">Public visibility</label>
+        <select id="public_visibility_state" name="public_visibility_state">
+          <% ['draft','published','hidden'].forEach(function (s) { %>
+            <option value="<%= s %>" <%= fieldVal('public_visibility_state','draft') === s ? 'selected' : '' %>><%= s %></option>
+          <% }); %>
+        </select>
+        <% fieldErrors('public_visibility_state').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
     </fieldset>
 
-    <fieldset>
+    <fieldset class="setup-section" data-section="date-window">
       <legend>Date window</legend>
-      <label>
-        Mode
-        <select name="date_window_mode">
-          <option value="fixed"   <%= config.date_window_mode === 'fixed'   ? 'selected' : '' %>>Fixed range</option>
-          <option value="rolling" <%= config.date_window_mode === 'rolling' ? 'selected' : '' %>>Rolling window</option>
+
+      <div class="<%= fieldClass('date_window_mode') %>">
+        <label for="date_window_mode">Mode</label>
+        <select id="date_window_mode" name="date_window_mode" data-control="date-window-mode">
+          <option value="fixed"   <%= fieldVal('date_window_mode','fixed')   === 'fixed'   ? 'selected' : '' %>>Fixed range</option>
+          <option value="rolling" <%= fieldVal('date_window_mode','fixed')   === 'rolling' ? 'selected' : '' %>>Rolling window</option>
         </select>
-      </label>
+        <% fieldErrors('date_window_mode').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="setup-subsection" data-when="date-window-mode" data-value="fixed">
+        <div class="<%= fieldClass('fixed_start_date') %>">
+          <label for="fixed_start_date">Start date</label>
+          <input id="fixed_start_date" type="date" name="fixed_start_date"
+                 value="<%= fieldVal('fixed_start_date','') %>" />
+          <% fieldErrors('fixed_start_date').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+        </div>
+        <div class="<%= fieldClass('fixed_end_date') %>">
+          <label for="fixed_end_date">End date</label>
+          <input id="fixed_end_date" type="date" name="fixed_end_date"
+                 value="<%= fieldVal('fixed_end_date','') %>" />
+          <% fieldErrors('fixed_end_date').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+        </div>
+      </div>
+
+      <div class="setup-subsection" data-when="date-window-mode" data-value="rolling">
+        <div class="<%= fieldClass('rolling_window_size') %>">
+          <label for="rolling_window_size">Window size</label>
+          <input id="rolling_window_size" type="number" min="1" step="1" name="rolling_window_size"
+                 value="<%= fieldVal('rolling_window_size','') %>" />
+          <% fieldErrors('rolling_window_size').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+        </div>
+        <div class="<%= fieldClass('rolling_window_unit') %>">
+          <label for="rolling_window_unit">Window unit</label>
+          <select id="rolling_window_unit" name="rolling_window_unit">
+            <% ['days','weeks','months'].forEach(function (u) { %>
+              <option value="<%= u %>" <%= fieldVal('rolling_window_unit','') === u ? 'selected' : '' %>><%= u %></option>
+            <% }); %>
+          </select>
+          <% fieldErrors('rolling_window_unit').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+        </div>
+        <p class="muted setup-hint">
+          Weeks and months snap to natural boundaries rather than rolling by raw day count.
+        </p>
+      </div>
     </fieldset>
 
-    <fieldset>
+    <fieldset class="setup-section">
       <legend>Time behavior</legend>
-      <label>
-        <select name="time_behavior_mode">
-          <option value="date_only" <%= config.time_behavior_mode === 'date_only' ? 'selected' : '' %>>Date-only</option>
-          <option value="timed"     <%= config.time_behavior_mode === 'timed'     ? 'selected' : '' %>>Time-enabled</option>
+
+      <div class="<%= fieldClass('time_behavior_mode') %>">
+        <label for="time_behavior_mode">Mode</label>
+        <select id="time_behavior_mode" name="time_behavior_mode">
+          <option value="date_only" <%= fieldVal('time_behavior_mode','date_only') === 'date_only' ? 'selected' : '' %>>Date-only</option>
+          <option value="timed"     <%= fieldVal('time_behavior_mode','date_only') === 'timed'     ? 'selected' : '' %>>Time-enabled</option>
         </select>
-      </label>
+        <% fieldErrors('time_behavior_mode').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="<%= fieldClass('event_time_zone') %>">
+        <label for="event_time_zone">Canonical event time zone</label>
+        <input id="event_time_zone" type="text" name="event_time_zone"
+               placeholder="America/New_York"
+               value="<%= fieldVal('event_time_zone','UTC') %>" required />
+        <small class="muted">IANA time zone identifier. All scheduling is interpreted in this zone.</small>
+        <% fieldErrors('event_time_zone').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
     </fieldset>
 
-    <fieldset>
-      <legend>Confirmation</legend>
-      <label class="<%= emailConfirmationToggleDisabled ? 'is-disabled' : '' %>">
-        <input
-          type="checkbox"
-          name="email_confirmation_enabled"
-          <%= config.email_confirmation_enabled ? 'checked' : '' %>
-          <%= emailConfirmationToggleDisabled ? 'disabled' : '' %>
-        />
-        Send email confirmation
-        <% if (emailConfirmationToggleDisabled) { %>
-          <small class="muted">Requires the email form field to be enabled.</small>
+    <fieldset class="setup-section" data-section="form-config">
+      <legend>Public signup fields</legend>
+      <p class="muted setup-hint">
+        The public form uses a fixed set of supported fields. You can enable or require each, but the field list itself is bounded by design.
+      </p>
+
+      <div class="form-field-row">
+        <strong>Name</strong>
+        <label><input type="checkbox" name="form_config[name][enabled]" value="on" checked disabled /> Always enabled</label>
+        <label><input type="checkbox" name="form_config[name][required]" value="on" checked disabled /> Always required</label>
+      </div>
+
+      <div class="form-field-row">
+        <strong>Phone number</strong>
+        <label>
+          <input type="checkbox" name="form_config[phone][enabled]" value="on"
+                 data-control="phone-enabled"
+                 <%= phoneFF.enabled ? 'checked' : '' %> />
+          Enabled
+        </label>
+        <label>
+          <input type="checkbox" name="form_config[phone][required]" value="on"
+                 <%= phoneFF.required ? 'checked' : '' %> />
+          Required
+        </label>
+      </div>
+
+      <div class="form-field-row form-field-row--indent" data-when="phone-enabled" data-value="on">
+        <strong>Preferred contact method <small class="muted">(call / text)</small></strong>
+        <label>
+          <input type="checkbox" name="form_config[contact_method][enabled]" value="on"
+                 <%= cmFF.enabled ? 'checked' : '' %> />
+          Enabled
+        </label>
+        <label>
+          <input type="checkbox" name="form_config[contact_method][required]" value="on"
+                 <%= cmFF.required ? 'checked' : '' %> />
+          Required
+        </label>
+      </div>
+
+      <div class="form-field-row form-field-row--indent" data-when="phone-enabled" data-value="on">
+        <strong>Number type <small class="muted">(cell / WhatsApp)</small></strong>
+        <label>
+          <input type="checkbox" name="form_config[number_type][enabled]" value="on"
+                 <%= ntFF.enabled ? 'checked' : '' %> />
+          Enabled
+        </label>
+        <label>
+          <input type="checkbox" name="form_config[number_type][required]" value="on"
+                 <%= ntFF.required ? 'checked' : '' %> />
+          Required
+        </label>
+      </div>
+
+      <div class="form-field-row">
+        <strong>Email</strong>
+        <label>
+          <input type="checkbox" name="form_config[email][enabled]" value="on"
+                 data-control="email-enabled"
+                 <%= emailFF.enabled ? 'checked' : '' %> />
+          Enabled
+        </label>
+        <label>
+          <input type="checkbox" name="form_config[email][required]" value="on"
+                 <%= emailFF.required ? 'checked' : '' %> />
+          Required
+        </label>
+      </div>
+
+      <div class="form-field-row">
+        <strong>Notes</strong>
+        <label>
+          <input type="checkbox" name="form_config[notes][enabled]" value="on"
+                 <%= notesFF.enabled ? 'checked' : '' %> />
+          Enabled
+        </label>
+        <label>
+          <input type="checkbox" name="form_config[notes][required]" value="on"
+                 <%= notesFF.required ? 'checked' : '' %> />
+          Required
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset class="setup-section">
+      <legend>Confirmation and export preferences</legend>
+
+      <div class="<%= fieldClass('email_confirmation_enabled') %> field--email-confirmation <%= emailConfirmationDisabled ? 'is-disabled' : '' %>">
+        <label>
+          <input
+            type="checkbox"
+            name="email_confirmation_enabled"
+            value="on"
+            data-dependent-on="email-enabled"
+            <%= v.email_confirmation_enabled && !emailConfirmationDisabled ? 'checked' : '' %>
+            <%= emailConfirmationDisabled ? 'disabled' : '' %>
+          />
+          Send email confirmation
+        </label>
+        <% if (emailConfirmationDisabled) { %>
+          <small class="muted">Enable the email form field above to make this available.</small>
         <% } %>
-      </label>
+        <% fieldErrors('email_confirmation_enabled').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="field">
+        <label>
+          <input type="checkbox" name="add_to_calendar_enabled" value="on"
+                 <%= v.add_to_calendar_enabled ? 'checked' : '' %> />
+          Offer "add to calendar" on the confirmation page
+        </label>
+      </div>
+
+      <div class="<%= fieldClass('calendar_export_mode') %>">
+        <label for="calendar_export_mode">Calendar export mode</label>
+        <select id="calendar_export_mode" name="calendar_export_mode">
+          <option value="combined" <%= fieldVal('calendar_export_mode','combined') === 'combined' ? 'selected' : '' %>>Single combined event</option>
+          <option value="separate" <%= fieldVal('calendar_export_mode','combined') === 'separate' ? 'selected' : '' %>>Separate event per selected item</option>
+        </select>
+        <% fieldErrors('calendar_export_mode').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
     </fieldset>
 
-    <p class="muted">Setup form submission is wired in the calendar-config phase.</p>
+    <div class="setup-actions">
+      <button type="submit" class="btn btn--primary">Save calendar settings</button>
+      <a class="btn btn--ghost" href="/events/<%= event.id %>/calendar">Back to calendar</a>
+    </div>
   </form>
 </section>
+
+<script>
+  // Progressive enhancement only. Source-of-truth validation lives on the server.
+  // We toggle subsection visibility based on the current value of a controlling
+  // input; the server re-validates regardless of what the UI displays.
+  (function () {
+    function applyWhen(root) {
+      var controls = root.querySelectorAll('[data-control]');
+      controls.forEach(function (ctl) {
+        var key = ctl.getAttribute('data-control');
+        var dependents = root.querySelectorAll('[data-when="' + key + '"]');
+        function refresh() {
+          var current = ctl.type === 'checkbox'
+            ? (ctl.checked ? 'on' : 'off')
+            : ctl.value;
+          dependents.forEach(function (d) {
+            var want = d.getAttribute('data-value');
+            d.hidden = current !== want;
+          });
+        }
+        ctl.addEventListener('change', refresh);
+        refresh();
+      });
+
+      // Dependent-disabled inputs (e.g. email confirmation requires email field).
+      var dependentControls = root.querySelectorAll('[data-dependent-on]');
+      dependentControls.forEach(function (dc) {
+        var src = root.querySelector('[data-control="' + dc.getAttribute('data-dependent-on') + '"]');
+        if (!src) return;
+        function refresh() {
+          var disabled = !src.checked;
+          dc.disabled = disabled;
+          var wrap = dc.closest('.field--email-confirmation');
+          if (wrap) wrap.classList.toggle('is-disabled', disabled);
+          if (disabled) dc.checked = false;
+        }
+        src.addEventListener('change', refresh);
+      });
+    }
+    applyWhen(document.querySelector('.setup-form'));
+  }());
+</script>
+
 <%- include('../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>
