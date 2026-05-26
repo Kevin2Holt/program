@@ -33,6 +33,23 @@ const env = Object.freeze({
   },
 
   trustProxy: process.env.TRUST_PROXY ? Number(process.env.TRUST_PROXY) : 0,
+
+  // Application base URL — used when composing absolute links in emails and
+  // ICS files. Defaults to localhost in dev; required in production via env.
+  appBaseUrl: required('APP_BASE_URL', 'http://localhost:3000'),
+
+  email: {
+    // 'noop' = silently drop, 'log' = console.log, 'smtp' = attempt SMTP.
+    // Default 'noop' so dev/test never accidentally send mail.
+    provider: process.env.EMAIL_PROVIDER || 'noop',
+    from: process.env.MAIL_FROM || 'noreply@example.com',
+    smtp: {
+      host: process.env.SMTP_HOST || '',
+      port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,
+      user: process.env.SMTP_USER || '',
+      pass: process.env.SMTP_PASS || '',
+    },
+  },
 });
 
 module.exports = env;
