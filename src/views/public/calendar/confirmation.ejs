@@ -1,0 +1,24 @@
+<%- include('../../layouts/public', { stage: 'open' }) %>
+<section class="page page--calendar-confirmation">
+  <header>
+    <h1>Booking confirmation</h1>
+    <p class="muted">Reference: <code><%= booking.confirmation_ref %></code></p>
+  </header>
+
+  <h2>Selections</h2>
+  <ul class="confirmation-selections">
+    <% selections.forEach(function (sel) { %>
+      <li>
+        <strong><%= sel.item_name_snapshot %></strong>
+        &middot; <%= String(sel.selected_date).slice(0, 10) %>
+        <% if (sel.occurrence_label_snapshot) { %>
+          &middot; <%= sel.occurrence_label_snapshot %>
+        <% } %>
+        <% if (sel.occurrence_start_snapshot) { %>
+          &middot; <%= sel.occurrence_start_snapshot %>
+        <% } %>
+      </li>
+    <% }) %>
+  </ul>
+</section>
+<%- include('../../layouts/public', { stage: 'close' }) %>

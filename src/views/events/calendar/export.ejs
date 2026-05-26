@@ -1,0 +1,17 @@
+<%- include('../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--calendar-export">
+  <header><h1>Export</h1></header>
+
+  <form method="post" action="/events/<%= event.id %>/calendar/export">
+    <fieldset>
+      <legend>Detail level</legend>
+      <label><input type="radio" name="detail_level" value="count_only" /> Count only</label>
+      <label><input type="radio" name="detail_level" value="names_only" checked /> Names only</label>
+      <label><input type="radio" name="detail_level" value="count_and_names" /> Count + names</label>
+      <label><input type="radio" name="detail_level" value="names_and_contact" /> Names + contact info</label>
+    </fieldset>
+
+    <p class="muted">CSV generation runs through the export service and lands with the export phase.</p>
+  </form>
+</section>
+<%- include('../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

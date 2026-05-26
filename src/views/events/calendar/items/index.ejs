@@ -1,0 +1,33 @@
+<%- include('../../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--calendar-items">
+  <header>
+    <h1>Items</h1>
+    <p class="muted">Event: <%= event.title || event.code %></p>
+  </header>
+
+  <% if (items.length === 0) { %>
+    <p class="muted">No items yet. Item management is built out in the next phase.</p>
+  <% } else { %>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Identity</th>
+          <th>Name</th>
+          <th>Capacity</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% items.forEach(function (item) { %>
+          <tr>
+            <td><%- include('../../../partials/itemIndicator', { item: item }) %></td>
+            <td><%= item.name %></td>
+            <td><%= item.capacity %></td>
+            <td><%= item.status %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+<%- include('../../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

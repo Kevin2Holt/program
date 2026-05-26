@@ -1,0 +1,9 @@
+<%- include('../layouts/main', { stage: 'open', layoutContext: 'public' }) %>
+<section class="page page--auth">
+  <h1>Sign in</h1>
+  <p>The authentication flow is implemented in a later phase.</p>
+  <% if (typeof returnTo !== 'undefined' && returnTo) { %>
+    <p class="muted">Will redirect to: <code><%= returnTo %></code></p>
+  <% } %>
+</section>
+<%- include('../layouts/main', { stage: 'close', layoutContext: 'public' }) %>

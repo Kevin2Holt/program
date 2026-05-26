@@ -1,0 +1,11 @@
+<header class="app-header app-header--<%= context %>">
+  <div class="app-header__inner">
+    <a class="app-header__brand" href="/">progr.am</a>
+    <% if (context === 'organizer' && (typeof currentUser !== 'undefined') && currentUser) { %>
+      <nav class="app-header__nav" aria-label="Primary">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/account">Account</a>
+      </nav>
+    <% } %>
+  </div>
+</header>

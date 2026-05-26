@@ -1,0 +1,26 @@
+<%- include('../../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--calendar-availability">
+  <header><h1>Availability</h1></header>
+
+  <% if (!rules || rules.length === 0) { %>
+    <p class="muted">No availability rules defined.</p>
+  <% } else { %>
+    <ul class="rule-list">
+      <% rules.forEach(function (rule) { %>
+        <li>
+          <strong><%= rule.rule_type %></strong>
+          &middot; targets: <%= rule.target_scope %>
+          <% if (rule.rule_type === 'one_time') { %>
+            &middot; date: <%= String(rule.blocked_date).slice(0, 10) %>
+          <% } else { %>
+            &middot; pattern: <%= rule.recurrence_pattern %>
+          <% } %>
+          <% if (!rule.active) { %><em>(inactive)</em><% } %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <p class="muted">One-time and recurring rule editing lands with the availability phase.</p>
+</section>
+<%- include('../../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

@@ -1,0 +1,9 @@
+<%# Reusable item-identity token. Renders an item's shape + color as a
+small chip used across public and organizer calendar views. %>
+<span class="item-indicator <%= item.status === 'active' ? '' : 'item-indicator--archived' %>"
+      style="--item-color: <%= item.color %>;"
+      title="<%= item.name %>"
+      aria-label="<%= item.name %>">
+  <span class="item-indicator__shape"><%= item.shape %></span>
+  <span class="item-indicator__name"><%= item.name %></span>
+</span>

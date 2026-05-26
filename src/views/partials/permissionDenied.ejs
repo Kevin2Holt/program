@@ -1,0 +1,9 @@
+<%- include('../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--message">
+  <h1>Forbidden</h1>
+  <p>You don't have permission to view this page.</p>
+  <% if (typeof missingPermission !== 'undefined' && missingPermission) { %>
+    <p class="muted">Missing permission: <code><%= missingPermission %></code></p>
+  <% } %>
+</section>
+<%- include('../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

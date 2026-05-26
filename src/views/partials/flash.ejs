@@ -1,0 +1,10 @@
+<%# Flash messages partial. The flash system itself lands with the auth phase;
+this placeholder keeps the include path stable so view files do not need to
+change when it ships. %>
+<% if (typeof flash !== 'undefined' && flash && flash.length) { %>
+  <ul class="flash-list">
+    <% flash.forEach(function (entry) { %>
+      <li class="flash flash--<%= entry.kind %>"><%= entry.message %></li>
+    <% }) %>
+  </ul>
+<% } %>

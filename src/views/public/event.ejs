@@ -1,0 +1,10 @@
+<%- include('../layouts/public', { stage: 'open' }) %>
+<section class="page page--event">
+  <header class="event-header">
+    <h1><%= event.title || event.code %></h1>
+    <p class="event-code">/<%= event.code %></p>
+  </header>
+  <p class="muted">Event content rendering is implemented in a later phase.</p>
+  <p><a href="/<%= event.code %>/calendar">View calendar</a></p>
+</section>
+<%- include('../layouts/public', { stage: 'close' }) %>

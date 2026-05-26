@@ -1,0 +1,24 @@
+<%- include('../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--calendar-organizer">
+  <header class="calendar-org__header">
+    <h1>Calendar</h1>
+    <p class="muted">Event: <strong><%= event.title || event.code %></strong> <small>(/<%= event.code %>)</small></p>
+  </header>
+
+  <ul class="calendar-org__summary">
+    <li>Status: <%= config.enabled ? 'enabled' : 'disabled' %></li>
+    <li>Public visibility: <%= config.public_visibility_state %></li>
+    <li>Date window mode: <%= config.date_window_mode %></li>
+    <li>Time behavior: <%= config.time_behavior_mode %></li>
+    <li>Items: <%= activeItemCount %> active / <%= itemCount %> total</li>
+  </ul>
+
+  <nav class="calendar-org__nav">
+    <a href="/events/<%= event.id %>/calendar/setup">Setup</a>
+    <a href="/events/<%= event.id %>/calendar/items">Items</a>
+    <a href="/events/<%= event.id %>/calendar/availability">Availability</a>
+    <a href="/events/<%= event.id %>/calendar/bookings">Bookings</a>
+    <a href="/events/<%= event.id %>/calendar/export">Export</a>
+  </nav>
+</section>
+<%- include('../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

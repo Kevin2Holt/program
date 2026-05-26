@@ -1,0 +1,30 @@
+<%# Reusable layout fragments used by view pages.
+
+This file is included by view pages via:
+  <%- include('../layouts/main', { stage: 'open' }) %>
+  ...content...
+  <%- include('../layouts/main', { stage: 'close' }) %>
+
+It keeps layout responsibilities in one place while preserving plain-EJS
+partial composition (the main app spec avoids layout engines). %>
+
+<% if (stage === 'open') { %>
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'progr.am' %></title>
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/calendar.css" />
+</head>
+<body class="app-body app-body--<%= (typeof layoutContext !== 'undefined') ? layoutContext : 'organizer' %>">
+  <%- include('../partials/header', { context: (typeof layoutContext !== 'undefined') ? layoutContext : 'organizer' }) %>
+  <main class="app-main">
+    <%- include('../partials/flash') %>
+<% } else if (stage === 'close') { %>
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>
+<% } %>

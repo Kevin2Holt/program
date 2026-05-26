@@ -1,0 +1,58 @@
+<%- include('../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--calendar-setup">
+  <header><h1>Calendar setup</h1></header>
+
+  <form method="post" action="/events/<%= event.id %>/calendar/setup">
+    <fieldset>
+      <legend>Module</legend>
+      <label>
+        Title
+        <input type="text" name="title" value="<%= config.title || '' %>" />
+      </label>
+      <label>
+        <input type="checkbox" name="enabled" <%= config.enabled ? 'checked' : '' %> />
+        Enabled
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Date window</legend>
+      <label>
+        Mode
+        <select name="date_window_mode">
+          <option value="fixed"   <%= config.date_window_mode === 'fixed'   ? 'selected' : '' %>>Fixed range</option>
+          <option value="rolling" <%= config.date_window_mode === 'rolling' ? 'selected' : '' %>>Rolling window</option>
+        </select>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Time behavior</legend>
+      <label>
+        <select name="time_behavior_mode">
+          <option value="date_only" <%= config.time_behavior_mode === 'date_only' ? 'selected' : '' %>>Date-only</option>
+          <option value="timed"     <%= config.time_behavior_mode === 'timed'     ? 'selected' : '' %>>Time-enabled</option>
+        </select>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Confirmation</legend>
+      <label class="<%= emailConfirmationToggleDisabled ? 'is-disabled' : '' %>">
+        <input
+          type="checkbox"
+          name="email_confirmation_enabled"
+          <%= config.email_confirmation_enabled ? 'checked' : '' %>
+          <%= emailConfirmationToggleDisabled ? 'disabled' : '' %>
+        />
+        Send email confirmation
+        <% if (emailConfirmationToggleDisabled) { %>
+          <small class="muted">Requires the email form field to be enabled.</small>
+        <% } %>
+      </label>
+    </fieldset>
+
+    <p class="muted">Setup form submission is wired in the calendar-config phase.</p>
+  </form>
+</section>
+<%- include('../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

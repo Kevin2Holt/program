@@ -1,0 +1,9 @@
+<%- include('../layouts/public', { stage: 'open' }) %>
+<section class="page page--message">
+  <h1>Something went wrong</h1>
+  <% if (typeof message !== 'undefined' && message) { %>
+    <p><%= message %></p>
+  <% } %>
+  <p><a href="/">Back to progr.am</a></p>
+</section>
+<%- include('../layouts/public', { stage: 'close' }) %>

@@ -1,0 +1,32 @@
+<%- include('../../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--calendar-bookings">
+  <header><h1>Bookings</h1></header>
+
+  <% if (!bookings || bookings.length === 0) { %>
+    <p class="muted">No bookings yet.</p>
+  <% } else { %>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Reference</th>
+          <th>Registrant</th>
+          <th>Status</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% bookings.forEach(function (b) { %>
+          <tr>
+            <td><code><%= b.confirmation_ref.slice(0, 12) %>&hellip;</code></td>
+            <td><%= (b.registrant && b.registrant.name) || '—' %></td>
+            <td><%= b.status %></td>
+            <td><%= b.created_at %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+
+  <p class="muted">Detail view, edit, and reschedule flows land with the organizer booking phase.</p>
+</section>
+<%- include('../../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

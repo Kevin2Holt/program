@@ -1,0 +1,39 @@
+<%- include('../../layouts/public', { stage: 'open' }) %>
+<section class="page page--calendar-public">
+  <header class="calendar-public__header">
+    <h1><%= config.title || 'Calendar' %></h1>
+    <p class="event-code">/<%= event.code %>/calendar</p>
+    <% if (dateWindow) { %>
+      <p class="muted">Window: <%= dateWindow.start %> &mdash; <%= dateWindow.end %></p>
+    <% } %>
+  </header>
+
+  <section class="calendar-public__items">
+    <h2>Items</h2>
+    <% if (items.length === 0) { %>
+      <p class="muted">No items configured yet.</p>
+    <% } else { %>
+      <ul class="item-indicator-list">
+        <% items.forEach(function (item) { %>
+          <li><%- include('../../partials/itemIndicator', { item: item }) %></li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+
+  <section class="calendar-public__selections">
+    <h2>Your selections</h2>
+    <% if (!pendingSelections || pendingSelections.length === 0) { %>
+      <p class="muted">No selections yet.</p>
+    <% } else { %>
+      <ul>
+        <% pendingSelections.forEach(function (sel) { %>
+          <li><%= sel.selectedDate %> &middot; item #<%= sel.itemId %> &middot; <%= sel.selectionType %></li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+
+  <p class="muted">The interactive selection grid and submission form land in a later phase.</p>
+</section>
+<%- include('../../layouts/public', { stage: 'close' }) %>
