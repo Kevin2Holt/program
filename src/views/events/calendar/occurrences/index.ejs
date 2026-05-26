@@ -1,0 +1,92 @@
+<%
+  function fmtDate(d) { return d ? String(d).slice(0, 10) : '—'; }
+  function fmtTime(t) { return t ? String(t).slice(0, 5) : '—'; }
+  function fmtRange(occ) {
+    if (!occ.start_time) return '—';
+    const start = fmtTime(occ.start_time);
+    if (occ.end_time) return start + '–' + fmtTime(occ.end_time);
+    if (occ.duration_minutes != null) return start + ' · ' + occ.duration_minutes + ' min';
+    return start;
+  }
+  // Group by item id for display.
+  const groups = new Map();
+  (occurrences || []).forEach(function (o) {
+    const k = String(o.item_id);
+    if (!groups.has(k)) groups.set(k, { item: o._item, rows: [] });
+    groups.get(k).rows.push(o);
+  });
+%>
+<%- include('../../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--calendar-occurrences">
+  <header class="org-page__header">
+    <h1>Occurrences</h1>
+    <p class="muted">
+      Event: <strong><%= event.title || event.code %></strong>
+      <small>(/<%= event.code %>)</small>
+    </p>
+  </header>
+
+  <% if (typeof flash !== 'undefined' && flash) { %>
+    <div class="flash flash--<%= flash.kind %>"><%= flash.message %></div>
+  <% } %>
+
+  <% if (config.time_behavior_mode !== 'timed') { %>
+    <div class="flash flash--info">
+      Calendar time behavior is <strong>date-only</strong>. Occurrences are only used in
+      <strong>timed</strong> mode. <a href="/events/<%= event.id %>/calendar/setup">Open setup</a> to change.
+    </div>
+  <% } %>
+
+  <div class="org-page__actions">
+    <a class="btn btn--primary" href="/events/<%= event.id %>/calendar/occurrences/new">New occurrence</a>
+    <a class="btn btn--ghost" href="/events/<%= event.id %>/calendar">Back to calendar</a>
+  </div>
+
+  <% if (groups.size === 0) { %>
+    <p class="muted">No occurrences yet.</p>
+  <% } else { %>
+    <% for (const { item, rows } of groups.values()) { %>
+      <section class="occurrence-group">
+        <h2 class="occurrence-group__head">
+          <% if (item) { %>
+            <%- include('../../../partials/itemIndicator', { item: item }) %>
+          <% } else { %>
+            <em>(unknown item)</em>
+          <% } %>
+        </h2>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Label</th>
+              <th>Capacity</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% rows.forEach(function (occ) { %>
+              <tr class="<%= occ.status !== 'active' ? 'row--archived' : '' %>">
+                <td><%= fmtDate(occ.service_date) %></td>
+                <td><%= fmtRange(occ) %></td>
+                <td><%= occ.label || '' %></td>
+                <td><%= occ.capacity_override != null ? occ.capacity_override : '(item default)' %></td>
+                <td><%= occ.status %></td>
+                <td class="actions">
+                  <a href="/events/<%= event.id %>/calendar/occurrences/<%= occ.id %>/edit">Edit</a>
+                  <% if (occ.status === 'active') { %>
+                    <form method="post" action="/events/<%= event.id %>/calendar/occurrences/<%= occ.id %>/archive" class="inline-form">
+                      <button type="submit" class="btn btn--link">Archive</button>
+                    </form>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </section>
+    <% } %>
+  <% } %>
+</section>
+<%- include('../../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

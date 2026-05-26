@@ -1,0 +1,97 @@
+<%
+  const v = (typeof values !== 'undefined' && values) ? values
+          : (typeof item !== 'undefined' && item) ? item
+          : {};
+  const byField = (typeof errorsByField !== 'undefined' && errorsByField) ? errorsByField : {};
+  function fieldErrors(name) { return byField[name] || []; }
+  function fieldClass(name)  { return fieldErrors(name).length ? 'field field--error' : 'field'; }
+  const action = (mode === 'create')
+    ? `/events/${event.id}/calendar/items`
+    : `/events/${event.id}/calendar/items/${item.id}`;
+%>
+<%- include('../../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--calendar-item-form">
+  <header class="org-page__header">
+    <h1><%= mode === 'create' ? 'New item' : 'Edit item' %></h1>
+    <p class="muted">
+      Event: <strong><%= event.title || event.code %></strong>
+      <small>(/<%= event.code %>)</small>
+    </p>
+  </header>
+
+  <% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+    <ul class="form-errors" role="alert">
+      <% errors.forEach(function (e) { %><li><%= e.message %></li><% }); %>
+    </ul>
+  <% } %>
+
+  <form method="post" action="<%= action %>" class="setup-form" novalidate>
+    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <% } %>
+
+    <fieldset class="setup-section">
+      <legend>Item</legend>
+
+      <div class="<%= fieldClass('name') %>">
+        <label for="item-name">Name</label>
+        <input id="item-name" type="text" name="name" maxlength="120" required
+               value="<%= v.name || '' %>" />
+        <% fieldErrors('name').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="<%= fieldClass('capacity') %>">
+        <label for="item-capacity">Capacity</label>
+        <input id="item-capacity" type="number" name="capacity" min="1" step="1"
+               value="<%= v.capacity != null ? v.capacity : 1 %>" required />
+        <small class="field__hint">Positive whole number. Set to 1 for a single-slot item.</small>
+        <% fieldErrors('capacity').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="<%= fieldClass('color') %>">
+        <label>Color</label>
+        <div class="swatch-grid">
+          <% palette.forEach(function (c) { %>
+            <label class="swatch">
+              <input type="radio" name="color" value="<%= c %>"
+                     <%= (v.color || palette[0]) === c ? 'checked' : '' %> />
+              <span class="swatch__chip" style="background: <%= c %>;"></span>
+              <span class="swatch__hex"><%= c %></span>
+            </label>
+          <% }); %>
+        </div>
+        <% fieldErrors('color').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="<%= fieldClass('shape') %>">
+        <label>Shape</label>
+        <div class="swatch-grid">
+          <% shapes.forEach(function (s) { %>
+            <label class="swatch swatch--shape">
+              <input type="radio" name="shape" value="<%= s %>"
+                     <%= (v.shape || shapes[0]) === s ? 'checked' : '' %> />
+              <span class="swatch__shape"><%= s %></span>
+            </label>
+          <% }); %>
+        </div>
+        <% fieldErrors('shape').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="<%= fieldClass('sort_order') %>">
+        <label for="item-sort">Sort order</label>
+        <input id="item-sort" type="number" name="sort_order" step="1"
+               value="<%= v.sort_order != null ? v.sort_order : 0 %>" />
+        <small class="field__hint">Items are listed ascending. Lower comes first.</small>
+        <% fieldErrors('sort_order').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+    </fieldset>
+
+    <div class="setup-actions">
+      <button type="submit" class="btn btn--primary">
+        <%= mode === 'create' ? 'Create item' : 'Save changes' %>
+      </button>
+      <a class="btn btn--ghost" href="/events/<%= event.id %>/calendar/items">Cancel</a>
+    </div>
+  </form>
+</section>
+<%- include('../../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

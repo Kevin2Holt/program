@@ -1,26 +1,121 @@
+<%
+  const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  function fmtDate(d) { return d ? String(d).slice(0, 10) : '—'; }
+  function summarizeRule(rule) {
+    if (rule.rule_type === 'one_time') {
+      return 'One-time · ' + fmtDate(rule.blocked_date);
+    }
+    const pat = rule.recurrence_pattern || '—';
+    const d = rule.recurrence_detail || {};
+    if (pat === 'weekly' || pat === 'biweekly') {
+      const days = (d.weekdays || []).map(function (n) { return WEEKDAY_LABELS[n] || n; }).join(', ');
+      return (pat === 'biweekly' ? 'Every other week' : 'Weekly') + ' · ' + days;
+    }
+    if (pat === 'monthly_by_date') {
+      return 'Monthly · day ' + (d.day_of_month || '—');
+    }
+    if (pat === 'monthly_by_weekday') {
+      return 'Monthly · week ' + (d.week_of_month || '—') + ' ' + (WEEKDAY_LABELS[d.weekday] || d.weekday || '—');
+    }
+    if (pat === 'daily') return 'Daily';
+    return pat;
+  }
+  function targetSummary(rule) {
+    if (rule.target_scope === 'all') return 'all items';
+    const ids = rule._target_item_ids || [];
+    const names = ids.map(function (id) {
+      const found = (items || []).find(function (i) { return Number(i.id) === Number(id); });
+      return found ? found.name : ('#' + id);
+    });
+    return names.join(', ') || '(no items)';
+  }
+  const oneTime = (rules || []).filter(function (r) { return r.rule_type === 'one_time'; });
+  const recurring = (rules || []).filter(function (r) { return r.rule_type === 'recurring'; });
+%>
 <%- include('../../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
 <section class="page page--calendar-availability">
-  <header><h1>Availability</h1></header>
+  <header class="org-page__header">
+    <h1>Availability</h1>
+    <p class="muted">
+      Event: <strong><%= event.title || event.code %></strong>
+      <small>(/<%= event.code %>)</small>
+    </p>
+  </header>
 
-  <% if (!rules || rules.length === 0) { %>
-    <p class="muted">No availability rules defined.</p>
-  <% } else { %>
-    <ul class="rule-list">
-      <% rules.forEach(function (rule) { %>
-        <li>
-          <strong><%= rule.rule_type %></strong>
-          &middot; targets: <%= rule.target_scope %>
-          <% if (rule.rule_type === 'one_time') { %>
-            &middot; date: <%= String(rule.blocked_date).slice(0, 10) %>
-          <% } else { %>
-            &middot; pattern: <%= rule.recurrence_pattern %>
-          <% } %>
-          <% if (!rule.active) { %><em>(inactive)</em><% } %>
-        </li>
-      <% }) %>
-    </ul>
+  <% if (typeof flash !== 'undefined' && flash) { %>
+    <div class="flash flash--<%= flash.kind %>"><%= flash.message %></div>
   <% } %>
 
-  <p class="muted">One-time and recurring rule editing lands with the availability phase.</p>
+  <div class="org-page__actions">
+    <a class="btn btn--primary" href="/events/<%= event.id %>/calendar/availability/new">New rule</a>
+    <a class="btn btn--ghost" href="/events/<%= event.id %>/calendar">Back to calendar</a>
+  </div>
+
+  <section class="rule-section">
+    <h2>One-time</h2>
+    <% if (oneTime.length === 0) { %>
+      <p class="muted">No one-time rules.</p>
+    <% } else { %>
+      <table class="data-table">
+        <thead>
+          <tr><th>When</th><th>Items</th><th>Reason</th><th>Active</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <% oneTime.forEach(function (rule) { %>
+            <tr class="<%= rule.active ? '' : 'row--archived' %>">
+              <td><%= summarizeRule(rule) %></td>
+              <td><%= targetSummary(rule) %></td>
+              <td><%= rule.reason || '' %></td>
+              <td><%= rule.active ? 'yes' : 'no' %></td>
+              <td class="actions">
+                <a href="/events/<%= event.id %>/calendar/availability/<%= rule.id %>/edit">Edit</a>
+                <% if (rule.active) { %>
+                  <form method="post" action="/events/<%= event.id %>/calendar/availability/<%= rule.id %>/archive" class="inline-form">
+                    <button type="submit" class="btn btn--link">Deactivate</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </section>
+
+  <section class="rule-section">
+    <h2>Recurring</h2>
+    <% if (recurring.length === 0) { %>
+      <p class="muted">No recurring rules.</p>
+    <% } else { %>
+      <table class="data-table">
+        <thead>
+          <tr><th>Pattern</th><th>Items</th><th>Window</th><th>Reason</th><th>Active</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <% recurring.forEach(function (rule) { %>
+            <tr class="<%= rule.active ? '' : 'row--archived' %>">
+              <td><%= summarizeRule(rule) %></td>
+              <td><%= targetSummary(rule) %></td>
+              <td>
+                <%= fmtDate(rule.recurrence_start_date) %>
+                →
+                <%= fmtDate(rule.recurrence_end_date) %>
+              </td>
+              <td><%= rule.reason || '' %></td>
+              <td><%= rule.active ? 'yes' : 'no' %></td>
+              <td class="actions">
+                <a href="/events/<%= event.id %>/calendar/availability/<%= rule.id %>/edit">Edit</a>
+                <% if (rule.active) { %>
+                  <form method="post" action="/events/<%= event.id %>/calendar/availability/<%= rule.id %>/archive" class="inline-form">
+                    <button type="submit" class="btn btn--link">Deactivate</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </section>
 </section>
 <%- include('../../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

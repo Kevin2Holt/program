@@ -1,0 +1,110 @@
+<%
+  const v = (typeof values !== 'undefined' && values) ? values
+          : (typeof occurrence !== 'undefined' && occurrence) ? occurrence
+          : {};
+  const byField = (typeof errorsByField !== 'undefined' && errorsByField) ? errorsByField : {};
+  function fieldErrors(name) { return byField[name] || []; }
+  function fieldClass(name)  { return fieldErrors(name).length ? 'field field--error' : 'field'; }
+  function fmt(t) { return t ? String(t).slice(0, 5) : ''; }
+  function fmtDate(d) { return d ? String(d).slice(0, 10) : ''; }
+  const action = (mode === 'create')
+    ? `/events/${event.id}/calendar/occurrences`
+    : `/events/${event.id}/calendar/occurrences/${occurrence.id}`;
+  const selectedItemId = (v.item_id != null) ? Number(v.item_id)
+                       : (occurrence ? Number(occurrence.item_id) : null);
+%>
+<%- include('../../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--calendar-occurrence-form">
+  <header class="org-page__header">
+    <h1><%= mode === 'create' ? 'New occurrence' : 'Edit occurrence' %></h1>
+    <p class="muted">
+      Event: <strong><%= event.title || event.code %></strong>
+      <small>(/<%= event.code %>)</small>
+    </p>
+  </header>
+
+  <% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+    <ul class="form-errors" role="alert">
+      <% errors.forEach(function (e) { %><li><%= e.message %></li><% }); %>
+    </ul>
+  <% } %>
+
+  <form method="post" action="<%= action %>" class="setup-form" novalidate>
+    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <% } %>
+
+    <fieldset class="setup-section">
+      <legend>Occurrence</legend>
+
+      <div class="<%= fieldClass('item_id') %>">
+        <label for="occ-item">Item</label>
+        <select id="occ-item" name="item_id" <%= mode === 'edit' ? 'disabled' : 'required' %>>
+          <% if (mode === 'create') { %><option value="">— select —</option><% } %>
+          <% (items || []).forEach(function (it) { %>
+            <option value="<%= it.id %>" <%= selectedItemId === Number(it.id) ? 'selected' : '' %>>
+              <%= it.name %><%= it.status === 'archived' ? ' (archived)' : '' %>
+            </option>
+          <% }); %>
+        </select>
+        <% if (mode === 'edit') { %>
+          <small class="field__hint">Item is fixed after creation. Create a new occurrence to move it to another item.</small>
+        <% } %>
+        <% fieldErrors('item_id').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="<%= fieldClass('service_date') %>">
+        <label for="occ-date">Service date</label>
+        <input id="occ-date" type="date" name="service_date" required
+               value="<%= fmtDate(v.service_date) %>" />
+        <% fieldErrors('service_date').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="setup-subsection">
+        <div class="<%= fieldClass('start_time') %>">
+          <label for="occ-start">Start time</label>
+          <input id="occ-start" type="time" name="start_time" required
+                 value="<%= fmt(v.start_time) %>" />
+          <% fieldErrors('start_time').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+        </div>
+
+        <div class="<%= fieldClass('end_time') %>">
+          <label for="occ-end">End time</label>
+          <input id="occ-end" type="time" name="end_time"
+                 value="<%= fmt(v.end_time) %>" />
+          <small class="field__hint">Or provide a duration instead.</small>
+          <% fieldErrors('end_time').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+        </div>
+
+        <div class="<%= fieldClass('duration_minutes') %>">
+          <label for="occ-dur">Duration (minutes)</label>
+          <input id="occ-dur" type="number" name="duration_minutes" min="1" step="1"
+                 value="<%= v.duration_minutes != null ? v.duration_minutes : '' %>" />
+          <% fieldErrors('duration_minutes').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+        </div>
+      </div>
+
+      <div class="<%= fieldClass('capacity_override') %>">
+        <label for="occ-cap">Capacity override (optional)</label>
+        <input id="occ-cap" type="number" name="capacity_override" min="1" step="1"
+               value="<%= v.capacity_override != null ? v.capacity_override : '' %>" />
+        <small class="field__hint">Leave blank to inherit the item's capacity.</small>
+        <% fieldErrors('capacity_override').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="<%= fieldClass('label') %>">
+        <label for="occ-label">Label (optional)</label>
+        <input id="occ-label" type="text" name="label" maxlength="200" value="<%= v.label || '' %>" />
+        <% fieldErrors('label').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+    </fieldset>
+
+    <div class="setup-actions">
+      <button type="submit" class="btn btn--primary">
+        <%= mode === 'create' ? 'Create occurrence' : 'Save changes' %>
+      </button>
+      <a class="btn btn--ghost" href="/events/<%= event.id %>/calendar/occurrences">Cancel</a>
+    </div>
+  </form>
+</section>
+<%- include('../../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

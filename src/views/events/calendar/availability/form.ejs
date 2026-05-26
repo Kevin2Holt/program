@@ -1,0 +1,252 @@
+<%
+  const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const v = (typeof values !== 'undefined' && values) ? values
+          : (typeof rule !== 'undefined' && rule) ? rule
+          : {};
+  const byField = (typeof errorsByField !== 'undefined' && errorsByField) ? errorsByField : {};
+  function fieldErrors(name) { return byField[name] || []; }
+  function fieldClass(name)  { return fieldErrors(name).length ? 'field field--error' : 'field'; }
+  function fmtDate(d) { return d ? String(d).slice(0, 10) : ''; }
+  const action = (mode === 'create')
+    ? `/events/${event.id}/calendar/availability`
+    : `/events/${event.id}/calendar/availability/${rule.id}`;
+  const ruleType    = v.rule_type    || 'one_time';
+  const targetScope = v.target_scope || 'all';
+  const pattern     = v.recurrence_pattern || 'weekly';
+  const detail      = (v.recurrence_detail && typeof v.recurrence_detail === 'object') ? v.recurrence_detail : {};
+  const selectedWeekdays = Array.isArray(v.weekdays) ? v.weekdays.map(Number)
+                          : Array.isArray(detail.weekdays) ? detail.weekdays.map(Number)
+                          : [];
+  const selectedItemIds = Array.isArray(v._target_item_ids) ? v._target_item_ids.map(Number)
+                         : Array.isArray(v.target_item_ids) ? v.target_item_ids.map(Number)
+                         : [];
+%>
+<%- include('../../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--calendar-availability-form">
+  <header class="org-page__header">
+    <h1><%= mode === 'create' ? 'New rule' : 'Edit rule' %></h1>
+    <p class="muted">
+      Event: <strong><%= event.title || event.code %></strong>
+      <small>(/<%= event.code %>)</small>
+    </p>
+  </header>
+
+  <% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+    <ul class="form-errors" role="alert">
+      <% errors.forEach(function (e) { %><li><%= e.message %></li><% }); %>
+    </ul>
+  <% } %>
+
+  <form method="post" action="<%= action %>" class="setup-form" novalidate>
+    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <% } %>
+
+    <fieldset class="setup-section">
+      <legend>Rule type</legend>
+      <div class="<%= fieldClass('rule_type') %>">
+        <label>
+          <input type="radio" name="rule_type" value="one_time" data-control="rule_type"
+                 <%= ruleType === 'one_time' ? 'checked' : '' %> />
+          One-time
+        </label>
+        <label>
+          <input type="radio" name="rule_type" value="recurring" data-control="rule_type"
+                 <%= ruleType === 'recurring' ? 'checked' : '' %> />
+          Recurring
+        </label>
+        <% fieldErrors('rule_type').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+    </fieldset>
+
+    <fieldset class="setup-section" data-dependent-on="rule_type" data-when="one_time"
+              <%= ruleType !== 'one_time' ? 'hidden' : '' %>>
+      <legend>One-time</legend>
+      <div class="<%= fieldClass('blocked_date') %>">
+        <label for="rule-date">Blocked date</label>
+        <input id="rule-date" type="date" name="blocked_date"
+               value="<%= fmtDate(v.blocked_date) %>" />
+        <% fieldErrors('blocked_date').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+    </fieldset>
+
+    <fieldset class="setup-section" data-dependent-on="rule_type" data-when="recurring"
+              <%= ruleType !== 'recurring' ? 'hidden' : '' %>>
+      <legend>Recurring</legend>
+
+      <div class="<%= fieldClass('recurrence_pattern') %>">
+        <label for="rule-pat">Pattern</label>
+        <select id="rule-pat" name="recurrence_pattern" data-control="recurrence_pattern">
+          <% recurrencePatterns.forEach(function (p) { %>
+            <option value="<%= p %>" <%= pattern === p ? 'selected' : '' %>><%= p %></option>
+          <% }); %>
+        </select>
+        <% fieldErrors('recurrence_pattern').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="<%= fieldClass('weekdays') %>"
+           data-dependent-on="recurrence_pattern" data-when="weekly,biweekly"
+           <%= (pattern === 'weekly' || pattern === 'biweekly') ? '' : 'hidden' %>>
+        <label>Weekdays</label>
+        <div class="weekday-grid">
+          <% weekdays.forEach(function (n) { %>
+            <label class="weekday">
+              <input type="checkbox" name="weekdays" value="<%= n %>"
+                     <%= selectedWeekdays.includes(n) ? 'checked' : '' %> />
+              <%= WEEKDAY_LABELS[n] %>
+            </label>
+          <% }); %>
+        </div>
+        <% fieldErrors('weekdays').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="<%= fieldClass('day_of_month') %>"
+           data-dependent-on="recurrence_pattern" data-when="monthly_by_date"
+           <%= pattern === 'monthly_by_date' ? '' : 'hidden' %>>
+        <label for="rule-dom">Day of month</label>
+        <input id="rule-dom" type="number" name="day_of_month" min="1" max="31"
+               value="<%= v.day_of_month != null ? v.day_of_month : detail.day_of_month || '' %>" />
+        <% fieldErrors('day_of_month').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="setup-subsection"
+           data-dependent-on="recurrence_pattern" data-when="monthly_by_weekday"
+           <%= pattern === 'monthly_by_weekday' ? '' : 'hidden' %>>
+        <div class="<%= fieldClass('week_of_month') %>">
+          <label for="rule-wom">Week of month</label>
+          <select id="rule-wom" name="week_of_month">
+            <% [1,2,3,4,5].forEach(function (n) {
+                 const sel = String(v.week_of_month || detail.week_of_month || '') === String(n) ? 'selected' : '';
+            %><option value="<%= n %>" <%= sel %>><%= n %></option><% }); %>
+          </select>
+          <% fieldErrors('week_of_month').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+        </div>
+        <div class="<%= fieldClass('weekday_of_month') %>">
+          <label for="rule-wdom">Weekday</label>
+          <select id="rule-wdom" name="weekday_of_month">
+            <% weekdays.forEach(function (n) {
+                 const sel = String(v.weekday_of_month || detail.weekday || '') === String(n) ? 'selected' : '';
+            %><option value="<%= n %>" <%= sel %>><%= WEEKDAY_LABELS[n] %></option><% }); %>
+          </select>
+          <% fieldErrors('weekday_of_month').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+        </div>
+      </div>
+
+      <div class="setup-subsection">
+        <div class="<%= fieldClass('recurrence_start_date') %>">
+          <label for="rule-rs">Start date (optional)</label>
+          <input id="rule-rs" type="date" name="recurrence_start_date"
+                 value="<%= fmtDate(v.recurrence_start_date) %>" />
+          <% fieldErrors('recurrence_start_date').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+        </div>
+        <div class="<%= fieldClass('recurrence_end_date') %>">
+          <label for="rule-re">End date (optional)</label>
+          <input id="rule-re" type="date" name="recurrence_end_date"
+                 value="<%= fmtDate(v.recurrence_end_date) %>" />
+          <% fieldErrors('recurrence_end_date').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="setup-section">
+      <legend>Applies to</legend>
+      <div class="<%= fieldClass('target_scope') %>">
+        <label>
+          <input type="radio" name="target_scope" value="all" data-control="target_scope"
+                 <%= targetScope === 'all' ? 'checked' : '' %> />
+          All items
+        </label>
+        <label>
+          <input type="radio" name="target_scope" value="single" data-control="target_scope"
+                 <%= targetScope === 'single' ? 'checked' : '' %> />
+          A specific item
+        </label>
+        <label>
+          <input type="radio" name="target_scope" value="selected" data-control="target_scope"
+                 <%= targetScope === 'selected' ? 'checked' : '' %> />
+          Selected items
+        </label>
+        <% fieldErrors('target_scope').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+
+      <div class="<%= fieldClass('target_item_ids') %>"
+           data-dependent-on="target_scope" data-when="single,selected"
+           <%= (targetScope === 'single' || targetScope === 'selected') ? '' : 'hidden' %>>
+        <label>Items</label>
+        <% if (!items || items.length === 0) { %>
+          <p class="muted">No items yet — create at least one item first.</p>
+        <% } else { %>
+          <div class="item-pick-grid">
+            <% items.forEach(function (it) { %>
+              <label class="item-pick">
+                <input type="<%= targetScope === 'single' ? 'radio' : 'checkbox' %>"
+                       name="target_item_ids" value="<%= it.id %>"
+                       <%= selectedItemIds.includes(Number(it.id)) ? 'checked' : '' %> />
+                <%- include('../../../partials/itemIndicator', { item: it }) %>
+              </label>
+            <% }); %>
+          </div>
+        <% } %>
+        <% fieldErrors('target_item_ids').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+    </fieldset>
+
+    <fieldset class="setup-section">
+      <legend>Details</legend>
+      <div class="<%= fieldClass('reason') %>">
+        <label for="rule-reason">Reason (optional)</label>
+        <input id="rule-reason" type="text" name="reason" maxlength="200"
+               value="<%= v.reason || '' %>" />
+        <% fieldErrors('reason').forEach(function (m) { %><small class="field__error"><%= m %></small><% }); %>
+      </div>
+      <div class="field">
+        <label>
+          <input type="checkbox" name="active" value="on" <%= (v.active !== false) ? 'checked' : '' %> />
+          Active
+        </label>
+      </div>
+    </fieldset>
+
+    <div class="setup-actions">
+      <button type="submit" class="btn btn--primary">
+        <%= mode === 'create' ? 'Create rule' : 'Save changes' %>
+      </button>
+      <a class="btn btn--ghost" href="/events/<%= event.id %>/calendar/availability">Cancel</a>
+    </div>
+  </form>
+
+  <script>
+    // Optional progressive disclosure: shows/hides fieldsets keyed by
+    // data-control / data-dependent-on / data-when. Server-side validation
+    // is still authoritative — without JS the form just shows everything.
+    (function () {
+      var roots = document.querySelectorAll('[data-control]');
+      function currentValueFor(name) {
+        var nodes = document.getElementsByName(name);
+        for (var i = 0; i < nodes.length; i++) {
+          var n = nodes[i];
+          if (n.type === 'radio' || n.type === 'checkbox') {
+            if (n.checked) return n.value;
+          } else if (n.value) {
+            return n.value;
+          }
+        }
+        return '';
+      }
+      function applyAll() {
+        var deps = document.querySelectorAll('[data-dependent-on]');
+        deps.forEach(function (el) {
+          var key = el.getAttribute('data-dependent-on');
+          var when = (el.getAttribute('data-when') || '').split(',').map(function (s) { return s.trim(); });
+          var cur = currentValueFor(key);
+          el.hidden = when.indexOf(cur) === -1;
+        });
+      }
+      roots.forEach(function (r) {
+        r.addEventListener('change', applyAll);
+      });
+      applyAll();
+    })();
+  </script>
+</section>
+<%- include('../../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

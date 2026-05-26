@@ -181,3 +181,122 @@
 }
 .btn--primary { background: var(--color-accent); color: var(--color-bg); border-color: var(--color-accent); }
 .btn--ghost { background: transparent; }
+
+/* --- Calendar organizer pages (items / occurrences / availability) --- */
+.org-page__header { margin-bottom: var(--space-4); }
+.org-page__actions {
+  display: flex;
+  gap: var(--space-3);
+  margin: var(--space-3) 0 var(--space-4);
+  flex-wrap: wrap;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin: var(--space-3) 0;
+}
+.data-table th,
+.data-table td {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+.data-table tbody tr:last-child th,
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table .actions { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+.row--archived { opacity: 0.6; }
+
+.inline-form { display: inline; margin: 0; }
+.btn--link {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--color-accent);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+
+/* Swatches (item color/shape picker) */
+.swatch-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: var(--color-bg-elevated);
+}
+.swatch input { margin: 0; }
+.swatch__chip {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+}
+.swatch__hex {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-fg-muted);
+}
+.swatch--shape .swatch__shape {
+  display: inline-block;
+  min-width: 1.5em;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+/* Occurrence grouping */
+.occurrence-group { margin-bottom: var(--space-5); }
+.occurrence-group__head { margin: 0 0 var(--space-2); font-size: 1.1rem; }
+
+/* Availability section grouping */
+.rule-section { margin-bottom: var(--space-5); }
+.rule-section h2 { margin: 0 0 var(--space-2); font-size: 1.1rem; }
+
+/* Weekday + item picker grids on the rule form */
+.weekday-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.weekday {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-elevated);
+  cursor: pointer;
+}
+.item-pick-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.item-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-elevated);
+  cursor: pointer;
+}
+
+.field__hint { color: var(--color-fg-muted); font-size: 0.85rem; }

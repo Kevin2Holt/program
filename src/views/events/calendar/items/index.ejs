@@ -1,12 +1,24 @@
 <%- include('../../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
 <section class="page page--calendar-items">
-  <header>
+  <header class="org-page__header">
     <h1>Items</h1>
-    <p class="muted">Event: <%= event.title || event.code %></p>
+    <p class="muted">
+      Event: <strong><%= event.title || event.code %></strong>
+      <small>(/<%= event.code %>)</small>
+    </p>
   </header>
 
-  <% if (items.length === 0) { %>
-    <p class="muted">No items yet. Item management is built out in the next phase.</p>
+  <% if (typeof flash !== 'undefined' && flash) { %>
+    <div class="flash flash--<%= flash.kind %>"><%= flash.message %></div>
+  <% } %>
+
+  <div class="org-page__actions">
+    <a class="btn btn--primary" href="/events/<%= event.id %>/calendar/items/new">New item</a>
+    <a class="btn btn--ghost" href="/events/<%= event.id %>/calendar">Back to calendar</a>
+  </div>
+
+  <% if (!items || items.length === 0) { %>
+    <p class="muted">No items yet. Create your first one to start accepting bookings.</p>
   <% } else { %>
     <table class="data-table">
       <thead>
@@ -14,16 +26,31 @@
           <th>Identity</th>
           <th>Name</th>
           <th>Capacity</th>
+          <th>Sort</th>
           <th>Status</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <% items.forEach(function (item) { %>
-          <tr>
+          <tr class="<%= item.status === 'archived' ? 'row--archived' : '' %>">
             <td><%- include('../../../partials/itemIndicator', { item: item }) %></td>
             <td><%= item.name %></td>
             <td><%= item.capacity %></td>
+            <td><%= item.sort_order %></td>
             <td><%= item.status %></td>
+            <td class="actions">
+              <a href="/events/<%= event.id %>/calendar/items/<%= item.id %>/edit">Edit</a>
+              <% if (item.status === 'active') { %>
+                <form method="post" action="/events/<%= event.id %>/calendar/items/<%= item.id %>/archive" class="inline-form">
+                  <button type="submit" class="btn btn--link">Archive</button>
+                </form>
+              <% } else { %>
+                <form method="post" action="/events/<%= event.id %>/calendar/items/<%= item.id %>/unarchive" class="inline-form">
+                  <button type="submit" class="btn btn--link">Restore</button>
+                </form>
+              <% } %>
+            </td>
           </tr>
         <% }) %>
       </tbody>
