@@ -54,9 +54,16 @@
   <% } %>
 
   <section class="calendar-confirmation__followup">
-    <p class="muted">Add-to-calendar download is coming soon (placeholder &mdash; not wired yet).</p>
-    <% if (booking.email) { %>
-      <p class="muted">Email confirmation will be sent to <%= booking.email %> (placeholder &mdash; not wired yet).</p>
+    <% if (typeof addToCalendarEnabled !== 'undefined' && addToCalendarEnabled) { %>
+      <p>
+        <a class="btn btn--secondary"
+           href="/<%= event.code %>/calendar/confirmation/<%= booking.confirmation_ref %>/calendar.ics">
+          Add to calendar (.ics)
+        </a>
+      </p>
+    <% } %>
+    <% if (booking.email && config.email_confirmation_enabled) { %>
+      <p class="muted">A confirmation email was sent to <%= booking.email %>.</p>
     <% } %>
   </section>
 
