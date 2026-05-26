@@ -28,6 +28,7 @@
     </section>
 
     <form class="calendar-signup__form" method="post" action="/<%= event.code %>/calendar/submit" novalidate>
+      <% if (typeof csrfToken !== "undefined" && csrfToken) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><% } %>
       <% if (!formConfig.name || formConfig.name.enabled !== false) { %>
         <div class="form-field">
           <label for="signup-name">Name<% if (!formConfig.name || formConfig.name.required) { %> <span aria-hidden="true">*</span><% } %></label>

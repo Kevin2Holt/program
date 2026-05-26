@@ -46,6 +46,7 @@
                         <% (cell.occurrences || []).forEach(function (occ) { %>
                           <% if (occ.state === 'available') { %>
                             <form method="post" action="/<%= event.code %>/calendar/selections" class="calendar-cell__form">
+                              <% if (typeof csrfToken !== "undefined" && csrfToken) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><% } %>
                               <input type="hidden" name="action" value="add" />
                               <input type="hidden" name="itemId" value="<%= item.id %>" />
                               <input type="hidden" name="selectedDate" value="<%= row.date %>" />
@@ -59,6 +60,7 @@
                         <% }) %>
                       <% } else { %>
                         <form method="post" action="/<%= event.code %>/calendar/selections" class="calendar-cell__form">
+                          <% if (typeof csrfToken !== "undefined" && csrfToken) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><% } %>
                           <input type="hidden" name="action" value="add" />
                           <input type="hidden" name="itemId" value="<%= item.id %>" />
                           <input type="hidden" name="selectedDate" value="<%= row.date %>" />
@@ -93,6 +95,7 @@
                   <% } %>
                 </span>
                 <form method="post" action="/<%= event.code %>/calendar/selections">
+                  <% if (typeof csrfToken !== "undefined" && csrfToken) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><% } %>
                   <input type="hidden" name="action" value="remove" />
                   <input type="hidden" name="itemId" value="<%= sel.itemId %>" />
                   <input type="hidden" name="selectedDate" value="<%= sel.selectedDate %>" />
@@ -108,6 +111,7 @@
           <div class="calendar-public__actions">
             <a class="button button--primary" href="/<%= event.code %>/calendar/signup">Continue to signup</a>
             <form method="post" action="/<%= event.code %>/calendar/selections" class="calendar-public__clear">
+              <% if (typeof csrfToken !== "undefined" && csrfToken) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><% } %>
               <input type="hidden" name="action" value="clear" />
               <button type="submit" class="button button--ghost">Clear all</button>
             </form>

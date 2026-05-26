@@ -77,6 +77,7 @@
                   <a href="/events/<%= event.id %>/calendar/occurrences/<%= occ.id %>/edit">Edit</a>
                   <% if (occ.status === 'active') { %>
                     <form method="post" action="/events/<%= event.id %>/calendar/occurrences/<%= occ.id %>/archive" class="inline-form">
+                      <% if (typeof csrfToken !== "undefined" && csrfToken) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><% } %>
                       <button type="submit" class="btn btn--link">Archive</button>
                     </form>
                   <% } %>

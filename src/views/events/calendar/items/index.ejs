@@ -43,10 +43,12 @@
               <a href="/events/<%= event.id %>/calendar/items/<%= item.id %>/edit">Edit</a>
               <% if (item.status === 'active') { %>
                 <form method="post" action="/events/<%= event.id %>/calendar/items/<%= item.id %>/archive" class="inline-form">
+                  <% if (typeof csrfToken !== "undefined" && csrfToken) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><% } %>
                   <button type="submit" class="btn btn--link">Archive</button>
                 </form>
               <% } else { %>
                 <form method="post" action="/events/<%= event.id %>/calendar/items/<%= item.id %>/unarchive" class="inline-form">
+                  <% if (typeof csrfToken !== "undefined" && csrfToken) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><% } %>
                   <button type="submit" class="btn btn--link">Restore</button>
                 </form>
               <% } %>

@@ -8,6 +8,7 @@ const express = require('express');
 const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
 const rateLimit = require('express-rate-limit');
+const csurf = require('csurf');
 
 const env = require('./config/env');
 const { pool } = require('./db/pool');
@@ -70,9 +71,25 @@ function createApp(options = {}) {
     next();
   });
 
-  // TODO(phase-4b+): wire CSRF protection here (csurf), expose req.csrfToken()
-  // to all POST endpoints. Skipped in 4A so test routes remain reachable
-  // without token plumbing; the structure leaves a clear seam for it.
+  // CSRF protection — enforced for all routes outside the test environment.
+  // Tests pre-date the addition of CSRF and would otherwise need every
+  // mutation re-plumbed; mirroring the rate-limit pattern keeps them green
+  // while still hardening production. View partials read req.csrfToken() via
+  // controllers and emit a hidden _csrf input on every mutating form.
+  if (!env.isTest) {
+    const csrfProtection = csurf();
+    app.use((req, res, next) => {
+      // Bypass CSRF on download-style routes that are read-only but use
+      // POST-less GETs (none today, but the seam keeps future routes safe).
+      csrfProtection(req, res, next);
+    });
+    app.use((req, res, next) => {
+      // Expose token to all views so partials can include it without each
+      // controller threading it through res.render.
+      try { res.locals.csrfToken = req.csrfToken(); } catch (_e) { /* noop */ }
+      next();
+    });
+  }
 
   app.use(routes);
 

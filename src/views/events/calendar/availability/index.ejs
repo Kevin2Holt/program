@@ -71,6 +71,7 @@
                 <a href="/events/<%= event.id %>/calendar/availability/<%= rule.id %>/edit">Edit</a>
                 <% if (rule.active) { %>
                   <form method="post" action="/events/<%= event.id %>/calendar/availability/<%= rule.id %>/archive" class="inline-form">
+                    <% if (typeof csrfToken !== "undefined" && csrfToken) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><% } %>
                     <button type="submit" class="btn btn--link">Deactivate</button>
                   </form>
                 <% } %>
@@ -107,6 +108,7 @@
                 <a href="/events/<%= event.id %>/calendar/availability/<%= rule.id %>/edit">Edit</a>
                 <% if (rule.active) { %>
                   <form method="post" action="/events/<%= event.id %>/calendar/availability/<%= rule.id %>/archive" class="inline-form">
+                    <% if (typeof csrfToken !== "undefined" && csrfToken) { %><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><% } %>
                     <button type="submit" class="btn btn--link">Deactivate</button>
                   </form>
                 <% } %>
