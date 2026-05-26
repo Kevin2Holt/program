@@ -21,6 +21,8 @@ const calendarOccurrenceService = require('../../services/calendarOccurrenceServ
 const bookingModel = require('../../models/calendarBooking');
 const occurrenceModel = require('../../models/calendarOccurrence');
 const references = require('../../services/calendarReferences');
+const calendarIcsService = require('../../services/calendarIcsService');
+const calendarEmailService = require('../../services/calendarEmailService');
 
 async function loadConfigOrNotFound(event, res) {
   const config = await calendarConfigService.getForEvent(event.id);
@@ -221,6 +223,22 @@ exports.submit = async function submit(req, res, next) {
     calendarBookingService.clearPendingSelections(req.session, config.id);
     delete req.session.calendarSubmissionTokens[config.id];
 
+    // Best-effort confirmation email. We intentionally do not await failures
+    // beyond the service's own guards — the booking is already persisted and
+    // the user will see the confirmation page even if mail delivery fails.
+    try {
+      await calendarEmailService.sendBookingConfirmation({
+        event: req.event,
+        config,
+        formConfig: config.form_config || {},
+        booking: result.booking,
+        selections: pending,
+      });
+    } catch (mailErr) {
+      // eslint-disable-next-line no-console
+      console.warn('[calendar] confirmation email failed:', mailErr && mailErr.message);
+    }
+
     return res.redirect(`/${req.event.code}/calendar/confirmation/${result.booking.confirmation_ref}`);
   } catch (err) { return next(err); }
 };
@@ -297,7 +315,51 @@ exports.confirmation = async function confirmation(req, res, next) {
       config,
       booking: result.booking,
       selections: result.selections,
+      addToCalendarEnabled: !!config.add_to_calendar_enabled,
     });
+  } catch (err) { return next(err); }
+};
+
+/* ------------------------------------------------------------------ */
+/* GET /:code/calendar/confirmation/:ref/calendar.ics                  */
+/* ------------------------------------------------------------------ */
+
+exports.addToCalendar = async function addToCalendar(req, res, next) {
+  try {
+    const config = await loadConfigOrNotFound(req.event, res);
+    if (!config) return;
+    if (!config.add_to_calendar_enabled) {
+      return res.status(404).render('public/notFound', {
+        title: 'Not found', pageTitle: 'Not found',
+      });
+    }
+    const ref = req.params.ref;
+    if (!references.isValidConfirmationRefShape(ref)) {
+      return res.status(404).render('public/notFound', {
+        title: 'Not found', pageTitle: 'Not found',
+      });
+    }
+    const result = await calendarBookingService.getBookingByConfirmationRef(ref);
+    if (!result || Number(result.booking.event_id) !== Number(req.event.id)) {
+      return res.status(404).render('public/notFound', {
+        title: 'Not found', pageTitle: 'Not found',
+      });
+    }
+    if (result.booking.status !== 'active') {
+      return res.status(404).render('public/notFound', {
+        title: 'Not found', pageTitle: 'Not found',
+      });
+    }
+    const ics = calendarIcsService.buildIcs({
+      event: req.event,
+      config,
+      booking: result.booking,
+      selections: result.selections,
+    });
+    const fname = `booking-${result.booking.confirmation_ref}.ics`;
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${fname}"`);
+    return res.send(ics);
   } catch (err) { return next(err); }
 };
 

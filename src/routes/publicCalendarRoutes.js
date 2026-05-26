@@ -13,11 +13,12 @@
 //   GET  /:code/calendar/signup
 //   POST /:code/calendar/submit
 //   GET  /:code/calendar/confirmation/:ref
-//   GET  /:code/calendar/confirmation/:ref/calendar  (add-to-calendar; later)
+//   GET  /:code/calendar/confirmation/:ref/calendar.ics  (add-to-calendar)
 
 const express = require('express');
 const calendarController = require('../controllers/public/calendarController');
 const { loadByCode } = require('../middleware/loadEvent');
+const { selectionsLimiter, submitLimiter, icsLimiter } = require('../middleware/rateLimits');
 
 const router = express.Router({ mergeParams: true });
 
@@ -25,14 +26,12 @@ const router = express.Router({ mergeParams: true });
 router.use('/:code/calendar', loadByCode('code'));
 
 router.get('/:code/calendar', calendarController.show);
-router.post('/:code/calendar/selections', calendarController.updateSelections);
+router.post('/:code/calendar/selections', selectionsLimiter, calendarController.updateSelections);
 router.get('/:code/calendar/signup', calendarController.signup);
-router.post('/:code/calendar/submit', calendarController.submit);
+router.post('/:code/calendar/submit', submitLimiter, calendarController.submit);
 router.get('/:code/calendar/confirmation/:ref', calendarController.confirmation);
-
-// Placeholder for add-to-calendar output; implemented in a later phase.
-router.get('/:code/calendar/confirmation/:ref/calendar', (req, res) => {
-  res.status(501).type('text/plain').send('Add-to-calendar output is not implemented yet.');
-});
+router.get('/:code/calendar/confirmation/:ref/calendar.ics', icsLimiter, calendarController.addToCalendar);
+// Back-compat alias without extension.
+router.get('/:code/calendar/confirmation/:ref/calendar', icsLimiter, calendarController.addToCalendar);
 
 module.exports = router;
