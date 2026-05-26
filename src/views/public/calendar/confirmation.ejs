@@ -1,24 +1,65 @@
 <%- include('../../layouts/public', { stage: 'open' }) %>
 <section class="page page--calendar-confirmation">
-  <header>
-    <h1>Booking confirmation</h1>
-    <p class="muted">Reference: <code><%= booking.confirmation_ref %></code></p>
+  <header class="calendar-confirmation__header">
+    <h1>You're signed up</h1>
+    <p class="muted">Keep this confirmation reference for your records:</p>
+    <p class="confirmation-ref"><code><%= booking.confirmation_ref %></code></p>
   </header>
 
-  <h2>Selections</h2>
-  <ul class="confirmation-selections">
-    <% selections.forEach(function (sel) { %>
-      <li>
-        <strong><%= sel.item_name_snapshot %></strong>
-        &middot; <%= String(sel.selected_date).slice(0, 10) %>
-        <% if (sel.occurrence_label_snapshot) { %>
-          &middot; <%= sel.occurrence_label_snapshot %>
+  <% if (booking.registrant && booking.registrant.name) { %>
+    <section class="calendar-confirmation__registrant">
+      <h2>Registrant</h2>
+      <p>
+        <strong><%= booking.registrant.name %></strong>
+        <% if (booking.registrant.phone) { %>
+          &middot; <%= booking.registrant.phone %>
+          <% if (booking.registrant.contact_method) { %>
+            (<%= booking.registrant.contact_method %><% if (booking.registrant.number_type) { %>, <%= booking.registrant.number_type %><% } %>)
+          <% } %>
         <% } %>
-        <% if (sel.occurrence_start_snapshot) { %>
-          &middot; <%= sel.occurrence_start_snapshot %>
+        <% if (booking.email) { %>
+          &middot; <%= booking.email %>
         <% } %>
-      </li>
-    <% }) %>
-  </ul>
+      </p>
+    </section>
+  <% } %>
+
+  <section class="calendar-confirmation__selections">
+    <h2>Selections</h2>
+    <% if (!selections || selections.length === 0) { %>
+      <p class="muted">No selections recorded.</p>
+    <% } else { %>
+      <ul class="confirmation-selections">
+        <% selections.forEach(function (sel) { %>
+          <li>
+            <strong><%= sel.item_name_snapshot %></strong>
+            &middot; <%= String(sel.selected_date).slice(0, 10) %>
+            <% if (sel.occurrence_label_snapshot) { %>
+              &middot; <%= sel.occurrence_label_snapshot %>
+            <% } %>
+            <% if (sel.occurrence_start_snapshot) { %>
+              &middot; <%= sel.occurrence_start_snapshot %><% if (sel.occurrence_end_snapshot) { %>–<%= sel.occurrence_end_snapshot %><% } %>
+            <% } %>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+
+  <% if (booking.notes) { %>
+    <section class="calendar-confirmation__notes">
+      <h2>Notes</h2>
+      <p><%= booking.notes %></p>
+    </section>
+  <% } %>
+
+  <section class="calendar-confirmation__followup">
+    <p class="muted">Add-to-calendar download is coming soon (placeholder &mdash; not wired yet).</p>
+    <% if (booking.email) { %>
+      <p class="muted">Email confirmation will be sent to <%= booking.email %> (placeholder &mdash; not wired yet).</p>
+    <% } %>
+  </section>
+
+  <p><a href="/<%= event.code %>/calendar">&larr; Back to calendar</a></p>
 </section>
 <%- include('../../layouts/public', { stage: 'close' }) %>

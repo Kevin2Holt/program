@@ -1,0 +1,113 @@
+<%- include('../../layouts/public', { stage: 'open' }) %>
+<section class="page page--calendar-signup">
+  <header>
+    <h1>Sign up</h1>
+    <p class="muted"><a href="/<%= event.code %>/calendar">&larr; Back to calendar</a></p>
+  </header>
+
+  <% if (errorsByField && errorsByField._form) { %>
+    <div class="flash flash--error" role="alert">
+      <% errorsByField._form.forEach(function (m) { %><p><%= m %></p><% }) %>
+    </div>
+  <% } %>
+
+  <div class="calendar-signup__layout">
+    <section class="calendar-signup__cart" aria-label="Your selections">
+      <h2>Your selections</h2>
+      <ul class="calendar-cart-list">
+        <% pendingPretty.forEach(function (sel) { %>
+          <li class="calendar-cart-item">
+            <strong><%= sel.itemName %></strong>
+            &middot; <%= sel.selectedDate %>
+            <% if (sel.selectionType === 'occurrence') { %>
+              &middot; #<%= sel.occurrenceId %>
+            <% } %>
+          </li>
+        <% }) %>
+      </ul>
+    </section>
+
+    <form class="calendar-signup__form" method="post" action="/<%= event.code %>/calendar/submit" novalidate>
+      <% if (!formConfig.name || formConfig.name.enabled !== false) { %>
+        <div class="form-field">
+          <label for="signup-name">Name<% if (!formConfig.name || formConfig.name.required) { %> <span aria-hidden="true">*</span><% } %></label>
+          <input id="signup-name" name="name" type="text" maxlength="120"
+                 value="<%= (values.registrant && values.registrant.name) || '' %>"
+                 <% if (!formConfig.name || formConfig.name.required) { %>required<% } %> />
+          <% (errorsByField.name || []).forEach(function (m) { %>
+            <p class="form-field__error" role="alert"><%= m %></p>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <% if (formConfig.phone && formConfig.phone.enabled) { %>
+        <div class="form-field">
+          <label for="signup-phone">Phone<% if (formConfig.phone.required) { %> <span aria-hidden="true">*</span><% } %></label>
+          <input id="signup-phone" name="phone" type="tel" maxlength="40"
+                 value="<%= (values.registrant && values.registrant.phone) || '' %>"
+                 <% if (formConfig.phone.required) { %>required<% } %> />
+          <% (errorsByField.phone || []).forEach(function (m) { %>
+            <p class="form-field__error" role="alert"><%= m %></p>
+          <% }) %>
+        </div>
+
+        <% if (formConfig.contact_method && formConfig.contact_method.enabled) { %>
+          <div class="form-field">
+            <label for="signup-contact-method">Contact method<% if (formConfig.contact_method.required) { %> <span aria-hidden="true">*</span><% } %></label>
+            <select id="signup-contact-method" name="contact_method" <% if (formConfig.contact_method.required) { %>required<% } %>>
+              <option value="">Choose…</option>
+              <option value="call" <% if (values.registrant && values.registrant.contact_method === 'call') { %>selected<% } %>>Call</option>
+              <option value="text" <% if (values.registrant && values.registrant.contact_method === 'text') { %>selected<% } %>>Text</option>
+            </select>
+            <% (errorsByField.contact_method || []).forEach(function (m) { %>
+              <p class="form-field__error" role="alert"><%= m %></p>
+            <% }) %>
+          </div>
+        <% } %>
+
+        <% if (formConfig.number_type && formConfig.number_type.enabled) { %>
+          <div class="form-field">
+            <label for="signup-number-type">Number type<% if (formConfig.number_type.required) { %> <span aria-hidden="true">*</span><% } %></label>
+            <select id="signup-number-type" name="number_type" <% if (formConfig.number_type.required) { %>required<% } %>>
+              <option value="">Choose…</option>
+              <option value="cell" <% if (values.registrant && values.registrant.number_type === 'cell') { %>selected<% } %>>Cell</option>
+              <option value="whatsapp" <% if (values.registrant && values.registrant.number_type === 'whatsapp') { %>selected<% } %>>WhatsApp</option>
+            </select>
+            <% (errorsByField.number_type || []).forEach(function (m) { %>
+              <p class="form-field__error" role="alert"><%= m %></p>
+            <% }) %>
+          </div>
+        <% } %>
+      <% } %>
+
+      <% if (formConfig.email && formConfig.email.enabled) { %>
+        <div class="form-field">
+          <label for="signup-email">Email<% if (formConfig.email.required) { %> <span aria-hidden="true">*</span><% } %></label>
+          <input id="signup-email" name="email" type="email" maxlength="200"
+                 value="<%= values.email || '' %>"
+                 <% if (formConfig.email.required) { %>required<% } %> />
+          <% (errorsByField.email || []).forEach(function (m) { %>
+            <p class="form-field__error" role="alert"><%= m %></p>
+          <% }) %>
+          <p class="muted form-field__hint">Email confirmation will be sent (placeholder &mdash; not wired yet).</p>
+        </div>
+      <% } %>
+
+      <% if (formConfig.notes && formConfig.notes.enabled) { %>
+        <div class="form-field">
+          <label for="signup-notes">Notes<% if (formConfig.notes.required) { %> <span aria-hidden="true">*</span><% } %></label>
+          <textarea id="signup-notes" name="notes" maxlength="2000" rows="4"
+                    <% if (formConfig.notes.required) { %>required<% } %>><%= values.notes || '' %></textarea>
+          <% (errorsByField.notes || []).forEach(function (m) { %>
+            <p class="form-field__error" role="alert"><%= m %></p>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <div class="form-actions">
+        <button type="submit" class="button button--primary">Submit booking</button>
+      </div>
+    </form>
+  </div>
+</section>
+<%- include('../../layouts/public', { stage: 'close' }) %>

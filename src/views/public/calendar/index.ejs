@@ -4,36 +4,117 @@
     <h1><%= config.title || 'Calendar' %></h1>
     <p class="event-code">/<%= event.code %>/calendar</p>
     <% if (dateWindow) { %>
-      <p class="muted">Window: <%= dateWindow.start %> &mdash; <%= dateWindow.end %></p>
+      <p class="muted">Browsing: <%= dateWindow.start %> &mdash; <%= dateWindow.end %></p>
     <% } %>
   </header>
 
-  <section class="calendar-public__items">
-    <h2>Items</h2>
-    <% if (items.length === 0) { %>
-      <p class="muted">No items configured yet.</p>
-    <% } else { %>
+  <% if (!items || items.length === 0) { %>
+    <p class="muted">No items are available for signup yet.</p>
+  <% } else if (!grid || !grid.dates || grid.dates.length === 0) { %>
+    <p class="muted">No dates are currently open for signup.</p>
+  <% } else { %>
+
+    <section class="calendar-public__legend">
+      <h2 class="visually-hidden">Items</h2>
       <ul class="item-indicator-list">
         <% items.forEach(function (item) { %>
           <li><%- include('../../partials/itemIndicator', { item: item }) %></li>
         <% }) %>
       </ul>
-    <% } %>
-  </section>
+    </section>
 
-  <section class="calendar-public__selections">
-    <h2>Your selections</h2>
-    <% if (!pendingSelections || pendingSelections.length === 0) { %>
-      <p class="muted">No selections yet.</p>
-    <% } else { %>
-      <ul>
-        <% pendingSelections.forEach(function (sel) { %>
-          <li><%= sel.selectedDate %> &middot; item #<%= sel.itemId %> &middot; <%= sel.selectionType %></li>
-        <% }) %>
-      </ul>
-    <% } %>
-  </section>
+    <div class="calendar-public__layout">
+      <section class="calendar-public__grid" aria-label="Date grid">
+        <table class="calendar-grid">
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <% items.forEach(function (item) { %>
+                <th scope="col" title="<%= item.name %>"><%= item.name %></th>
+              <% }) %>
+            </tr>
+          </thead>
+          <tbody>
+            <% grid.dates.forEach(function (row) { %>
+              <tr>
+                <th scope="row"><%= row.date %></th>
+                <% row.items.forEach(function (cell) { %>
+                  <% var item = itemsById.get(Number(cell.itemId)); %>
+                  <td class="calendar-cell calendar-cell--<%= cell.state %>">
+                    <% if (cell.state === 'available' && item) { %>
+                      <% if (config.time_behavior_mode === 'timed') { %>
+                        <% (cell.occurrences || []).forEach(function (occ) { %>
+                          <% if (occ.state === 'available') { %>
+                            <form method="post" action="/<%= event.code %>/calendar/selections" class="calendar-cell__form">
+                              <input type="hidden" name="action" value="add" />
+                              <input type="hidden" name="itemId" value="<%= item.id %>" />
+                              <input type="hidden" name="selectedDate" value="<%= row.date %>" />
+                              <input type="hidden" name="selectionType" value="occurrence" />
+                              <input type="hidden" name="occurrenceId" value="<%= occ.occurrenceId %>" />
+                              <button type="submit" class="calendar-cell__pick">
+                                <% if (occ.label) { %><%= occ.label %><% } else if (occ.startTime) { %><%= occ.startTime %><% } else { %>Pick<% } %>
+                              </button>
+                            </form>
+                          <% } %>
+                        <% }) %>
+                      <% } else { %>
+                        <form method="post" action="/<%= event.code %>/calendar/selections" class="calendar-cell__form">
+                          <input type="hidden" name="action" value="add" />
+                          <input type="hidden" name="itemId" value="<%= item.id %>" />
+                          <input type="hidden" name="selectedDate" value="<%= row.date %>" />
+                          <input type="hidden" name="selectionType" value="date_only" />
+                          <button type="submit" class="calendar-cell__pick">Pick</button>
+                        </form>
+                      <% } %>
+                    <% } else { %>
+                      <span class="calendar-cell__unavailable" aria-label="Unavailable">&mdash;</span>
+                    <% } %>
+                  </td>
+                <% }) %>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </section>
 
-  <p class="muted">The interactive selection grid and submission form land in a later phase.</p>
+      <aside class="calendar-public__cart" aria-label="Your selections">
+        <h2>Your selections</h2>
+        <% if (!pendingSelections || pendingSelections.length === 0) { %>
+          <p class="muted">No selections yet.</p>
+        <% } else { %>
+          <ul class="calendar-cart-list">
+            <% pendingPretty.forEach(function (sel) { %>
+              <li class="calendar-cart-item">
+                <span class="calendar-cart-item__label">
+                  <strong><%= sel.itemName %></strong>
+                  &middot; <%= sel.selectedDate %>
+                  <% if (sel.selectionType === 'occurrence') { %>
+                    &middot; #<%= sel.occurrenceId %>
+                  <% } %>
+                </span>
+                <form method="post" action="/<%= event.code %>/calendar/selections">
+                  <input type="hidden" name="action" value="remove" />
+                  <input type="hidden" name="itemId" value="<%= sel.itemId %>" />
+                  <input type="hidden" name="selectedDate" value="<%= sel.selectedDate %>" />
+                  <input type="hidden" name="selectionType" value="<%= sel.selectionType %>" />
+                  <% if (sel.occurrenceId) { %>
+                    <input type="hidden" name="occurrenceId" value="<%= sel.occurrenceId %>" />
+                  <% } %>
+                  <button type="submit" class="calendar-cart-item__remove" aria-label="Remove">Remove</button>
+                </form>
+              </li>
+            <% }) %>
+          </ul>
+          <div class="calendar-public__actions">
+            <a class="button button--primary" href="/<%= event.code %>/calendar/signup">Continue to signup</a>
+            <form method="post" action="/<%= event.code %>/calendar/selections" class="calendar-public__clear">
+              <input type="hidden" name="action" value="clear" />
+              <button type="submit" class="button button--ghost">Clear all</button>
+            </form>
+          </div>
+        <% } %>
+      </aside>
+    </div>
+  <% } %>
 </section>
 <%- include('../../layouts/public', { stage: 'close' }) %>

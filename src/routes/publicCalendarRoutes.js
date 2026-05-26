@@ -10,9 +10,10 @@
 //
 //   GET  /:code/calendar
 //   POST /:code/calendar/selections
+//   GET  /:code/calendar/signup
 //   POST /:code/calendar/submit
 //   GET  /:code/calendar/confirmation/:ref
-//   GET  /:code/calendar/confirmation/:ref/calendar  (add-to-calendar; Phase 4B+)
+//   GET  /:code/calendar/confirmation/:ref/calendar  (add-to-calendar; later)
 
 const express = require('express');
 const calendarController = require('../controllers/public/calendarController');
@@ -25,6 +26,7 @@ router.use('/:code/calendar', loadByCode('code'));
 
 router.get('/:code/calendar', calendarController.show);
 router.post('/:code/calendar/selections', calendarController.updateSelections);
+router.get('/:code/calendar/signup', calendarController.signup);
 router.post('/:code/calendar/submit', calendarController.submit);
 router.get('/:code/calendar/confirmation/:ref', calendarController.confirmation);
 
