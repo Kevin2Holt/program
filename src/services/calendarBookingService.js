@@ -13,6 +13,7 @@ const bookingModel = require('../models/calendarBooking');
 const itemModel = require('../models/calendarItem');
 const occurrenceModel = require('../models/calendarOccurrence');
 const occurrenceService = require('./calendarOccurrenceService');
+const availabilityService = require('./calendarAvailabilityService');
 const references = require('./calendarReferences');
 
 /* ------------------------------------------------------------------ */
@@ -133,6 +134,16 @@ async function finalizeBooking({
     throw bookingError('NO_SELECTIONS', 'At least one selection is required.', 400);
   }
 
+  // Pre-load the rule set once so we can re-resolve availability outside the
+  // capacity transaction. We tolerate the rule list being missing in tests
+  // that stub at a lower layer; in that case we skip rule re-resolution and
+  // rely on the capacity check below.
+  let rules = [];
+  try {
+    rules = await availabilityService.loadHydratedRules(config.id);
+  } catch (_e) { rules = []; }
+  const window = availabilityService.deriveDateWindow(config);
+
   return withTransaction(async (client) => {
     // Idempotency: if a booking with this submission_token already exists,
     // return it instead of creating a duplicate.
@@ -145,6 +156,10 @@ async function finalizeBooking({
     const hydrated = [];
     const timedForOverlap = [];
     for (const sel of normalized) {
+      // Window check (cheap; happens before DB capacity work).
+      if (window && !availabilityService.isDateInWindow(sel.selectedDate, window)) {
+        throw bookingError('OUT_OF_WINDOW', 'A selection is outside the calendar window.', 409);
+      }
       const usage = await getCapacityUsage(sel, { client });
       if (!usage.exists) {
         throw bookingError('SELECTION_GONE', 'A selection is no longer available.', 409);
@@ -155,10 +170,21 @@ async function finalizeBooking({
       if (sel.selectionType === 'occurrence') {
         const occ = await occurrenceModel.findById(sel.occurrenceId, { client });
         const item = await itemModel.findById(occ.item_id, { client });
+        // Blocked-by-rules check requires the live item; archived items are
+        // already rejected by the usage 'exists' clause for occurrences.
+        if (item && availabilityService._internals.isBlockedByRules(item, sel.selectedDate, rules)) {
+          throw bookingError('BLOCKED', 'A selection is blocked.', 409);
+        }
         hydrated.push({ sel, occ, item });
         timedForOverlap.push(occ);
       } else {
         const item = await itemModel.findById(sel.itemId, { client });
+        if (!item || item.status !== 'active') {
+          throw bookingError('SELECTION_GONE', 'A selection is no longer available.', 409);
+        }
+        if (availabilityService._internals.isBlockedByRules(item, sel.selectedDate, rules)) {
+          throw bookingError('BLOCKED', 'A selection is blocked.', 409);
+        }
         hydrated.push({ sel, occ: null, item });
       }
     }

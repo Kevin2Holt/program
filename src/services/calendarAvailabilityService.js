@@ -110,21 +110,90 @@ async function rawAvailabilityIgnoringCapacity({ config, item, isoDate, rules },
 
 /**
  * Evaluate the rule list against (item, date). One-time rules take precedence
- * over recurring rules per Phase 2 §"precedence". The full recurrence engine
- * is a Phase 4B+ deliverable; this scaffold handles one-time rules correctly
- * and leaves recurring evaluation behind a TODO.
+ * over recurring rules per Phase 2 §"precedence". When a one-time rule blocks
+ * the date for the item we return immediately; otherwise we fall through to
+ * the recurring evaluator.
  */
 function isBlockedByRules(item, isoDate, rules) {
   if (!rules || rules.length === 0) return false;
-  const oneTime = rules.filter((r) => r.active && r.rule_type === 'one_time');
-  for (const rule of oneTime) {
-    if (toIsoDate(rule.blocked_date) === isoDate && ruleTargetsItem(rule, item)) {
+  // 1. One-time rules first (highest precedence).
+  for (const rule of rules) {
+    if (!rule.active || rule.rule_type !== 'one_time') continue;
+    if (!ruleTargetsItem(rule, item)) continue;
+    if (toIsoDate(rule.blocked_date) === isoDate) return true;
+  }
+  // 2. Recurring rules. Boundary checks (recurrence_start_date /
+  //    recurrence_end_date) are inclusive; absent boundaries mean "unbounded".
+  for (const rule of rules) {
+    if (!rule.active || rule.rule_type !== 'recurring') continue;
+    if (!ruleTargetsItem(rule, item)) continue;
+    if (recurringRuleMatchesDate(rule, isoDate)) return true;
+  }
+  return false;
+}
+
+/**
+ * Pure date-vs-recurring-rule predicate. Uses UTC-anchored math: every date is
+ * interpreted as midnight UTC, so weekday/day-of-month computations are stable
+ * across the runtime's local zone. The event_time_zone is the canonical zone
+ * for organizer-facing display; for boundary evaluation we deliberately treat
+ * dates as opaque YYYY-MM-DD identifiers to avoid DST surprises.
+ */
+function recurringRuleMatchesDate(rule, isoDate) {
+  // Boundary checks (inclusive).
+  const startBound = rule.recurrence_start_date ? toIsoDate(rule.recurrence_start_date) : null;
+  const endBound = rule.recurrence_end_date ? toIsoDate(rule.recurrence_end_date) : null;
+  if (startBound && isoDate < startBound) return false;
+  if (endBound && isoDate > endBound) return false;
+
+  const detail = rule.recurrence_detail || {};
+  const d = new Date(`${isoDate}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return false;
+  const weekday = d.getUTCDay();           // 0..6
+  const dayOfMonth = d.getUTCDate();       // 1..31
+  const year = d.getUTCFullYear();
+  const month = d.getUTCMonth();           // 0..11
+
+  switch (rule.recurrence_pattern) {
+    case 'daily':
+      return true;
+    case 'weekly': {
+      const days = Array.isArray(detail.weekdays) ? detail.weekdays : [];
+      return days.includes(weekday);
+    }
+    case 'biweekly': {
+      const days = Array.isArray(detail.weekdays) ? detail.weekdays : [];
+      if (!days.includes(weekday)) return false;
+      // The biweekly anchor is the recurrence_start_date if present, otherwise
+      // 1970-01-01 (Thursday). Match dates whose whole-week offset from the
+      // anchor is even.
+      const anchorIso = startBound || '1970-01-01';
+      const anchorD = new Date(`${anchorIso}T00:00:00Z`);
+      const diffDays = Math.floor((d.getTime() - anchorD.getTime()) / 86400000);
+      const weekOffset = Math.floor(diffDays / 7);
+      return weekOffset % 2 === 0;
+    }
+    case 'monthly_by_date':
+      return Number.isInteger(detail.day_of_month) && detail.day_of_month === dayOfMonth;
+    case 'monthly_by_weekday': {
+      const targetWeekday = Number.isInteger(detail.weekday) ? detail.weekday : null;
+      const targetWeek = Number.isInteger(detail.week_of_month) ? detail.week_of_month : null;
+      if (targetWeekday === null || targetWeek === null) return false;
+      if (weekday !== targetWeekday) return false;
+      // Compute the 1-based occurrence number of this weekday in its month.
+      // Week 5 represents "last" only if there is no 5th occurrence (i.e.
+      // when week 5 doesn't exist, the rule shouldn't match week 4 instead;
+      // we keep semantics simple: week 5 means "the 5th occurrence if it
+      // exists, else no match"). This is conservative and predictable.
+      const occurrenceNumber = Math.floor((dayOfMonth - 1) / 7) + 1;
+      if (occurrenceNumber !== targetWeek) return false;
+      // Sanity: confirm the same year/month context (always true given d).
+      void year; void month;
       return true;
     }
+    default:
+      return false;
   }
-  // TODO(phase-4b+): evaluate recurring rules (daily, weekly, biweekly,
-  // monthly_by_date, monthly_by_weekday) using the canonical event time zone.
-  return false;
 }
 
 function ruleTargetsItem(rule, item) {
@@ -158,6 +227,140 @@ async function loadHydratedRules(configId, opts = {}) {
 function publicStateFromOrganizerState(state) {
   if (state === ORGANIZER_STATES.AVAILABLE) return PUBLIC_STATES.AVAILABLE;
   return PUBLIC_STATES.UNAVAILABLE;
+}
+
+/* ------------------------------------------------------------------ */
+/* Range resolver                                                      */
+/* ------------------------------------------------------------------ */
+
+// Capacity-aware resolution over the entire configured window for every
+// active item. Public callers receive the collapsed public state; organizer
+// callers receive the structured organizer state. The resolver expects all
+// inputs to be pre-loaded so it stays synchronous + pure.
+//
+// Shape returned:
+//   { window: { start, end },
+//     dates: [
+//       { date, items: [ { itemId, state, reason?, occurrences?: [...] } ] }
+//     ] }
+function resolveAvailabilityForRange({
+  config,
+  items,
+  rules,
+  occurrencesByItemDate = new Map(), // Map<`${itemId}:${date}`, occurrence[]>
+  capacityUsage = new Map(),         // Map<key, used>
+  view = 'public',
+}) {
+  const window = deriveDateWindow(config);
+  if (!window) return { window: null, dates: [] };
+
+  const isTimed = config && config.time_behavior_mode === 'timed';
+  const dates = enumerateDatesInclusive(window.start, window.end);
+  const out = [];
+
+  for (const date of dates) {
+    const itemRow = [];
+    for (const item of items) {
+      const cell = resolveCell({
+        config, item, isoDate: date, rules,
+        isTimed, occurrencesByItemDate, capacityUsage, view,
+      });
+      itemRow.push(cell);
+    }
+    out.push({ date, items: itemRow });
+  }
+  return { window, dates: out };
+}
+
+function resolveCell({
+  config, item, isoDate, rules, isTimed, occurrencesByItemDate, capacityUsage, view,
+}) {
+  const base = {
+    itemId: item.id,
+    state: ORGANIZER_STATES.AVAILABLE,
+    reason: null,
+    occurrences: null,
+  };
+
+  if (item.status !== 'active') {
+    return finalizeCell({ ...base, state: ORGANIZER_STATES.ARCHIVED, reason: 'archived' }, view);
+  }
+  if (!isDateInWindow(isoDate, deriveDateWindow(config))) {
+    return finalizeCell({ ...base, state: ORGANIZER_STATES.OUT_OF_WINDOW, reason: 'out_of_window' }, view);
+  }
+  if (isBlockedByRules(item, isoDate, rules)) {
+    return finalizeCell({ ...base, state: ORGANIZER_STATES.BLOCKED, reason: 'blocked' }, view);
+  }
+
+  if (isTimed) {
+    const key = `${item.id}:${isoDate}`;
+    const occs = occurrencesByItemDate.get(key) || [];
+    const annotated = [];
+    let anyAvailable = false;
+    for (const occ of occs) {
+      if (occ.status !== 'active') continue;
+      const capUsedKey = `occ:${occ.id}`;
+      const used = capacityUsage.get(capUsedKey) || 0;
+      const cap = occ.capacity_override != null ? occ.capacity_override : item.capacity;
+      const isFull = used >= cap;
+      annotated.push({
+        occurrenceId: occ.id,
+        label: occ.label || null,
+        startTime: occ.start_time || null,
+        endTime: occ.end_time || null,
+        durationMinutes: occ.duration_minutes || null,
+        used,
+        capacity: cap,
+        state: isFull ? ORGANIZER_STATES.FULL : ORGANIZER_STATES.AVAILABLE,
+      });
+      if (!isFull) anyAvailable = true;
+    }
+    base.occurrences = annotated;
+    if (annotated.length === 0) {
+      // No occurrences scheduled on this date — treat as out_of_window so the
+      // public view collapses it to "unavailable" without hinting why.
+      return finalizeCell({ ...base, state: ORGANIZER_STATES.OUT_OF_WINDOW, reason: 'no_occurrences' }, view);
+    }
+    if (!anyAvailable) {
+      return finalizeCell({ ...base, state: ORGANIZER_STATES.FULL, reason: 'full' }, view);
+    }
+    return finalizeCell({ ...base, state: ORGANIZER_STATES.AVAILABLE }, view);
+  }
+
+  // Date-only mode: collapse to a single (item, date) capacity check.
+  const usedKey = `date:${item.id}:${isoDate}`;
+  const used = capacityUsage.get(usedKey) || 0;
+  if (used >= item.capacity) {
+    return finalizeCell({ ...base, state: ORGANIZER_STATES.FULL, reason: 'full' }, view);
+  }
+  return finalizeCell(base, view);
+}
+
+function finalizeCell(cell, view) {
+  if (view === 'organizer') return cell;
+  // Public collapses every non-available state to 'unavailable'.
+  return {
+    ...cell,
+    state: cell.state === ORGANIZER_STATES.AVAILABLE ? PUBLIC_STATES.AVAILABLE : PUBLIC_STATES.UNAVAILABLE,
+    occurrences: cell.occurrences ? cell.occurrences.map((o) => ({
+      ...o,
+      state: o.state === ORGANIZER_STATES.AVAILABLE ? PUBLIC_STATES.AVAILABLE : PUBLIC_STATES.UNAVAILABLE,
+    })) : null,
+  };
+}
+
+function enumerateDatesInclusive(startIso, endIso) {
+  const out = [];
+  let d = new Date(`${startIso}T00:00:00Z`);
+  const end = new Date(`${endIso}T00:00:00Z`);
+  // Safety cap: refuse pathological windows that would burn memory.
+  let i = 0;
+  while (d.getTime() <= end.getTime() && i < 5000) {
+    out.push(d.toISOString().slice(0, 10));
+    d = new Date(d.getTime() + 86400000);
+    i += 1;
+  }
+  return out;
 }
 
 /* ------------------------------------------------------------------ */
@@ -486,6 +689,8 @@ module.exports = {
   publicStateFromOrganizerState,
   listActiveItemsForEvent,
   toIsoDate,
+  resolveAvailabilityForRange,
+  enumerateDatesInclusive,
   // Organizer rule CRUD.
   parseAndValidateRuleForm,
   createRuleForEvent,
@@ -494,5 +699,5 @@ module.exports = {
   findRuleByIdForEvent,
   listRulesForEvent,
   // Exposed for testing only.
-  _internals: { isBlockedByRules, computeRollingWindow, ruleTargetsItem },
+  _internals: { isBlockedByRules, computeRollingWindow, ruleTargetsItem, recurringRuleMatchesDate },
 };
