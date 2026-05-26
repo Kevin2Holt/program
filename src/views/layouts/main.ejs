@@ -1,13 +1,14 @@
-<%# Reusable layout fragments used by view pages.
-
-This file is included by view pages via:
-  <%- include('../layouts/main', { stage: 'open' }) %>
-  ...content...
-  <%- include('../layouts/main', { stage: 'close' }) %>
-
-It keeps layout responsibilities in one place while preserving plain-EJS
-partial composition (the main app spec avoids layout engines). %>
-
+<%
+// Reusable layout fragments used by view pages.
+//
+// This file is included by view pages via:
+//   include('../layouts/main', { stage: 'open' })
+//   ...content...
+//   include('../layouts/main', { stage: 'close' })
+//
+// It keeps layout responsibilities in one place while preserving plain-EJS
+// partial composition (the main app spec avoids layout engines).
+%>
 <% if (stage === 'open') { %>
 <!doctype html>
 <html lang="en" data-theme="dark">
