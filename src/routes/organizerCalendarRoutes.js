@@ -72,9 +72,13 @@ router.post('/:eventId/calendar/availability/:ruleId',
 router.post('/:eventId/calendar/availability/:ruleId/archive',
   requireCalendarPermission(PERMISSIONS.EDIT_AVAILABILITY), ctrl.availabilityArchive);
 
-// --- Bookings / Export (Phase 4B.3+) ---
+// --- Bookings / Export ---
 router.get('/:eventId/calendar/bookings',
   requireCalendarPermission(PERMISSIONS.VIEW_DETAILS), ctrl.bookings);
+router.get('/:eventId/calendar/bookings/:bookingId',
+  requireCalendarPermission(PERMISSIONS.VIEW_DETAILS), ctrl.bookingShow);
+router.post('/:eventId/calendar/bookings/:bookingId/cancel',
+  requireCalendarPermission(PERMISSIONS.EDIT_BOOKINGS), ctrl.bookingCancel);
 router.get('/:eventId/calendar/export',
   requireCalendarPermission(PERMISSIONS.EXPORT), ctrl.exportPage);
 

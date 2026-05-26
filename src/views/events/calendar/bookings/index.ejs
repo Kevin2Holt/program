@@ -2,6 +2,10 @@
 <section class="page page--calendar-bookings">
   <header><h1>Bookings</h1></header>
 
+  <% if (flash) { %>
+    <div class="flash flash--<%= flash.kind %>"><%= flash.message %></div>
+  <% } %>
+
   <% if (!bookings || bookings.length === 0) { %>
     <p class="muted">No bookings yet.</p>
   <% } else { %>
@@ -10,23 +14,35 @@
         <tr>
           <th>Reference</th>
           <th>Registrant</th>
+          <th>Email</th>
           <th>Status</th>
           <th>Created</th>
+          <th aria-label="Actions"></th>
         </tr>
       </thead>
       <tbody>
         <% bookings.forEach(function (b) { %>
-          <tr>
-            <td><code><%= b.confirmation_ref.slice(0, 12) %>&hellip;</code></td>
+          <tr class="<% if (b.status === 'canceled') { %>data-table__row--muted<% } %>">
+            <td>
+              <a href="/events/<%= event.id %>/calendar/bookings/<%= b.id %>">
+                <code><%= b.confirmation_ref.slice(0, 12) %>&hellip;</code>
+              </a>
+            </td>
             <td><%= (b.registrant && b.registrant.name) || '—' %></td>
-            <td><%= b.status %></td>
+            <td><%= b.email || '—' %></td>
+            <td>
+              <span class="status-pill status-pill--<%= b.status %>"><%= b.status %></span>
+            </td>
             <td><%= b.created_at %></td>
+            <td>
+              <a href="/events/<%= event.id %>/calendar/bookings/<%= b.id %>">View</a>
+            </td>
           </tr>
         <% }) %>
       </tbody>
     </table>
   <% } %>
 
-  <p class="muted">Detail view, edit, and reschedule flows land with the organizer booking phase.</p>
+  <p class="muted">CSV export and add-to-calendar arrive in a later phase.</p>
 </section>
 <%- include('../../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

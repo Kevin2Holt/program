@@ -14,6 +14,7 @@ const calendarOccurrenceService = require('../../services/calendarOccurrenceServ
 const calendarAvailabilityService = require('../../services/calendarAvailabilityService');
 const calendarItemModel = require('../../models/calendarItem');
 const bookingModel = require('../../models/calendarBooking');
+const calendarBookingService = require('../../services/calendarBookingService');
 
 exports.index = async function index(req, res, next) {
   try {
@@ -597,14 +598,52 @@ function consumeFlash(req, key) {
 exports.bookings = async function bookings(req, res, next) {
   try {
     const all = await bookingModel.listForEvent(req.event.id);
+    const flash = consumeFlash(req, 'calendarBookingsFlash');
     res.render('events/calendar/bookings/index', {
       title: 'Bookings',
       pageTitle: 'Bookings',
       event: req.event,
       bookings: all,
+      flash,
     });
   } catch (err) { next(err); }
 };
+
+exports.bookingShow = async function bookingShow(req, res, next) {
+  try {
+    const result = await calendarBookingService.getBookingWithSelections(req.params.bookingId);
+    if (!result || !result.booking || Number(result.booking.event_id) !== Number(req.event.id)) {
+      return notFound(res);
+    }
+    return res.render('events/calendar/bookings/show', {
+      title: 'Booking detail',
+      pageTitle: 'Booking detail',
+      event: req.event,
+      booking: result.booking,
+      selections: result.selections,
+      csrfToken: req.csrfToken ? req.csrfToken() : null,
+    });
+  } catch (err) { return next(err); }
+};
+
+exports.bookingCancel = async function bookingCancel(req, res, next) {
+  try {
+    const existing = await bookingModel.findById(req.params.bookingId);
+    if (!existing || Number(existing.event_id) !== Number(req.event.id)) {
+      return notFound(res);
+    }
+    if (existing.status !== 'canceled') {
+      await calendarBookingService.cancelBooking(existing.id);
+    }
+    setFlash(req, 'calendarBookingsFlash', { kind: 'success', message: 'Booking canceled.' });
+    return res.redirect(`/events/${req.event.id}/calendar/bookings`);
+  } catch (err) { return next(err); }
+};
+
+// TODO(phase-4b+): organizer-side edit / reschedule. Spec marks this as
+// optional for Phase 4B.3 — cancel is sufficient for now and frees capacity
+// automatically because countActiveForItemDate/countActiveForOccurrence
+// filter on status='active'.
 
 exports.exportPage = async function exportPage(req, res, next) {
   try {
