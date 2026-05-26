@@ -1,17 +1,88 @@
 <%- include('../../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
 <section class="page page--calendar-export">
-  <header><h1>Export</h1></header>
+  <header class="page__header">
+    <h1>Export bookings</h1>
+    <p class="muted">
+      Download bookings as CSV. Detail level and field inclusion are enforced
+      at the service layer, so what you see here is what lands in the file.
+    </p>
+  </header>
 
-  <form method="post" action="/events/<%= event.id %>/calendar/export">
-    <fieldset>
+  <form method="post" action="/events/<%= event.id %>/calendar/export"
+        class="form form--calendar-export" novalidate>
+    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <% } %>
+
+    <fieldset class="form__group">
       <legend>Detail level</legend>
-      <label><input type="radio" name="detail_level" value="count_only" /> Count only</label>
-      <label><input type="radio" name="detail_level" value="names_only" checked /> Names only</label>
-      <label><input type="radio" name="detail_level" value="count_and_names" /> Count + names</label>
-      <label><input type="radio" name="detail_level" value="names_and_contact" /> Names + contact info</label>
+      <label>
+        <input type="radio" name="detail_level" value="count_only"
+          <%= values && values.detail_level === 'count_only' ? 'checked' : '' %> />
+        Count only (no registrant data)
+      </label>
+      <label>
+        <input type="radio" name="detail_level" value="names_only"
+          <%= !values || values.detail_level === 'names_only' ? 'checked' : '' %> />
+        Names only
+      </label>
+      <label>
+        <input type="radio" name="detail_level" value="count_and_names"
+          <%= values && values.detail_level === 'count_and_names' ? 'checked' : '' %> />
+        Count + names
+      </label>
+      <label>
+        <input type="radio" name="detail_level" value="names_and_contact"
+          <%= values && values.detail_level === 'names_and_contact' ? 'checked' : '' %> />
+        Names + contact info
+      </label>
     </fieldset>
 
-    <p class="muted">CSV generation runs through the export service and lands with the export phase.</p>
+    <fieldset class="form__group">
+      <legend>Include fields</legend>
+      <p class="muted">
+        Fields that are not enabled in your registrant form, or that the detail
+        level forbids, will be dropped automatically.
+      </p>
+      <% (allowedFields || []).forEach(function (field) { %>
+        <label>
+          <input type="checkbox" name="include_fields" value="<%= field %>"
+            <%= values && Array.isArray(values.include_fields) && values.include_fields.indexOf(field) !== -1 ? 'checked' : '' %> />
+          <%= field %>
+        </label>
+      <% }) %>
+    </fieldset>
+
+    <fieldset class="form__group">
+      <legend>Filter by date range (optional)</legend>
+      <label>
+        Start date
+        <input type="date" name="start_date"
+          value="<%= values && values.start_date ? values.start_date : '' %>" />
+      </label>
+      <label>
+        End date
+        <input type="date" name="end_date"
+          value="<%= values && values.end_date ? values.end_date : '' %>" />
+      </label>
+    </fieldset>
+
+    <% if (items && items.length) { %>
+      <fieldset class="form__group">
+        <legend>Filter by item (optional &mdash; leave empty for all)</legend>
+        <% items.forEach(function (it) { %>
+          <label>
+            <input type="checkbox" name="item_ids" value="<%= it.id %>" />
+            <%= it.name %><% if (it.status !== 'active') { %> <span class="muted">(<%= it.status %>)</span><% } %>
+          </label>
+        <% }) %>
+      </fieldset>
+    <% } %>
+
+    <div class="form__actions">
+      <button type="submit" class="btn btn--primary">Download CSV</button>
+      <a class="btn btn--ghost" href="/events/<%= event.id %>/calendar">Cancel</a>
+    </div>
   </form>
 </section>
 <%- include('../../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>
