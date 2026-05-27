@@ -1,0 +1,42 @@
+<%- include('../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--dashboard">
+  <header class="page__header">
+    <h1>Dashboard</h1>
+    <p class="muted">
+      Signed in as
+      <strong><%= currentUser.displayName || currentUser.email %></strong>.
+    </p>
+  </header>
+
+  <div class="page__actions">
+    <a class="btn btn--primary" href="/events/new">Create event</a>
+  </div>
+
+  <% if (!events || events.length === 0) { %>
+    <section class="empty-state">
+      <h2>No events yet</h2>
+      <p>
+        Events are how you share programs and signup calendars with attendees.
+        Create your first one to get started.
+      </p>
+      <p>
+        <a class="btn btn--primary" href="/events/new">Create your first event</a>
+      </p>
+    </section>
+  <% } else { %>
+    <ul class="event-list">
+      <% events.forEach(function (ev) { %>
+        <li class="event-list__item">
+          <div class="event-list__title">
+            <a href="/events/<%= ev.id %>/calendar"><%= ev.title || ev.code %></a>
+          </div>
+          <div class="event-list__meta muted">
+            <span>Code: <code><%= ev.code %></code></span>
+            <span>Status: <%= ev.status %></span>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</section>
+<%- include('../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

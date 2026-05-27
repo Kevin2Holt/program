@@ -1,0 +1,54 @@
+<%- include('../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--event-new">
+  <header class="page__header">
+    <h1>Create event</h1>
+    <p class="muted">
+      Pick a short code attendees will use in the URL. You can change other
+      details later from the event settings.
+    </p>
+  </header>
+
+  <% if (errorsByField && errorsByField._form && errorsByField._form.length) { %>
+    <ul class="form__error-summary" role="alert">
+      <% errorsByField._form.forEach(function (msg) { %>
+        <li><%= msg %></li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <form method="post" action="/events" class="form form--event-new" novalidate>
+    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <% } %>
+
+    <label class="form__field">
+      <span class="form__label">Event title</span>
+      <input type="text" name="title" value="<%= values.title || '' %>"
+             maxlength="200" required />
+      <% if (errorsByField.title) { %>
+        <span class="form__error"><%= errorsByField.title.join(' ') %></span>
+      <% } %>
+    </label>
+
+    <label class="form__field">
+      <span class="form__label">Event code</span>
+      <input type="text" name="code" value="<%= values.code || '' %>"
+             pattern="[a-z0-9]+(-[a-z0-9]+)*"
+             minlength="3" maxlength="32"
+             autocapitalize="off" autocomplete="off" spellcheck="false"
+             required />
+      <span class="form__hint muted">
+        Lowercase letters, digits, and hyphens. 3&ndash;32 characters. Public URL: <code>prog.am/&lt;code&gt;</code>.
+      </span>
+      <% if (errorsByField.code) { %>
+        <span class="form__error"><%= errorsByField.code.join(' ') %></span>
+      <% } %>
+    </label>
+
+    <div class="form__actions">
+      <button type="submit" class="btn btn--primary">Create event</button>
+      <a class="btn btn--ghost" href="/dashboard">Cancel</a>
+    </div>
+  </form>
+</section>
+<%- include('../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>

@@ -1,0 +1,32 @@
+<%- include('../layouts/main', { stage: 'open', layoutContext: 'organizer' }) %>
+<section class="page page--account">
+  <header class="page__header">
+    <h1>Account</h1>
+    <p class="muted">Basic profile and session controls.</p>
+  </header>
+
+  <dl class="key-value">
+    <dt>Email</dt>
+    <dd><%= user.email %></dd>
+
+    <dt>Display name</dt>
+    <dd><%= user.displayName || '(not set)' %></dd>
+
+    <dt>Joined</dt>
+    <dd>
+      <% if (user.createdAt) { %>
+        <%= new Date(user.createdAt).toISOString().slice(0, 10) %>
+      <% } else { %>
+        &mdash;
+      <% } %>
+    </dd>
+  </dl>
+
+  <form method="post" action="/auth/logout" class="form">
+    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <% } %>
+    <button type="submit" class="btn btn--secondary">Sign out</button>
+  </form>
+</section>
+<%- include('../layouts/main', { stage: 'close', layoutContext: 'organizer' }) %>
