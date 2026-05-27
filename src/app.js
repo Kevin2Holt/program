@@ -13,6 +13,7 @@ const csurf = require('csurf');
 const env = require('./config/env');
 const { pool } = require('./db/pool');
 const attachUser = require('./middleware/attachUser');
+const flash = require('./middleware/flash');
 const routes = require('./routes');
 
 function createApp(options = {}) {
@@ -63,6 +64,9 @@ function createApp(options = {}) {
 
   // Attach user from session.
   app.use(attachUser);
+
+  // Flash messages — must come after session, before routes.
+  app.use(flash);
 
   // Make user available to all views.
   app.use((req, res, next) => {

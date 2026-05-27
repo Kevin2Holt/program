@@ -1,18 +1,19 @@
 'use strict';
 
-// Minimal auth route stubs so `requireAuth` redirects have somewhere to land.
-// The real auth flow is part of the main-app spec and will be implemented in
-// its own phase.
+// Authentication routes — signup, login, logout. Form pages are GETs;
+// mutating actions are POST and follow PRG.
 
 const express = require('express');
+const authController = require('../controllers/authController');
+
 const router = express.Router();
 
-router.get('/auth/login', (req, res) => {
-  res.render('auth/login', {
-    title: 'Sign in',
-    pageTitle: 'Sign in',
-    returnTo: req.query.returnTo || '/',
-  });
-});
+router.get('/auth/login', authController.loginForm);
+router.post('/auth/login', authController.loginSubmit);
+
+router.get('/auth/signup', authController.signupForm);
+router.post('/auth/signup', authController.signupSubmit);
+
+router.post('/auth/logout', authController.logout);
 
 module.exports = router;

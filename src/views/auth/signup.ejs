@@ -1,6 +1,6 @@
 <%- include('../layouts/main', { stage: 'open', layoutContext: 'public' }) %>
 <section class="page page--auth">
-  <h1>Sign in</h1>
+  <h1>Create your account</h1>
 
   <% if (errorsByField && errorsByField._form && errorsByField._form.length) { %>
     <ul class="form__error-summary" role="alert">
@@ -10,37 +10,54 @@
     </ul>
   <% } %>
 
-  <form method="post" action="/auth/login" class="form form--auth" novalidate>
+  <form method="post" action="/auth/signup" class="form form--auth" novalidate>
     <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
     <% } %>
-    <input type="hidden" name="returnTo" value="<%= returnTo %>" />
 
     <label class="form__field">
       <span class="form__label">Email</span>
       <input type="email" name="email" value="<%= values.email || '' %>"
-             autocomplete="username" required />
+             autocomplete="email" required />
       <% if (errorsByField.email) { %>
         <span class="form__error"><%= errorsByField.email.join(' ') %></span>
       <% } %>
     </label>
 
     <label class="form__field">
+      <span class="form__label">Display name <span class="muted">(optional)</span></span>
+      <input type="text" name="displayName"
+             value="<%= values.displayName || '' %>" autocomplete="name" />
+      <% if (errorsByField.displayName) { %>
+        <span class="form__error"><%= errorsByField.displayName.join(' ') %></span>
+      <% } %>
+    </label>
+
+    <label class="form__field">
       <span class="form__label">Password</span>
       <input type="password" name="password"
-             autocomplete="current-password" required />
+             autocomplete="new-password" required minlength="8" />
       <% if (errorsByField.password) { %>
         <span class="form__error"><%= errorsByField.password.join(' ') %></span>
       <% } %>
     </label>
 
+    <label class="form__field">
+      <span class="form__label">Confirm password</span>
+      <input type="password" name="passwordConfirm"
+             autocomplete="new-password" required />
+      <% if (errorsByField.passwordConfirm) { %>
+        <span class="form__error"><%= errorsByField.passwordConfirm.join(' ') %></span>
+      <% } %>
+    </label>
+
     <div class="form__actions">
-      <button type="submit" class="btn btn--primary">Sign in</button>
+      <button type="submit" class="btn btn--primary">Create account</button>
     </div>
   </form>
 
   <p class="muted">
-    No account yet? <a href="/auth/signup">Create one</a>.
+    Already have an account? <a href="/auth/login">Sign in</a>.
   </p>
 </section>
 <%- include('../layouts/main', { stage: 'close', layoutContext: 'public' }) %>
