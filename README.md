@@ -42,27 +42,6 @@ public/
 test/             Tests
 ```
 
-## Phase 4A scope
-
-Phase 4A is the *foundation* layer of the calendar signup module:
-
-- Project scaffolding (Express app, session, CSRF, view engine, static assets)
-- PostgreSQL schema and migrations for the calendar entities
-- Models with CRUD-oriented helpers and archive-friendly methods
-- Service-layer modules (config, items, occurrences, availability, booking,
-  export, permissions) with meaningful structure and clear TODO markers
-- Route registration for both the public `/:code/calendar` family and the
-  organizer `/events/:eventId/calendar` family, with route-ordering care so
-  the generic public `/:code` route never swallows calendar URLs
-- Calendar permission constants and permission middleware
-- Minimal EJS views/layouts/partials to verify integration
-- Initial tests for models, route registration, permissions, and helpers
-- GitHub Actions CI for lint / test / syntax-check
-
-Subsequent phases (4B+) flesh out organizer setup, item management, occurrence
-support, availability rules, the public booking flow, organizer booking
-management, CSV export, polish, and merge-readiness review.
-
 ## Getting started
 
 ```bash
