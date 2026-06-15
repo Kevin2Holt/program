@@ -23,11 +23,11 @@ const env = Object.freeze({
   isTest: process.env.NODE_ENV === 'test',
   port: parseInt(process.env.PORT || '3000', 10),
 
-  databaseUrl: required('DATABASE_URL', 'postgres://progam:progam@localhost:5432/progam_dev'),
+  databaseUrl: required('DATABASE_URL', 'postgres://program:program@localhost:5432/program_dev'),
 
   session: {
     secret: required('SESSION_SECRET', 'dev-only-insecure-secret'),
-    name: process.env.SESSION_NAME || 'progam.sid',
+    name: process.env.SESSION_NAME || 'program.sid',
     // 30 days; pending-selection state is also kept in this session.
     maxAgeMs: 1000 * 60 * 60 * 24 * 30,
   },

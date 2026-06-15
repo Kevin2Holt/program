@@ -99,7 +99,7 @@ exports.logout = function logout(req, res, next) {
   if (!req.session) return res.redirect('/');
   return req.session.destroy((err) => {
     if (err) return next(err);
-    res.clearCookie('progam.sid');
+    res.clearCookie('program.sid');
     return res.redirect('/');
   });
 };

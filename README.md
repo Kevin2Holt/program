@@ -2,7 +2,7 @@
 
 `progr.am` is a server-rendered web application for creating and viewing event
 programs and itineraries. Event organizers create structured programs, and
-attendees access them through short event-code URLs (`prog.am/<CODE>`).
+attendees access them through short event-code URLs (`progr.am/<CODE>`).
 
 This repository is the long-term home for the full `progr.am` application. The
 current implementation status focuses on the **calendar signup module**, which

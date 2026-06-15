@@ -232,7 +232,7 @@ function request(app, { method = 'GET', path: urlPath, headers = {}, body = null
 function pickCookie(res) {
   const sc = res.headers['set-cookie'];
   if (!sc) return '';
-  const first = Array.isArray(sc) ? sc.find((c) => c.startsWith('progam.sid=')) : sc;
+  const first = Array.isArray(sc) ? sc.find((c) => c.startsWith('program.sid=')) : sc;
   if (!first) return '';
   return first.split(';')[0];
 }
