@@ -182,7 +182,7 @@ Calendar tables carry `event_id` and use **composite foreign keys**, e.g. `(even
     2. Rename `published` to `previous`.
     3. Insert the copy as the new `published`.
   - **Roll back:** swap `published` and `previous`.
-  - **Unpublish:** delete `published`, but keep `previous` so the program can be restored.
+  - **Unpublish:** the `published` version becomes `previous` (replacing any older `previous`), so Roll back can restore it. *(As built in 0.3; the original plan kept the older `previous` and deleted `published`.)*
 
 ### Calendar
 

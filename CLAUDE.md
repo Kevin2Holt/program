@@ -8,7 +8,7 @@ progr.am is a web app for event **programs** (block-based, published to `progr.a
 |---|---|
 | `npm run dev` | Dev server at http://localhost:5173 (uses `DATABASE_URL`) |
 | `npm run db:migrate` / `db:rollback` / `db:status` | Apply, undo the last, or list migrations |
-| `npm run db:seed` | Load demo data (from milestone 0.7) |
+| `npm run db:seed` | Load demo data into the **dev** database through the real services (re-runnable; login in `scripts/seed.js`) |
 | `npm run check` | svelte-check (types, a11y, template errors) |
 | `npm run lint` / `lint:fix` | ESLint, including the style rules below |
 | `npm test` | Vitest: unit and service tests against the real `progr_am_test` database |
@@ -162,4 +162,9 @@ Other protections:
     - `restoreBooking`: only if every spot is still free. The cancel toast offers Undo, which calls restore.
   - **`calendarExportService`:** fixed columns per detail level (count / names / count_names / contact + chosen fields); contact details can't leak at other levels; CSV cells beginning with `= + - @` are neutralized.
   - The export page previews exactly the exported columns and downloads through the API.
-- Next: 0.7 seeds, polish, handoff.
+- **0.7 seeds, accessibility, polish (done):**
+  - `scripts/seed.js`: a demo organizer with three events (date-only missionary meals with mixed rules, a timed summit with overlaps, and a published sacrament program). It runs the real services through `scripts/lib/registerAliases.js`, which maps `$lib`/`$server` for plain Node.
+  - `tests/e2e/accessibility.spec.js`: axe (WCAG 2.1 AA) on every main page in both themes. It must stay at zero violations.
+  - Links in running text are underlined, scrollable tables are focusable regions, and the light success color was darkened for contrast.
+  - The public booking API returns only `{ ok, reference }`.
+  - Handoff: `docs/rebuild/HANDOFF.md`.
