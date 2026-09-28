@@ -37,7 +37,7 @@ As written, "any active Allow rules" includes one-time Allow rules, and that bre
 For each Item `I`, date `D`, and (in timed mode) occurrence `O`:
 
 ```
-1. D outside the window (or before today in the event time zone)  → OUT_OF_WINDOW
+1. D outside the window, before today, or before today + min_days_ahead (event time zone) → OUT_OF_WINDOW
 2. I archived (or, in timed mode, O's time archived / not on D)     → ARCHIVED
 3. recurringAllows = active recurring Allow rules that target I and whose [starts_on, ends_on] contains D
    state = recurringAllows is empty ? OPEN : CLOSED

@@ -11,7 +11,7 @@ Each question has a recommended default. If you just say "approved", I use the d
 6. **"Applies to" when the organizer clicks "Selected Items" while every Item is checked.** Default: uncheck all and focus the first checkbox, then let the automatic switching take over. Saving with none checked stores "All Items".
 7. **Program header fields.** Do you want a small header on each program version (eyebrow, title, date, time, place), as in the mockups? *Default: yes.* The alternative is making it an ordinary first text block.
 8. **Public tab label.** Should the public navigation call the calendar **"Sign up"** (default) or the calendar's title?
-9. **Same-day signups.** Can people sign up for *today* (default: yes), or should there be a cutoff, e.g. "at least 1 day ahead"? A cutoff would be a new setup field.
+9. **Same-day signups.** *Decided:* an optional **Minimum days ahead** setup field, default 0 (same day allowed). Original question: Can people sign up for *today* (default: yes), or should there be a cutoff, e.g. "at least 1 day ahead"? A cutoff would be a new setup field.
 10. **Undo after cancel.** An organizer's "Cancel booking" toast offers Undo for about 5 s. If the slot was taken in the meantime, Undo fails and explains why. OK? *Default: yes.*
 11. **Email transport for production.** Is SMTP fine for later (e.g. through your email provider)? Development only logs emails either way.
 12. **Hosting.** Will the temporary domain run on this home server (Cloudflare Tunnel) or on a VPS? This doesn't block building; it only affects the handoff notes.
