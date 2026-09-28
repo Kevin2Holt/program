@@ -11,6 +11,10 @@ const WIDTHS = { phone: { width: 390, height: 844 }, desktop: { width: 1280, hei
 const THEMES = ["dark", "light"];
 const OUTPUT_DIR = "test-results/screens";
 const SETTLE_MS = 400;
+const SCREENS_TEST_TIMEOUT_MS = 5 * 60 * 1000;
+
+// Each test captures many screens (and seeds real data), so they get more time.
+test.describe.configure({ timeout: SCREENS_TEST_TIMEOUT_MS });
 
 
 async function captureScreen(page, screen, theme, widthName) {
@@ -103,6 +107,54 @@ test("calendar organizer screens", async ({ page }) => {
 		]
 	});
 	const base = `/events/${eventId}/calendar`;
+	await page.goto(`${base}/setup`);
+	const eventCode = (await page.locator(".event-switch__code").innerText()).split("/").pop();
+	// Real signups through the public page, so the tables show realistic data.
+	const people = [
+		{ name: "Maya Castillo", phone: "801-555-0148", contactMethod: "text", numberType: "cell", notes: "", dayIndex: 2 },
+		{ name: "The Nguyen family", phone: "385-555-0102", contactMethod: "call", numberType: "cell", notes: "We'll bring dinner around 5:30. Elder Chen has a peanut allergy.", dayIndex: 3 },
+		{ name: "Sione Fifita", phone: "+676 555 0190", contactMethod: "text", numberType: "whatsapp", notes: "Bringing lu pulu", dayIndex: 3 },
+		{ name: "Ruth Adeyemi", phone: "+234 803 555 0111", contactMethod: "text", numberType: "whatsapp", notes: "", dayIndex: 4 },
+		{ name: "Grace Whitfield", phone: "801-555-0165", contactMethod: "text", numberType: "cell", notes: "", dayIndex: 6 }
+	];
+	const publicPage = await page.context().newPage();
+	await publicPage.goto(`/${eventCode}/calendar`);
+	for (const { name, phone, contactMethod, numberType, notes, dayIndex } of people) {
+		await publicPage.evaluate(() => sessionStorage.clear());
+		await publicPage.reload();
+		await publicPage.locator("button.cal-day").nth(dayIndex).click();
+		await publicPage.locator(".day-panel .slot:not(.is-conflict)").first().click();
+		await publicPage.getByRole("button", { name: "Continue" }).last().click();
+		await publicPage.getByLabel("Name").fill(name);
+		await publicPage.getByLabel("Phone").fill(phone);
+		await publicPage.getByRole("radio", { name: contactMethod === "call" ? "Call" : "Text" }).click();
+		await publicPage.getByRole("radio", { name: numberType === "whatsapp" ? "WhatsApp" : "Cell" }).click();
+		if (notes) {
+			await publicPage.getByLabel("Notes").fill(notes);
+		}
+		await publicPage.getByRole("button", { name: /Sign up for/ }).click();
+		await publicPage.waitForURL(/confirmation/);
+		await publicPage.goto(`/${eventCode}/calendar`);
+	}
+	await publicPage.close();
+	await page.goto(`${base}/bookings`);
+	const firstBookingHref = await page.locator("table.bookings-table .table__name").first().getAttribute("href");
+
+	await captureAll(page, [
+		{ name: "calendar-bookings", path: `${base}/bookings` },
+		{ name: "calendar-booking", path: firstBookingHref },
+		{
+			name: "calendar-booking-edit",
+			path: firstBookingHref,
+			viewportOnly: true,
+			prepare: async (screenPage) => {
+				await screenPage.getByRole("button", { name: "Edit", exact: true }).click();
+				await screenPage.getByRole("dialog").waitFor();
+			}
+		},
+		{ name: "calendar-export", path: `${base}/export` }
+	]);
+
 	await captureAll(page, [
 		{ name: "calendar-overview", path: base },
 		{ name: "calendar-setup", path: `${base}/setup` },

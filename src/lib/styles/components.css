@@ -4288,3 +4288,162 @@ button.cal-day:hover {
 .cal-day__mon {
 	margin-right: 0.25em;
 }
+
+/* ======================================================================
+	Bookings and export (app)
+====================================================================== */
+
+.table__name {
+	color: var(--color-text);
+	font-weight: var(--weight-medium);
+}
+
+.table__phone {
+	color: inherit;
+}
+
+.edit-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: var(--space-2);
+	align-items: center;
+	padding: var(--space-3);
+	border-bottom: var(--border-width) solid var(--color-divider);
+}
+
+.edit-row__fields {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+	gap: var(--space-2);
+}
+
+.edit-row__error {
+	grid-column: 1 / -1;
+}
+
+.edit-row.has-error {
+	background: var(--color-danger-tint);
+}
+
+@media (max-width: 560px) {
+	.edit-row__fields {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.confirmation-link {
+	font-family: var(--font-mono);
+	font-size: var(--text-xs);
+	overflow-wrap: anywhere;
+}
+
+.activity {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	margin: 0;
+	padding: 0 0 0 var(--space-4);
+	border-left: var(--border-width-strong) solid var(--color-border);
+	list-style: none;
+	font-size: var(--text-sm);
+}
+
+.activity li {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-1) var(--space-2);
+}
+
+.activity__what {
+	font-weight: var(--weight-medium);
+}
+
+.activity__detail {
+	flex-basis: 100%;
+	color: var(--color-text-muted);
+}
+
+.export-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 24rem) minmax(0, 1fr);
+	gap: var(--space-5);
+	align-items: start;
+}
+
+@media (max-width: 960px) {
+	.export-layout {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.level-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: var(--space-2);
+}
+
+.choice-card.level-card {
+	height: auto;
+	align-items: flex-start;
+	gap: var(--space-3);
+	padding: var(--space-3);
+	text-align: left;
+}
+
+.level-card small {
+	display: block;
+	font-weight: var(--weight-regular);
+	font-size: var(--text-xs);
+	color: var(--color-text-subtle);
+}
+
+.export-preview td {
+	white-space: nowrap;
+}
+
+/* Phones: each booking row becomes a labeled card instead of a wide table. */
+@media (max-width: 640px) {
+	.bookings-table thead {
+		display: none;
+	}
+
+	.bookings-table,
+	.bookings-table tbody,
+	.bookings-table tr,
+	.bookings-table td {
+		display: block;
+	}
+
+	.bookings-table tr {
+		position: relative;
+		padding: var(--space-3) var(--space-8) var(--space-3) var(--space-4);
+		border-bottom: var(--border-width) solid var(--color-divider);
+	}
+
+	.bookings-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+
+	.bookings-table td {
+		height: auto;
+		padding: var(--space-0-5) 0;
+		border: 0;
+	}
+
+	.bookings-table td[data-label]::before {
+		content: attr(data-label) " ";
+		color: var(--color-text-subtle);
+		font-size: var(--text-xs);
+	}
+
+	.bookings-table td.num {
+		position: absolute;
+		top: 50%;
+		right: var(--space-3);
+		transform: translateY(-50%);
+	}
+
+	.bookings-table .bookings-table__date {
+		font-weight: var(--weight-semibold);
+	}
+}
