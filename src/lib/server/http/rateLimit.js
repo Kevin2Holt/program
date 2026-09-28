@@ -2,6 +2,7 @@
 	Fixed-window rate limits stored in Postgres, so limits survive restarts and
 	need no extra service. Used for auth and every public write.
 */
+import { config } from "../config.js";
 import { sql } from "../db.js";
 
 
@@ -43,7 +44,7 @@ export async function recordRateLimitHit(key, { limit, windowS }) {
 		returning hits`;
 	await removeStaleBucketsSometimes();
 	const retryAfterS = Math.ceil((windowStart.getTime() + windowS * MS_PER_SECOND - nowMs) / MS_PER_SECOND);
-	return { allowed: row.hits <= limit, retryAfterS };
+	return { allowed: row.hits <= limit * config.rateLimitScale, retryAfterS };
 }
 
 export function buildRateLimitKey(scope, clientAddress, extra = "") {

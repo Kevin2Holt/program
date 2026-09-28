@@ -30,6 +30,8 @@ export const config = {
 	databaseUrl: readTrimmedEnv("DATABASE_URL", ""),
 	publicBaseUrl: stripTrailingSlashes(readTrimmedEnv("PUBLIC_BASE_URL", DEFAULT_PUBLIC_BASE_URL)),
 	isProduction: process.env.NODE_ENV === "production",
+	// Multiplies every rate limit; browser tests raise it so many signups can run (default 1).
+	rateLimitScale: Math.max(1, Number(readTrimmedEnv("RATE_LIMIT_SCALE", "1")) || 1),
 	mail: {
 		transport: MAIL_TRANSPORTS.includes(mailTransport) ? mailTransport : "log",
 		from: readTrimmedEnv("MAIL_FROM", DEFAULT_MAIL_FROM),
