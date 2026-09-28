@@ -6,8 +6,12 @@
 	import ConfirmHost from "$lib/components/ui/ConfirmHost.svelte";
 	import Toaster from "$lib/components/ui/Toaster.svelte";
 
-	let { children } = $props();
+	let { data, children } = $props();
 </script>
+
+<svelte:head>
+	<meta name="csrf-token" content={data.csrfToken} />
+</svelte:head>
 
 {@render children()}
 

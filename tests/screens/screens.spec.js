@@ -4,7 +4,7 @@
 	Then: node scripts/screen-sheets.js builds one review sheet per screen.
 */
 import { test } from "@playwright/test";
-import { signUpThroughUi } from "../e2e/helpers.js";
+import { seedCalendar, signUpThroughUi } from "../e2e/helpers.js";
 
 
 const WIDTHS = { phone: { width: 390, height: 844 }, desktop: { width: 1280, height: 820 } };
@@ -81,6 +81,51 @@ test("organizer screens", async ({ page }) => {
 		{ name: "event-settings", path: `/events/${eventId}/settings` },
 		{ name: "account", path: "/account" },
 		{ name: "program-editor-empty", path: `/events/${eventId}/program` }
+	]);
+});
+
+test("calendar organizer screens", async ({ page }) => {
+	await signUpThroughUi(page, { displayName: "Kevin Holt" });
+	const eventId = await createEventForScreens(page, { name: "Ward Missionary Meals", code: `meals-${Date.now() % 100000}` });
+	await seedCalendar(page, eventId, {
+		config: { title: "Missionary meals" },
+		items: [
+			{ name: "Elders Ramos & Chen", color: "blue", shape: "circle" },
+			{ name: "Elders Tuilagi & Brooks", color: "amber", shape: "triangle" },
+			{ name: "Sisters Okafor & Lind", color: "green", shape: "square" },
+			{ name: "Sisters Park & Moreau", color: "pink", shape: "diamond" }
+		],
+		rules: [
+			{ effect: "block", kind: "recurring", frequency: "weekly", weekdays: [1], label: "P-day" },
+			{ effect: "allow", kind: "recurring", frequency: "weekly", weekdays: [2, 4, 6], appliesTo: "selected", itemNames: ["Sisters Park & Moreau"] },
+			{ effect: "block", kind: "recurring", frequency: "monthly_weekday", monthWeek: 1, monthWeekday: 0, label: "Fast Sunday" },
+			{ effect: "block", kind: "recurring", frequency: "biweekly", weekdays: [3], startsOn: "2026-09-30", appliesTo: "selected", itemNames: ["Elders Tuilagi & Brooks"], label: "District council", active: false }
+		]
+	});
+	const base = `/events/${eventId}/calendar`;
+	await captureAll(page, [
+		{ name: "calendar-overview", path: base },
+		{ name: "calendar-setup", path: `${base}/setup` },
+		{ name: "calendar-items", path: `${base}/items` },
+		{
+			name: "calendar-item-drawer",
+			path: `${base}/items`,
+			viewportOnly: true,
+			prepare: async (screenPage) => {
+				await screenPage.getByRole("button", { name: "Elders Ramos & Chen", exact: true }).click();
+				await screenPage.getByRole("dialog").waitFor();
+			}
+		},
+		{ name: "calendar-availability", path: `${base}/availability` },
+		{
+			name: "calendar-rule-drawer",
+			path: `${base}/availability`,
+			viewportOnly: true,
+			prepare: async (screenPage) => {
+				await screenPage.getByRole("button", { name: "Add rule" }).click();
+				await screenPage.getByRole("dialog").waitFor();
+			}
+		}
 	]);
 });
 

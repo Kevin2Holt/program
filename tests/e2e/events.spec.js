@@ -1,19 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { signUpThroughUi } from "./helpers.js";
+import { createEventThroughUi, signUpThroughUi } from "./helpers.js";
 
-
-async function createEventThroughUi(page, { name, code }) {
-
-	await page.goto("/dashboard");
-	await page.getByRole("button", { name: "New event" }).first().click();
-	await page.getByLabel("Event name").fill(name);
-	const codeInput = page.getByLabel("Short link");
-	await codeInput.fill(code);
-	await expect(page.getByText("Available")).toBeVisible();
-	await page.getByRole("button", { name: "Create event" }).click();
-	await expect(page).toHaveURL(/\/events\/\d+\/program/);
-	return Number(/\/events\/(\d+)\//.exec(page.url())[1]);
-}
 
 
 test.describe("events", () => {
