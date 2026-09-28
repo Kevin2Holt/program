@@ -1,6 +1,6 @@
 <script>
 	/*
-		Overflow menu. items: [{ label, icon?, onselect?, href?, danger?, disabled? }]
+		Overflow menu. items: [{ label, icon?, onselect?, href?, danger?, disabled?, meta? }]
 		Keyboard: arrows move, Enter/Space choose, Escape closes.
 	*/
 	import { tick } from "svelte";
@@ -12,6 +12,7 @@
 		label = "More actions",
 		icon = "more",
 		triggerLabel = "",
+		triggerClass = "",
 		size = "sm",
 		align = "right",
 		width = undefined
@@ -77,10 +78,10 @@
 >
 	<button
 		bind:this={triggerEl}
-		class="btn"
-		class:btn--ghost={!triggerLabel}
-		class:btn--icon={!triggerLabel}
-		class:btn--sm={size === "sm"}
+		class={triggerClass || "btn"}
+		class:btn--ghost={!triggerClass && !triggerLabel}
+		class:btn--icon={!triggerClass && !triggerLabel}
+		class:btn--sm={!triggerClass && size === "sm"}
 		type="button"
 		aria-haspopup="menu"
 		aria-expanded={open}

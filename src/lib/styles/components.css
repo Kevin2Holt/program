@@ -3476,7 +3476,7 @@ button.cal-day:hover {
 
 .lv-row {
 	display: grid;
-	grid-template-columns: 1rem minmax(0, 9rem) minmax(0, 1fr) auto;
+	grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) auto;
 	gap: var(--space-2);
 	align-items: center;
 }
@@ -3926,4 +3926,171 @@ button.cal-day:hover {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	vertical-align: bottom;
+}
+
+/* ======================================================================
+	Program editor (app)
+====================================================================== */
+
+.btn.preview-toggle {
+	display: none;
+}
+
+@media (max-width: 1100px) {
+	.btn.preview-toggle {
+		display: inline-flex;
+	}
+}
+
+@media (max-width: 640px) {
+	.hide-sm {
+		display: none;
+	}
+}
+
+.program-header-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: var(--space-3) var(--space-4);
+}
+
+.program-header-grid__title {
+	grid-column: span 2;
+}
+
+@media (max-width: 560px) {
+	.program-header-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.program-header-grid__title {
+		grid-column: auto;
+	}
+}
+
+.ed-list.is-dragging {
+	cursor: grabbing;
+	user-select: none;
+}
+
+.ed-block.is-dragging {
+	position: relative;
+	z-index: var(--z-sticky);
+	transition: box-shadow var(--dur-fast) var(--ease-standard);
+}
+
+.ed-block.is-lifted {
+	border-color: var(--color-accent);
+	box-shadow: 0 0 0 3px var(--color-accent-tint-strong), var(--shadow-md);
+}
+
+.ed-block__grip {
+	touch-action: none;
+}
+
+.ed-block__head--flush {
+	margin-bottom: 0;
+}
+
+.ed-insert__btn[aria-expanded="true"],
+.is-drop-target .ed-insert__btn {
+	opacity: 1;
+}
+
+.is-drop-target .ed-insert::before {
+	opacity: 1;
+	height: 3px;
+}
+
+.add-block-row {
+	margin-top: var(--space-2);
+}
+
+.add-block-row .select {
+	display: block;
+}
+
+.btn.add-block-btn {
+	height: 2.5rem;
+	border-style: dashed;
+	color: var(--color-text-muted);
+}
+
+.device--desktop {
+	width: auto;
+	max-width: none;
+	margin: var(--space-4);
+	border-radius: var(--radius-lg);
+}
+
+.program__empty {
+	margin-top: var(--space-4);
+	color: var(--color-text-subtle);
+	font-size: var(--text-md);
+}
+
+.program--compact {
+	padding: var(--space-5) var(--space-4);
+}
+
+.program--compact .program__title {
+	font-size: var(--text-2xl);
+}
+
+.link-popover {
+	width: 18rem;
+	padding: var(--space-2);
+}
+
+.link-popover .input {
+	height: var(--control-h-sm);
+	font-size: var(--text-sm);
+}
+
+.rte-toolbar .select {
+	display: inline-flex;
+}
+
+.rte .ProseMirror,
+.rte.ProseMirror {
+	outline: none;
+}
+
+.rte h2 {
+	font-size: var(--text-lg);
+	margin: var(--space-1) 0;
+}
+
+.rte h3 {
+	font-size: var(--text-md);
+	margin: var(--space-1) 0;
+}
+
+.rte ul,
+.rte ol {
+	padding-left: var(--space-5);
+	margin: var(--space-1) 0;
+}
+
+.rte a {
+	text-decoration: underline;
+}
+
+.rte p.is-editor-empty:first-child::before {
+	content: attr(data-placeholder);
+	float: left;
+	height: 0;
+	color: var(--color-text-subtle);
+	pointer-events: none;
+}
+
+@media (max-width: 560px) {
+	.lv-rows {
+		gap: var(--space-3);
+	}
+
+	.lv-row {
+		padding-bottom: var(--space-3);
+		border-bottom: var(--border-width) solid var(--color-divider);
+	}
 }
