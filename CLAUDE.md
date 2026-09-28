@@ -67,6 +67,7 @@ Other protections:
   - `Menu`, `Alert`, `EmptyState`, `Skeleton`, `SaveState`, `Status`, `Badge`, `ItemMarker`
 - Wrap every input in `Field`, which provides the label, hint, inline error, and aria wiring. Wrap forms in `Form`, which adds the CSRF field, avoids a reload, and tracks pending state.
 - **Themes:** dark is the default and light is first-class. Check both (use `npm run test:screens`).
+- **Event accent colors:** an event's public pages carry `data-accent` (from `events.accent_color`, chosen in Event settings). The presets live in `tokens.css` and the list in `$lib/accentColors.js`. Each was checked for AA in both themes, and `tests/e2e/accessibility.spec.js` runs axe on every one. Components must use the `--color-accent*` tokens, never a fixed accent value, so the event color applies. Add a color only with both theme blocks and a contrast check.
 - **Density:** public pages are phone-first (16 px text, 44 px targets, `body.is-public`); organizer pages are compact (14 px, 32 px controls).
 - **States:** every screen needs empty, loading, error, and permission-denied states, plus validation next to the field.
 - **Motion:** transitions are short (120–260 ms) and come from tokens; reduced motion is honored.
@@ -170,3 +171,7 @@ Other protections:
   - Links in running text are underlined, scrollable tables are focusable regions, and the light success color was darkened for contrast.
   - The public booking API returns only `{ ok, reference }`.
   - Handoff: `docs/rebuild/HANDOFF.md`.
+- **After 0.7:**
+  - 0.7.1: `createUuid()` so Continue works over plain HTTP.
+  - 0.7.2: `per_day` calendar files (migration 005).
+  - 0.7.3: per-event accent color (migration 006, `ColorSwatches`, Event settings → Page color).

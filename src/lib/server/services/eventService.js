@@ -3,10 +3,11 @@
 	one namespace shared by current and retired codes), code changes that keep
 	the old code redirecting, archiving, and public code resolution.
 */
+import { checkValidAccent } from "$lib/accentColors.js";
 import { checkHasErrors, fail, failInvalid, RESULT_CODE, succeed } from "$lib/result.js";
 import { normalizeEventCode, normalizeText, validateEventCodeShape, validateEventName } from "$lib/validation.js";
 import { PG_ERROR, sql } from "../db.js";
-import { checkReservedWord, deleteOldCode, findEventById, findEventByCode, findEventIdUsingCode, findMembership, insertEvent, insertEventMember, insertOldCode, listEventsForMember, listOldCodes, setEventArchived, updateEventCode, updateEventName } from "../data/events.js";
+import { checkReservedWord, deleteOldCode, findEventById, findEventByCode, findEventIdUsingCode, findMembership, insertEvent, insertEventMember, insertOldCode, listEventsForMember, listOldCodes, setEventArchived, updateEventAccent, updateEventCode, updateEventName } from "../data/events.js";
 import { ROLE } from "./permissionService.js";
 import { createDraftVersion } from "./programService.js";
 
@@ -106,6 +107,15 @@ export async function updateEventSettings(eventId, input) {
 		throw err;
 	}
 	return succeed({ ...event, name, code, codeChanged: code !== event.code });
+}
+
+export async function setEventAccent(eventId, accentColor) {
+
+	if (!checkValidAccent(accentColor)) {
+		return failInvalid({ accentColor: "Choose one of the colors." });
+	}
+	await updateEventAccent(eventId, accentColor);
+	return succeed({ accentColor });
 }
 
 export async function archiveEvent(eventId, archived) {

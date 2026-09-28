@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
 import { listReservedWords } from "../../src/lib/server/data/events.js";
-import { checkCodeAvailability, createEvent, loadMembership, resolvePublicEvent, updateEventSettings, archiveEvent } from "../../src/lib/server/services/eventService.js";
+import { checkCodeAvailability, createEvent, loadMembership, resolvePublicEvent, setEventAccent, updateEventSettings, archiveEvent } from "../../src/lib/server/services/eventService.js";
 import { checkRoleHasPermission, listPermissionsForRole, PERMISSION } from "../../src/lib/server/services/permissionService.js";
 import { clearAllTables, sql } from "../helpers/database.js";
 import { createTestEvent, createTestUser } from "../helpers/factories.js";
@@ -130,5 +130,26 @@ describe("route collisions", () => {
 
 	it("reserved words load from the database", async () => {
 		expect(await listReservedWords()).toContain("login");
+	});
+});
+
+describe("accent color", () => {
+	it("new events use indigo; a listed color is saved and reaches the public event", async () => {
+		const owner = await createTestUser();
+		const event = await createTestEvent(owner.id);
+		expect((await resolvePublicEvent(event.code)).event.accent_color).toBe("indigo");
+
+		const result = await setEventAccent(event.id, "teal");
+		expect(result.ok).toBe(true);
+		expect((await resolvePublicEvent(event.code)).event.accent_color).toBe("teal");
+	});
+
+	it("refuses colors outside the curated list", async () => {
+		const owner = await createTestUser();
+		const event = await createTestEvent(owner.id);
+		const result = await setEventAccent(event.id, "#ff00ff");
+		expect(result.ok).toBe(false);
+		expect(result.errors.accentColor).toBeTruthy();
+		expect((await resolvePublicEvent(event.code)).event.accent_color).toBe("indigo");
 	});
 });

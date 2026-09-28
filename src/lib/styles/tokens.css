@@ -228,6 +228,177 @@
 }
 
 
+/* ---------- Event accent colors ---------- */
+
+/*
+	An event's public pages carry data-accent="…" (see $lib/accentColors.js).
+	Indigo is the default and uses the theme tokens above. Every preset was
+	checked for WCAG AA in both themes: white on the button colors >= 4.5:1,
+	accent text on page, surfaces and tints >= 4.5:1, accent vs page >= 3:1.
+	The first block is the dark theme (the default); the second is light.
+*/
+
+[data-accent="blue"] {
+	--color-accent: #2563eb;
+	--color-accent-hover: #1d4ed8;
+	--color-accent-pressed: #1e40af;
+	--color-accent-text: #93c5fd;
+	--color-accent-tint: rgb(37 99 235 / 0.14);
+	--color-accent-tint-strong: rgb(37 99 235 / 0.24);
+	--color-focus: #93c5fd;
+}
+
+:root[data-theme="light"] [data-accent="blue"] {
+	--color-accent: #2563eb;
+	--color-accent-hover: #1d4ed8;
+	--color-accent-pressed: #1e40af;
+	--color-accent-text: #1d4ed8;
+	--color-accent-tint: rgb(37 99 235 / 0.09);
+	--color-accent-tint-strong: rgb(37 99 235 / 0.16);
+	--color-focus: #2563eb;
+}
+
+[data-accent="teal"] {
+	--color-accent: #0f766e;
+	--color-accent-hover: #115e59;
+	--color-accent-pressed: #134e4a;
+	--color-accent-text: #5eead4;
+	--color-accent-tint: rgb(15 118 110 / 0.14);
+	--color-accent-tint-strong: rgb(15 118 110 / 0.24);
+	--color-focus: #5eead4;
+}
+
+:root[data-theme="light"] [data-accent="teal"] {
+	--color-accent: #0f766e;
+	--color-accent-hover: #115e59;
+	--color-accent-pressed: #134e4a;
+	--color-accent-text: #115e59;
+	--color-accent-tint: rgb(15 118 110 / 0.09);
+	--color-accent-tint-strong: rgb(15 118 110 / 0.16);
+	--color-focus: #0f766e;
+}
+
+[data-accent="green"] {
+	--color-accent: #15803d;
+	--color-accent-hover: #166534;
+	--color-accent-pressed: #14532d;
+	--color-accent-text: #86efac;
+	--color-accent-tint: rgb(21 128 61 / 0.14);
+	--color-accent-tint-strong: rgb(21 128 61 / 0.24);
+	--color-focus: #86efac;
+}
+
+:root[data-theme="light"] [data-accent="green"] {
+	--color-accent: #15803d;
+	--color-accent-hover: #166534;
+	--color-accent-pressed: #14532d;
+	--color-accent-text: #166534;
+	--color-accent-tint: rgb(21 128 61 / 0.09);
+	--color-accent-tint-strong: rgb(21 128 61 / 0.16);
+	--color-focus: #15803d;
+}
+
+[data-accent="amber"] {
+	--color-accent: #b45309;
+	--color-accent-hover: #92400e;
+	--color-accent-pressed: #78350f;
+	--color-accent-text: #fcd34d;
+	--color-accent-tint: rgb(180 83 9 / 0.14);
+	--color-accent-tint-strong: rgb(180 83 9 / 0.24);
+	--color-focus: #fcd34d;
+}
+
+:root[data-theme="light"] [data-accent="amber"] {
+	--color-accent: #b45309;
+	--color-accent-hover: #92400e;
+	--color-accent-pressed: #78350f;
+	--color-accent-text: #92400e;
+	--color-accent-tint: rgb(180 83 9 / 0.09);
+	--color-accent-tint-strong: rgb(180 83 9 / 0.16);
+	--color-focus: #b45309;
+}
+
+[data-accent="red"] {
+	--color-accent: #dc2626;
+	--color-accent-hover: #b91c1c;
+	--color-accent-pressed: #991b1b;
+	--color-accent-text: #fca5a5;
+	--color-accent-tint: rgb(220 38 38 / 0.14);
+	--color-accent-tint-strong: rgb(220 38 38 / 0.24);
+	--color-focus: #fca5a5;
+}
+
+:root[data-theme="light"] [data-accent="red"] {
+	--color-accent: #dc2626;
+	--color-accent-hover: #b91c1c;
+	--color-accent-pressed: #991b1b;
+	--color-accent-text: #b91c1c;
+	--color-accent-tint: rgb(220 38 38 / 0.09);
+	--color-accent-tint-strong: rgb(220 38 38 / 0.16);
+	--color-focus: #dc2626;
+}
+
+[data-accent="pink"] {
+	--color-accent: #be185d;
+	--color-accent-hover: #9d174d;
+	--color-accent-pressed: #831843;
+	--color-accent-text: #f9a8d4;
+	--color-accent-tint: rgb(190 24 93 / 0.14);
+	--color-accent-tint-strong: rgb(190 24 93 / 0.24);
+	--color-focus: #f9a8d4;
+}
+
+:root[data-theme="light"] [data-accent="pink"] {
+	--color-accent: #be185d;
+	--color-accent-hover: #9d174d;
+	--color-accent-pressed: #831843;
+	--color-accent-text: #be185d;
+	--color-accent-tint: rgb(190 24 93 / 0.09);
+	--color-accent-tint-strong: rgb(190 24 93 / 0.16);
+	--color-focus: #be185d;
+}
+
+[data-accent="violet"] {
+	--color-accent: #7c3aed;
+	--color-accent-hover: #6d28d9;
+	--color-accent-pressed: #5b21b6;
+	--color-accent-text: #c4b5fd;
+	--color-accent-tint: rgb(124 58 237 / 0.14);
+	--color-accent-tint-strong: rgb(124 58 237 / 0.24);
+	--color-focus: #c4b5fd;
+}
+
+:root[data-theme="light"] [data-accent="violet"] {
+	--color-accent: #7c3aed;
+	--color-accent-hover: #6d28d9;
+	--color-accent-pressed: #5b21b6;
+	--color-accent-text: #6d28d9;
+	--color-accent-tint: rgb(124 58 237 / 0.09);
+	--color-accent-tint-strong: rgb(124 58 237 / 0.16);
+	--color-focus: #7c3aed;
+}
+
+[data-accent="slate"] {
+	--color-accent: #64748b;
+	--color-accent-hover: #56657a;
+	--color-accent-pressed: #475569;
+	--color-accent-text: #cbd5e1;
+	--color-accent-tint: rgb(100 116 139 / 0.14);
+	--color-accent-tint-strong: rgb(100 116 139 / 0.24);
+	--color-focus: #cbd5e1;
+}
+
+:root[data-theme="light"] [data-accent="slate"] {
+	--color-accent: #475569;
+	--color-accent-hover: #334155;
+	--color-accent-pressed: #1e293b;
+	--color-accent-text: #334155;
+	--color-accent-tint: rgb(71 85 105 / 0.09);
+	--color-accent-tint-strong: rgb(71 85 105 / 0.16);
+	--color-focus: #475569;
+}
+
+
 /* ---------- Reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {

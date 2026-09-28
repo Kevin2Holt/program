@@ -230,6 +230,10 @@ test("public calendar screens", async ({ page }) => {
 
 	const published = await callApi(page, "POST", `/api/events/${mealsId}/program/publish`);
 	expect(published.status).toBe(200);
+	// The timed calendar screens show a non-default event accent color.
+	await page.goto(`/events/${summitId}/settings`);
+	await page.getByRole("radio", { name: "Teal", exact: true }).click();
+	await page.getByText("Page color saved").waitFor();
 
 	await captureAll(page, [
 		{ name: "program-with-calendar", path: `/${mealsCode}` },

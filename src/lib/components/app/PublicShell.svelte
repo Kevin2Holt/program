@@ -8,7 +8,7 @@
 	let onCalendar = $derived(page.url.pathname.startsWith(`/${event.code}/calendar`));
 </script>
 
-<div class="is-public">
+<div class="is-public" data-accent={event.accentColor}>
 	<header class="pub-header">
 		<div class="pub-header__inner">
 			<a class="pub-header__title" href="/{event.code}" style="color: inherit">{event.name}</a>

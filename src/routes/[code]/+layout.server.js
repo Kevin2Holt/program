@@ -9,7 +9,7 @@ export async function load(event) {
 	const config = await loadCalendarConfig(publicEvent.id);
 	const hasCalendar = Boolean(config) && config.status !== "draft";
 	return {
-		publicEvent: { id: publicEvent.id, name: publicEvent.name, code: publicEvent.code },
+		publicEvent: { id: publicEvent.id, name: publicEvent.name, code: publicEvent.code, accentColor: publicEvent.accent_color },
 		hasCalendar,
 		calendarTitle: hasCalendar ? config.title : "",
 		calendarOpen: hasCalendar && config.status === "open"

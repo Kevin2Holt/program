@@ -2863,6 +2863,50 @@ button.cal-day:hover {
 	color: var(--color-accent-text);
 }
 
+/* Accent color picker: each swatch carries its own data-accent, so it paints with that preset's tokens. */
+.accent-swatches {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-2);
+}
+
+.accent-swatch {
+	display: inline-grid;
+	place-items: center;
+	width: var(--control-h-md);
+	height: var(--control-h-md);
+	border: 0;
+	border-radius: var(--radius-full);
+	background: var(--color-accent);
+	color: var(--color-text-on-accent);
+	cursor: pointer;
+	transition: transform var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard);
+}
+
+.accent-swatch:hover {
+	transform: scale(1.08);
+}
+
+.accent-swatch[aria-checked="true"] {
+	box-shadow: 0 0 0 2px var(--color-surface-1), 0 0 0 4px var(--color-accent);
+}
+
+.accent-swatch:focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: 4px;
+}
+
+.accent-preview {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-3);
+	padding: var(--space-3);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: var(--radius-lg);
+	background: var(--color-bg);
+}
+
 .confirm-hero {
 	display: flex;
 	flex-direction: column;

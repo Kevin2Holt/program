@@ -40,6 +40,7 @@ export function toClientEvent(eventRow) {
 		id: eventRow.id,
 		name: eventRow.name,
 		code: eventRow.code,
+		accentColor: eventRow.accent_color,
 		archived: Boolean(eventRow.archived_at),
 		updatedAt: eventRow.updated_at
 	};

@@ -5,7 +5,7 @@
 import { sql } from "../db.js";
 
 
-const EVENT_COLUMNS = sql`e.id, e.name, e.code, e.created_by, e.archived_at, e.created_at, e.updated_at`;
+const EVENT_COLUMNS = sql`e.id, e.name, e.code, e.accent_color, e.created_by, e.archived_at, e.created_at, e.updated_at`;
 
 
 export async function checkReservedWord(word) {
@@ -75,6 +75,11 @@ export async function listEventsForMember(userId) {
 export async function updateEventName(db, eventId, name) {
 
 	await db`update events set name = ${name}, updated_at = now() where id = ${eventId}`;
+}
+
+export async function updateEventAccent(eventId, accentColor) {
+
+	await sql`update events set accent_color = ${accentColor}, updated_at = now() where id = ${eventId}`;
 }
 
 export async function updateEventCode(db, eventId, code) {

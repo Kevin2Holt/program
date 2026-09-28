@@ -1,12 +1,15 @@
 <script>
 	import CodeField from "$lib/components/app/CodeField.svelte";
 	import Topbar from "$lib/components/app/Topbar.svelte";
+	import { tick } from "svelte";
 	import Button from "$lib/components/ui/Button.svelte";
+	import ColorSwatches from "$lib/components/ui/ColorSwatches.svelte";
 	import Field from "$lib/components/ui/Field.svelte";
 	import Form from "$lib/components/ui/Form.svelte";
 	import Input from "$lib/components/ui/Input.svelte";
 	import { confirmAction } from "$lib/components/ui/confirm.svelte.js";
 	import { showToast } from "$lib/components/ui/toast.svelte.js";
+	import { ACCENT_COLORS } from "$lib/accentColors.js";
 	import { LIMITS } from "$lib/validation.js";
 
 	let { data, form } = $props();
@@ -15,7 +18,17 @@
 	let name = $derived(result?.values?.name ?? data.event.name);
 	let code = $derived(result?.values?.code ?? data.event.code);
 	let archiveSubmitButton = $state();
+	let accentSubmitButton = $state();
+	// Follows the saved color, but switches the moment a swatch is picked.
+	let accentColor = $derived(data.event.accentColor);
 
+
+	async function saveAccent(value) {
+
+		accentColor = value;
+		await tick();
+		accentSubmitButton.click();
+	}
 
 	async function toggleArchived() {
 
@@ -41,7 +54,7 @@
 	<div class="page-head">
 		<div>
 			<h1 class="page-head__title">Event settings</h1>
-			<p class="page-head__sub">Name and public link.</p>
+			<p class="page-head__sub">Name, public link, and color.</p>
 		</div>
 	</div>
 
@@ -66,6 +79,27 @@
 					</div>
 				{/snippet}
 			</Form>
+		</section>
+
+		<section class="card" aria-labelledby="accent-h">
+			<div class="settings-row">
+				<div>
+					<div class="settings-row__label" id="accent-h">Page color</div>
+					<div class="settings-row__desc">Buttons, links, and highlights on this event's public pages. Every color stays readable in light and dark.</div>
+				</div>
+				<Form action="?/accent" onsuccess={() => showToast("Page color saved")} onfailure={() => showToast("Couldn't save the color. Try again.", { icon: "alert-circle" })}>
+					<div class="stack" style="--stack-gap: var(--space-3)">
+						<input type="hidden" name="accentColor" value={accentColor} />
+						<button bind:this={accentSubmitButton} type="submit" hidden aria-hidden="true" tabindex="-1"></button>
+						<ColorSwatches value={accentColor} options={ACCENT_COLORS} labelledBy="accent-h" onchange={saveAccent} />
+						<div class="accent-preview" data-accent={accentColor} aria-hidden="true">
+							<span class="btn btn--primary btn--sm">Sign up</span>
+							<span class="badge badge--accent">3 open</span>
+							<span style="color: var(--color-accent-text); text-decoration: underline; text-underline-offset: 0.18em">A link on the page</span>
+						</div>
+					</div>
+				</Form>
+			</div>
 		</section>
 
 		<section class="card" aria-labelledby="archive-h">
