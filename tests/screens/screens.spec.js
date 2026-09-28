@@ -129,6 +129,84 @@ test("calendar organizer screens", async ({ page }) => {
 	]);
 });
 
+function buildDateFromToday(offsetDays) {
+
+	const DAY_MS = 24 * 60 * 60 * 1000;
+	return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Denver", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(Date.now() + offsetDays * DAY_MS));
+}
+
+async function selectDayAndPick(screenPage, names) {
+
+	// Picks persist in session storage; start every capture from none.
+	await screenPage.evaluate(() => sessionStorage.clear());
+	await screenPage.reload();
+	await screenPage.locator("button.cal-day").nth(2).click();
+	for (const name of names) {
+		await screenPage.getByRole("button", { name: new RegExp(`^Add ${name}`) }).first().click();
+	}
+	await screenPage.waitForTimeout(300);
+}
+
+test("public calendar screens", async ({ page }) => {
+	await signUpThroughUi(page, { displayName: "Kevin Holt" });
+	const mealsCode = `elm-meals-${Date.now() % 100000}`;
+	const mealsId = await createEventForScreens(page, { name: "Elm Ward", code: mealsCode });
+	await seedCalendar(page, mealsId, {
+		config: { title: "Missionary meals" },
+		items: [
+			{ name: "Elders Ramos & Chen", color: "blue", shape: "circle" },
+			{ name: "Elders Tuilagi & Brooks", color: "amber", shape: "triangle" },
+			{ name: "Sisters Okafor & Lind", color: "green", shape: "square" },
+			{ name: "Sisters Park & Moreau", color: "pink", shape: "diamond" }
+		],
+		rules: [
+			{ effect: "block", kind: "recurring", frequency: "weekly", weekdays: [1], label: "P-day" },
+			{ effect: "allow", kind: "recurring", frequency: "weekly", weekdays: [2, 4, 6], appliesTo: "selected", itemNames: ["Sisters Park & Moreau"] }
+		]
+	});
+	const summitCode = `summit-${Date.now() % 100000}`;
+	const summitId = await createEventForScreens(page, { name: "Fall Leadership Summit", code: summitCode });
+	await seedCalendar(page, summitId, {
+		config: { title: "Breakouts", timed: true, windowMode: "fixed", fixedStart: buildDateFromToday(1), fixedEnd: buildDateFromToday(3) },
+		items: [
+			{ name: "Leading Volunteers", color: "blue", shape: "circle", capacity: 30, times: [{ startTime: "09:00", durationMinutes: 60 }, { startTime: "14:00", durationMinutes: 60 }] },
+			{ name: "Design Thinking Lab", color: "pink", shape: "star", capacity: 30, times: [{ startTime: "09:30", durationMinutes: 90 }] },
+			{ name: "Budget Basics", color: "teal", shape: "square", capacity: 30, times: [{ startTime: "11:00", durationMinutes: 60 }, { startTime: "15:30", durationMinutes: 60 }] },
+			{ name: "Keynote Q&A", color: "amber", shape: "hexagon", capacity: 30, times: [{ startTime: "13:00", durationMinutes: 45 }] }
+		]
+	});
+
+	await captureAll(page, [
+		{ name: "public-calendar", path: `/${mealsCode}/calendar`, viewportOnly: true, prepare: (screenPage) => selectDayAndPick(screenPage, ["Elders Ramos & Chen"]) },
+		{ name: "public-calendar-timed", path: `/${summitCode}/calendar`, viewportOnly: true, prepare: async (screenPage) => {
+			await screenPage.evaluate(() => sessionStorage.clear());
+			await screenPage.reload();
+			await screenPage.locator("button.cal-day").first().click();
+			await screenPage.getByRole("button", { name: /^Add Leading Volunteers, 9:00/ }).click();
+			await screenPage.waitForTimeout(300);
+		} },
+		{ name: "public-signup-form", path: `/${mealsCode}/calendar`, prepare: async (screenPage) => {
+			await selectDayAndPick(screenPage, ["Elders Ramos & Chen"]);
+			const continueButton = screenPage.getByRole("button", { name: "Continue" }).last();
+			await continueButton.click();
+			await screenPage.getByLabel("Name").fill("Jordan Whitaker");
+			await screenPage.getByLabel("Phone").fill("555-01");
+			await screenPage.getByRole("button", { name: /Sign up for/ }).click();
+			await screenPage.getByText("Enter a full phone number").waitFor();
+		} }
+	]);
+
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.goto(`/${mealsCode}/calendar`);
+	await selectDayAndPick(page, ["Elders Tuilagi & Brooks"]);
+	await page.getByRole("button", { name: "Continue" }).last().click();
+	await page.getByLabel("Name").fill("Jordan Whitaker");
+	await page.getByLabel("Phone").fill("801-555-0123");
+	await page.getByRole("button", { name: /Sign up for/ }).click();
+	await page.waitForURL(/confirmation/);
+	await captureAll(page, [{ name: "public-confirmation", path: new URL(page.url()).pathname }]);
+});
+
 test("program screens", async ({ page }) => {
 	await signUpThroughUi(page, { displayName: "Kevin Holt" });
 	const code = `elm-ward-${Date.now() % 100000}`;

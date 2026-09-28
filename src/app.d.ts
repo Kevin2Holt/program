@@ -8,6 +8,9 @@ declare global {
 			csrfToken: string;
 			theme: "dark" | "light";
 		}
+		interface PageState {
+			signupStep?: "details";
+		}
 		interface Error {
 			message: string;
 			reference?: string;

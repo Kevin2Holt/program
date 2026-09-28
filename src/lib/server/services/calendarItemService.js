@@ -159,3 +159,10 @@ export async function moveCalendarItem(eventId, itemId, direction) {
 		return succeed();
 	});
 }
+
+// Colors and shapes for every Item (archived too), for showing past bookings.
+export async function loadItemIdentities(eventId) {
+
+	const items = await listItemRows(sql, eventId);
+	return Object.fromEntries(items.map((item) => [item.id, { name: item.name, color: item.color, shape: item.shape, glyph: item.glyph }]));
+}

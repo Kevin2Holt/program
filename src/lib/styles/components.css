@@ -1733,10 +1733,12 @@ svg.icon {
 }
 
 @media (max-width: 560px) {
+	/* Top of the screen on phones, so toasts never cover bottom bars and sheets. */
 	.toasts {
 		left: var(--space-3);
 		right: var(--space-3);
-		bottom: var(--space-3);
+		top: calc(var(--space-3) + env(safe-area-inset-top));
+		bottom: auto;
 	}
 
 	.toast {
@@ -4249,4 +4251,40 @@ button.cal-day:hover {
 
 .rule-summary {
 	font-size: var(--text-sm);
+}
+
+.conflict-list {
+	margin: var(--space-1) 0 var(--space-1);
+	padding-left: var(--space-5);
+}
+
+.confirm-hero__icon--canceled {
+	background: var(--color-surface-3);
+	color: var(--color-text-muted);
+}
+
+.confirm-picks {
+	position: relative;
+}
+
+.confirm-picks__badge {
+	position: absolute;
+	top: var(--space-3);
+	right: var(--space-4);
+}
+
+.step-back.link-button {
+	color: var(--color-text-muted);
+}
+
+.picks__title {
+	font-size: var(--text-base);
+}
+
+.day-panel__date {
+	font-size: var(--text-lg);
+}
+
+.cal-day__mon {
+	margin-right: 0.25em;
 }

@@ -16,6 +16,7 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const PERCENT = 100;
 
 
+/** @param {number} eventId @param {any} [db] a client or transaction */
 export async function loadCalendarContext(eventId, db = sql) {
 
 	const config = await findConfig(db, eventId);
@@ -44,6 +45,52 @@ export async function resolveAvailabilityRange(context, { fromDate, toDate, wind
 		date,
 		items: resolveDate({ date, items: context.items, times: context.times, rules: context.rules, window, usage, timed: context.config.timed })
 	}));
+}
+
+/*
+	What the public calendar needs: the grid range, Item identities, and only the
+	offerings that are available (public views never see why something isn't).
+	Returns null when there's no calendar or it's still a draft.
+*/
+export async function buildPublicCalendar(eventId, now = new Date()) {
+
+	const context = await loadCalendarContext(eventId);
+	if (!context || context.config.status === "draft") {
+		return null;
+	}
+	const { today, window } = deriveContextWindow(context, now);
+	const open = context.config.status === "open" && Boolean(window) && window.firstBookable <= window.end;
+	const days = open ? await resolveAvailabilityRange(context, { fromDate: window.firstBookable, toDate: window.end, window }) : [];
+	const offeringsByDate = {};
+	for (const day of days) {
+		const offerings = [];
+		for (const entry of day.items) {
+			if (entry.occurrences.length) {
+				for (const occurrence of entry.occurrences.filter((candidate) => candidate.status === STATUS.available)) {
+					offerings.push({ itemId: entry.itemId, timeId: occurrence.timeId, startTime: occurrence.startTime, durationMinutes: occurrence.durationMinutes, label: occurrence.label });
+				}
+			}
+			else if (entry.status === STATUS.available) {
+				offerings.push({ itemId: entry.itemId, timeId: null, startTime: null, durationMinutes: null, label: "" });
+			}
+		}
+		if (offerings.length) {
+			offeringsByDate[day.date] = offerings.sort((a, b) => (a.startTime || "").localeCompare(b.startTime || ""));
+		}
+	}
+	return {
+		title: context.config.title,
+		status: context.config.status,
+		timed: context.config.timed,
+		preventOverlap: context.config.preventOverlap,
+		timeZone: context.config.timeZone,
+		formFields: context.config.formFields,
+		today,
+		window,
+		grid: deriveGridRange(window),
+		items: context.items.filter((item) => !item.archived).map(({ id, name, color, shape, glyph }) => ({ id, name, color, shape, glyph })),
+		offeringsByDate
+	};
 }
 
 // One Sunday–Saturday week of organizer statuses plus summary numbers, for the overview.
