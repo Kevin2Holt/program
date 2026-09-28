@@ -49,7 +49,7 @@ Aliases: `$lib` → `src/lib`, `$server` → `src/lib/server` (server-only; Svel
 Other protections:
 - **Rate limits** (`$server/http/rateLimit.js`, stored in Postgres) cover login, signup, account changes, and all public writes, through `limitFormAction` / `limitEndpoint`.
 - Organizer routes live in the `(org)` route group, whose layout calls `requireUser`.
-- Permission checks come in milestone 0.2 (`permissionService`). **Every** organizer handler checks an explicit permission.
+- **Every** organizer handler calls `loadEventAccess(event, PERMISSION.x)` (`src/lib/server/http/eventAccess.js`).
 
 ## Design system (non-negotiable)
 
@@ -112,4 +112,11 @@ Other protections:
   - SvelteKit scaffold, migrations, auth (sign up, log in, log out, account), sessions, CSRF, rate limits, and security headers
   - The design-system components, the theme cookie, and the organizer shell
   - Tests: Vitest service tests, Playwright e2e, and the screens pass
-- Next: 0.2 events and routing.
+- **0.2 events and routing (done):**
+  - Events with custom codes: shape, reserved words (seeded, and a test that every top-level route is reserved), and one namespace for current and retired codes, enforced by a DB trigger.
+  - Old codes 308-redirect to the current code, subpaths included (`loadPublicEvent`).
+  - `event_members` roles and `permissionService` (`PERMISSION.*`).
+  - `loadEventAccess(event, PERMISSION.x)` in every event route: non-members get 404, members lacking the permission get 403.
+  - Dashboard with create dialog and live code check (`/api/codes/check`), event settings (rename, change code, archive), and the public `/[code]` shell.
+  - `RATE_LIMIT_SCALE` is raised only for browser tests.
+- Next: 0.3 programs.
