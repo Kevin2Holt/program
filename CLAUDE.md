@@ -119,4 +119,15 @@ Other protections:
   - `loadEventAccess(event, PERMISSION.x)` in every event route: non-members get 404, members lacking the permission get 403.
   - Dashboard with create dialog and live code check (`/api/codes/check`), event settings (rename, change code, archive), and the public `/[code]` shell.
   - `RATE_LIMIT_SCALE` is raised only for browser tests.
-- Next: 0.3 programs.
+- **0.3 programs (done):**
+  - `program_versions` (draft / published / previous, unique per event) and `program_blocks`.
+  - `programService` locks the draft row and keeps blocks and `block_order` in sync in one transaction, checked by `assertOrderMatchesBlocks`.
+  - **Lifecycle:** publish deep-copies the draft (the old published becomes previous); unpublish moves published to previous; rollback swaps them (deferrable unique constraint).
+  - **Block registry:** `src/lib/blocks/registry.js`. Adding a type means updating the registry, `ProgramView`, an editor component, and the DB check constraint.
+  - Text HTML is sanitized on the server (`sanitizeHtml.js`).
+  - **Editor:** Tiptap text blocks, label/value rows, separators, and the header.
+  - **Saving:** autosave per block via `saveQueue.svelte.js`. Structural changes (add, duplicate, delete with Undo, reorder) save immediately.
+  - **Reordering:** pointer drag, or keyboard (focus grip, Space, arrows, Space).
+  - The live preview and the public `/[code]` both render with `ProgramView`.
+  - The JSON API is under `/api/events/[eventId]/program/…` (client helper: `src/lib/api.js`).
+- Next: 0.4 calendar engine and organizer setup.
