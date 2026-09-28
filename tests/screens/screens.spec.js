@@ -79,6 +79,47 @@ test("organizer screens", async ({ page }) => {
 			}
 		},
 		{ name: "event-settings", path: `/events/${eventId}/settings` },
-		{ name: "account", path: "/account" }
+		{ name: "account", path: "/account" },
+		{ name: "program-editor-empty", path: `/events/${eventId}/program` }
+	]);
+});
+
+test("program screens", async ({ page }) => {
+	await signUpThroughUi(page, { displayName: "Kevin Holt" });
+	const code = `elm-ward-${Date.now() % 100000}`;
+	const eventId = await createEventForScreens(page, { name: "Elm Ward Sacrament Meeting", code });
+
+	await page.getByLabel("Eyebrow").fill("Sacrament Meeting");
+	await page.getByLabel("Title").fill("Elm Ward");
+	await page.getByLabel("Date").fill("Sunday, October 4, 2026");
+	await page.getByLabel("Time").fill("10:00 am");
+	await page.getByLabel("Place").fill("Elm Chapel");
+	await page.getByRole("button", { name: "Label / value" }).click();
+	const rows = [["Presiding", "Bishop Daniel Arroyo"], ["Conducting", "Brother Marcus Lee"], ["Organist", "Sister Ana Kealoha"], ["Opening Hymn", "#2 The Spirit of God"]];
+	for (const [index, [label, value]] of rows.entries()) {
+		await page.getByLabel(`Label ${index + 1}`).fill(label);
+		await page.getByLabel(`Value ${index + 1}`).fill(value);
+		if (index < rows.length - 1) {
+			await page.getByLabel(`Value ${index + 1}`).press("Enter");
+		}
+	}
+	await page.getByRole("button", { name: "Add block" }).click();
+	await page.getByRole("menuitem", { name: /^Separator/ }).click();
+	await page.getByRole("button", { name: "Add block" }).click();
+	await page.getByRole("menuitem", { name: /^Text/ }).click();
+	const text = page.getByRole("textbox", { name: /Text block/ });
+	await text.click();
+	await page.keyboard.press("Control+b");
+	await text.pressSequentially("Speakers");
+	await page.keyboard.press("Control+b");
+	await page.keyboard.press("Enter");
+	await text.pressSequentially("This week our youth speakers share what they learned at youth conference.");
+	await page.locator(".topbar .save-state").getByText("Saved").waitFor();
+	await page.getByRole("button", { name: "Publish", exact: true }).click();
+	await page.getByRole("status").getByText("Published").waitFor();
+
+	await captureAll(page, [
+		{ name: "program-editor", path: `/events/${eventId}/program`, viewportOnly: true },
+		{ name: "program-public", path: `/${code}` }
 	]);
 });
