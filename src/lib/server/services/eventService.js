@@ -8,6 +8,7 @@ import { normalizeEventCode, normalizeText, validateEventCodeShape, validateEven
 import { PG_ERROR, sql } from "../db.js";
 import { checkReservedWord, deleteOldCode, findEventById, findEventByCode, findEventIdUsingCode, findMembership, insertEvent, insertEventMember, insertOldCode, listEventsForMember, listOldCodes, setEventArchived, updateEventCode, updateEventName } from "../data/events.js";
 import { ROLE } from "./permissionService.js";
+import { createDraftVersion } from "./programService.js";
 
 
 const CODE_TAKEN_MESSAGE = "That link is taken. Try another.";
@@ -51,6 +52,7 @@ export async function createEvent(userId, input) {
 		const event = await sql.begin(async (tx) => {
 			const created = await insertEvent(tx, { name, code: codeCheck.code, createdBy: userId });
 			await insertEventMember(tx, { eventId: created.id, userId, role: ROLE.owner });
+			await createDraftVersion(tx, created.id);
 			return created;
 		});
 		return succeed(event);
