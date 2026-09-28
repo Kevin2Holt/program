@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>progr.am rebuild mockups</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+	<style>
+		.gallery { max-width: 56rem; margin: 0 auto; padding: var(--space-10) var(--space-4) var(--space-16); }
+		.gallery h2 { margin: var(--space-8) 0 var(--space-3); }
+		.shot { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: var(--border-width) solid var(--color-divider); }
+		.shot:last-child { border-bottom: 0; }
+		.shot__name { font-weight: var(--weight-semibold); color: var(--color-text); }
+		.shot__desc { font-size: var(--text-sm); color: var(--color-text-muted); }
+	</style>
+</head>
+<body>
+	<main class="gallery">
+		<div class="row row--between">
+			<a class="brand" href="index.html" style="padding: 0"><span class="brand__mark">p</span><span>progr<span class="brand__dot">.</span>am</span></a>
+			<button class="btn btn--ghost btn--icon" type="button" data-theme-toggle></button>
+		</div>
+		<h1 style="font-size: var(--text-3xl); margin-top: var(--space-6)">Rebuild mockups</h1>
+		<p class="muted" style="margin-top: var(--space-2); font-size: var(--text-base); max-width: 40rem">Static, clickable mockups for the checkpoint. Every page uses the same tokens and component CSS the app will use. Toggle the theme with the sun/moon button (it's remembered), or open either theme directly with the links. Resize to about 390 px to check phone layouts.</p>
+
+		<h2 class="caps">Public (phone-first)</h2>
+		<div class="card">
+			<div class="shot"><div><a class="shot__name" href="program.html">Program page</a><div class="shot__desc">/&lt;code&gt;: published blocks, link to the calendar</div></div><div class="row"><a class="btn btn--sm" href="program.html?theme=dark">Dark</a><a class="btn btn--sm" href="program.html?theme=light">Light</a></div></div>
+			<div class="shot"><div><a class="shot__name" href="calendar.html?demo=selected">Calendar: date-only, day selected</a><div class="shot__desc">Week grid, day panel, “Your selections”. Click days, add, remove, and filter.</div></div><div class="row"><a class="btn btn--sm" href="calendar.html?demo=selected&amp;theme=dark">Dark</a><a class="btn btn--sm" href="calendar.html?demo=selected&amp;theme=light">Light</a></div></div>
+			<div class="shot"><div><a class="shot__name" href="calendar.html?mode=timed&amp;demo=selected">Calendar: timed, with overlap</a><div class="shot__desc">Occurrence markers, times in the panel, overlapping times disabled</div></div><div class="row"><a class="btn btn--sm" href="calendar.html?mode=timed&amp;demo=selected&amp;theme=dark">Dark</a><a class="btn btn--sm" href="calendar.html?mode=timed&amp;demo=selected&amp;theme=light">Light</a></div></div>
+			<div class="shot"><div><a class="shot__name" href="signup.html">Signup form</a><div class="shot__desc">Selections summary, structured fields, inline error, conflict banner</div></div><div class="row"><a class="btn btn--sm" href="signup.html?theme=dark">Dark</a><a class="btn btn--sm" href="signup.html?theme=light">Light</a></div></div>
+			<div class="shot"><div><a class="shot__name" href="confirmation.html">Confirmation</a><div class="shot__desc">Opaque link built from the public base URL, add-to-calendar</div></div><div class="row"><a class="btn btn--sm" href="confirmation.html?theme=dark">Dark</a><a class="btn btn--sm" href="confirmation.html?theme=light">Light</a></div></div>
+		</div>
+
+		<h2 class="caps">Organizer (compact)</h2>
+		<div class="card">
+			<div class="shot"><div><a class="shot__name" href="dashboard.html">Dashboard</a><div class="shot__desc">Events list, new-event dialog with code validation, empty and loading states</div></div><div class="row"><a class="btn btn--sm" href="dashboard.html?theme=dark">Dark</a><a class="btn btn--sm" href="dashboard.html?theme=light">Light</a></div></div>
+			<div class="shot"><div><a class="shot__name" href="program-editor.html">Program editor + live preview</a><div class="shot__desc">Blocks, insert-between, autosave state, publish / unpublish / roll back</div></div><div class="row"><a class="btn btn--sm" href="program-editor.html?theme=dark">Dark</a><a class="btn btn--sm" href="program-editor.html?theme=light">Light</a></div></div>
+			<div class="shot"><div><a class="shot__name" href="calendar-overview.html">Calendar overview</a><div class="shot__desc">Organizer statuses: available / full / blocked / out of window</div></div><div class="row"><a class="btn btn--sm" href="calendar-overview.html?theme=dark">Dark</a><a class="btn btn--sm" href="calendar-overview.html?theme=light">Light</a></div></div>
+			<div class="shot"><div><a class="shot__name" href="calendar-setup.html">Calendar setup</a><div class="shot__desc">Progressive disclosure, Event Time Zone search, form fields, confirmation options</div></div><div class="row"><a class="btn btn--sm" href="calendar-setup.html?theme=dark">Dark</a><a class="btn btn--sm" href="calendar-setup.html?theme=light">Light</a></div></div>
+			<div class="shot"><div><a class="shot__name" href="items.html">Items</a><div class="shot__desc">List, edit drawer (color, shape, capacity, times), archive dialog</div></div><div class="row"><a class="btn btn--sm" href="items.html?theme=dark">Dark</a><a class="btn btn--sm" href="items.html?theme=light">Light</a></div></div>
+			<div class="shot"><div><a class="shot__name" href="availability.html">Availability rules + form</a><div class="shot__desc">Allow / Block, one date / repeats, self-switching “Applies to”, delete confirm</div></div><div class="row"><a class="btn btn--sm" href="availability.html?theme=dark">Dark</a><a class="btn btn--sm" href="availability.html?theme=light">Light</a></div></div>
+			<div class="shot"><div><a class="shot__name" href="bookings.html">Bookings table</a><div class="shot__desc">Required columns, filters, empty and permission-denied states</div></div><div class="row"><a class="btn btn--sm" href="bookings.html?theme=dark">Dark</a><a class="btn btn--sm" href="bookings.html?theme=light">Light</a></div></div>
+			<div class="shot"><div><a class="shot__name" href="booking.html">Booking details</a><div class="shot__desc">Signups, contact, notes; edit drawer blocks a move into a full slot</div></div><div class="row"><a class="btn btn--sm" href="booking.html?theme=dark">Dark</a><a class="btn btn--sm" href="booking.html?theme=light">Light</a></div></div>
+			<div class="shot"><div><a class="shot__name" href="export.html">Export</a><div class="shot__desc">Filters, detail level, field inclusion, exact preview</div></div><div class="row"><a class="btn btn--sm" href="export.html?theme=dark">Dark</a><a class="btn btn--sm" href="export.html?theme=light">Light</a></div></div>
+		</div>
+
+		<h2 class="caps">Design system</h2>
+		<div class="card">
+			<div class="shot"><div><a class="shot__name" href="components.html">Components and states</a><div class="shot__desc">Every control, marker set, statuses, feedback states</div></div><div class="row"><a class="btn btn--sm" href="components.html?theme=dark">Dark</a><a class="btn btn--sm" href="components.html?theme=light">Light</a></div></div>
+		</div>
+	</main>
+	<script src="assets/mock.js"></script>
+</body>
+</html>

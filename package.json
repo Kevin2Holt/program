@@ -1,34 +1,63 @@
 {
-  "name": "program",
-  "version": "0.1.0",
-  "private": true,
-  "description": "progr.am — event programs and calendar signup module",
-  "main": "src/server.js",
-  "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "migrate": "node src/db/migrate.js up",
-    "migrate:down": "node src/db/migrate.js down",
-    "test": "node --test test/**/*.test.js",
-    "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
-    "syntax-check": "node --check src/server.js && find src -name '*.js' -exec node --check {} +"
-  },
-  "engines": {
-    "node": ">=20"
-  },
-  "dependencies": {
-    "connect-pg-simple": "^9.0.1",
-    "csurf": "^1.11.0",
-    "dotenv": "^16.4.5",
-    "ejs": "^3.1.10",
-    "express": "^4.19.2",
-    "express-rate-limit": "^7.4.0",
-    "express-session": "^1.18.0",
-    "pg": "^8.12.0",
-    "sanitize-html": "^2.13.0"
-  },
-  "devDependencies": {
-    "eslint": "^9.9.0",
-    "nodemon": "^3.1.4"
-  }
+	"name": "progr-am",
+	"version": "0.7.0",
+	"private": true,
+	"description": "progr.am: event programs and signup calendars",
+	"type": "module",
+	"engines": {
+		"node": ">=22"
+	},
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"start": "node build",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --fail-on-warnings",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:e2e": "playwright test --project=e2e",
+		"test:screens": "playwright test --project=screens",
+		"db:migrate": "node scripts/migrate.js up",
+		"db:rollback": "node scripts/migrate.js down",
+		"db:status": "node scripts/migrate.js status",
+		"db:seed": "node --import ./scripts/lib/registerAliases.js scripts/seed.js",
+		"db:reset:test": "node scripts/migrate.js reset --test",
+		"verify": "npm run check && npm run lint && npm run test",
+		"verify:full": "npm run verify && npm run test:e2e"
+	},
+	"devDependencies": {
+		"@axe-core/playwright": "^4.13.0",
+		"@eslint/js": "^10.0.1",
+		"@playwright/test": "^1.63.0",
+		"@stylistic/eslint-plugin": "^5.10.0",
+		"@sveltejs/adapter-node": "^5.5.7",
+		"@sveltejs/kit": "^2.70.3",
+		"@sveltejs/vite-plugin-svelte": "^7.3.1",
+		"@types/node": "^26.6.3",
+		"eslint": "^10.11.0",
+		"eslint-plugin-svelte": "^3.23.0",
+		"globals": "^17.12.0",
+		"svelte": "^5.57.1",
+		"svelte-check": "^4.7.6",
+		"svelte-eslint-parser": "^1.8.1",
+		"typescript": "^6.0.3",
+		"vite": "^8.3.1",
+		"vitest": "^5.0.2"
+	},
+	"dependencies": {
+		"@fontsource-variable/inter": "^5.3.0",
+		"@fontsource/jetbrains-mono": "^5.3.0",
+		"@tiptap/core": "^3.31.3",
+		"@tiptap/extension-link": "^3.31.3",
+		"@tiptap/extension-underline": "^3.31.3",
+		"@tiptap/pm": "^3.31.3",
+		"@tiptap/starter-kit": "^3.31.3",
+		"dotenv": "^18.0.4",
+		"luxon": "^3.7.2",
+		"nodemailer": "^10.0.12",
+		"postgres": "^3.4.9",
+		"sanitize-html": "^2.17.7"
+	}
 }

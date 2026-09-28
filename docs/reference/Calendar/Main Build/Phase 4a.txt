@@ -1,0 +1,454 @@
+You are continuing a structured multi-phase build process for the `progr.am` calendar signup module.
+
+I am attaching 3 files:
+1. `program_project_specification.txt`
+2. `Phase-2-Final-Specification.txt`
+3. `Phase-3-Final-Specification.txt`
+
+Read all three files carefully before doing anything else. Treat them as the source of truth. If any instruction in this prompt conflicts with those files, follow the files unless this prompt explicitly says to override something.
+
+Your task is to complete **Phase 4A** only.
+
+---
+
+# Phase 4A Goal
+
+Create the initial private GitHub repository for this project and implement the **foundational backend and project structure** for the calendar signup module inside the new `progr.am` application codebase.
+
+Phase 4A is intentionally limited in scope. Do **not** build the full product yet.
+
+Your job in this phase is to:
+
+- create the new private GitHub repo
+- initialize the project structure from scratch
+- scaffold the main application architecture according to the attached specifications
+- implement the Phase 4A foundations for the calendar module
+
+This phase should establish a clean, merge-ready, long-term foundation for the main app and the calendar subsystem.
+
+---
+
+# GitHub and repository instructions
+
+You have authenticated access to my GitHub.
+
+Create the repository with these settings:
+
+- Repository name: `program`
+- Visibility: **private**
+- Primary/default branch: `main`
+
+After creating the repo, initialize the codebase directly in that repository and commit your work there.
+
+Use a clean commit history with logical commit boundaries where practical. Follow the repository convention described in the project spec, which favors layered implementation steps such as:
+- scaffold/tooling
+- database schema
+- app/middleware/session wiring
+- models/services
+- routes/controllers
+- views/layouts/partials
+- static assets/CI
+
+Do not create an unrelated starter template repo. Build the project structure around the attached specifications.
+
+---
+
+# Important context
+
+This module is a **calendar signup subsystem inside progr.am**, not a separate product.
+
+Even though you are starting from an empty repository, you should build the repository as the beginning of the full `progr.am` application, not as a one-off side-project app.
+
+That means:
+- create the app in the architecture expected by the main project spec
+- preserve the route model
+- preserve the layered folder structure
+- preserve mergeability from the beginning
+- make the calendar module feel like a natural subsystem of the main app
+
+---
+
+# Files to use as source of truth
+
+Use the attached files as the specification:
+
+- `program_project_specification.txt` → main app architecture, conventions, current intended project structure, routing model, design direction, middleware/security direction, repository conventions
+- `Phase-2-Final-Specification.txt` → product behavior and product rules for the calendar module
+- `Phase-3-Final-Specification.txt` → implementation planning, entities, routes, services, build sequencing, clarified implementation decisions
+
+You should rely heavily on:
+- the route model
+- the entity definitions
+- the data model plan
+- permission rules
+- the build phase sequencing
+- the clarified Phase 3 decisions
+
+---
+
+# Locked implementation decisions already established
+
+Treat the following as fully decided.
+
+## Main application architecture
+- Tech stack:
+  - Frontend: HTML, CSS, JavaScript
+  - Backend: Node.js
+  - Framework: Express
+  - Templating: EJS
+  - Database: PostgreSQL
+- Rendering model: server-rendered with progressive enhancement, not SPA-first
+- Public route model: code-first
+- Main public event route shape: `/:code`
+- Calendar public route shape: `/:code/calendar`
+- Organizer route family: authenticated event-management routes
+- Dark mode is default
+- Light mode is available
+- CSS should follow the shared custom-property style direction from the main spec
+- Avoid introducing a bundler unless absolutely necessary; follow the no-bundler direction already established in the main project spec
+
+## Repository conventions
+Use the project conventions described in the main app spec:
+- repo name: `program`
+- default branch: `main`
+
+The intended project structure includes at least:
+- `src/config/`
+- `src/controllers/`
+- `src/db/`
+- `src/middleware/`
+- `src/models/`
+- `src/routes/`
+- `src/services/`
+- `src/views/`
+- `public/css/`
+- `public/js/`
+- `.github/workflows/`
+
+View organization should align with the main spec:
+- `src/views/layouts/`
+- `src/views/partials/`
+- `src/views/auth/`
+- `src/views/account/`
+- `src/views/dashboard/`
+- `src/views/events/`
+- `src/views/public/`
+
+Even if some directories are lightly used in Phase 4A, set up the structure correctly.
+
+## Calendar route family
+Public:
+- `/:code/calendar`
+- `POST /:code/calendar/selections`
+- `POST /:code/calendar/submit`
+- `/:code/calendar/confirmation/:ref`
+
+Organizer:
+- `/events/:eventId/calendar`
+- `/events/:eventId/calendar/setup`
+- `/events/:eventId/calendar/items`
+- `/events/:eventId/calendar/occurrences`
+- `/events/:eventId/calendar/availability`
+- `/events/:eventId/calendar/bookings`
+- `/events/:eventId/calendar/export`
+
+## Calendar core entities
+- `CalendarConfig`
+- `CalendarItem`
+- `CalendarOccurrence`
+- `CalendarBooking`
+- `CalendarBookingSelection`
+- `CalendarAvailabilityRule`
+- `CalendarAvailabilityRuleTarget`
+
+## Calendar core data rules
+- One booking parent can have many booking selections.
+- Date-only mode does not require occurrence rows.
+- Timed mode uses real occurrence rows.
+- Availability rules remain rules, not generated blackout occurrences.
+- Items and occurrences with history should be archived/deactivated, not hard deleted.
+- Booking selections preserve simple historical snapshot fields.
+- Minimal booking status model for now: `active` and `canceled`.
+
+## Pending selection state
+- Use **server session-backed pending selection state**.
+- It is temporary interaction state only, not the source of truth for final booking success.
+
+## Submission safety
+- Final submission must revalidate availability transactionally.
+- Use redirect-after-post.
+- Include anti-double-submit protection via a submission token or equivalent dedupe mechanism.
+
+## Confirmation reference
+- Confirmation refs must be opaque, non-sequential, scoped to one booking, safe for public viewing by possession of link, and not usable as edit links.
+
+## Time zone
+- Use one **canonical event time zone** for this side project’s scheduling logic, occurrence display, booking validation, overlap logic, confirmation behavior, and add-to-calendar behavior.
+
+## Email confirmation dependency
+- Email confirmation cannot be enabled unless email collection is enabled.
+- The organizer UI control should remain visible but disabled/grayed out when unavailable.
+
+## Permissions
+Use the `calendar.*` namespace and keep it shallow:
+- `calendar.view`
+- `calendar.view.details`
+- `calendar.edit`
+- `calendar.edit.items`
+- `calendar.edit.availability`
+- `calendar.edit.bookings`
+- `calendar.export`
+
+Even if current practical access is simplified early on, code explicit permission checks and permission scaffolding so later role-aware enforcement is clean.
+
+---
+
+# Scope for Phase 4A
+
+You are implementing the foundation only.
+
+## In scope
+
+### 1. Repository and app bootstrap
+Create the initial repository contents needed to begin the full `progr.am` app in a clean, structured way.
+
+At minimum, bootstrap:
+- `package.json`
+- app/server entry point(s)
+- Express app setup
+- environment/config structure
+- database connection scaffolding
+- session/auth middleware scaffolding consistent with the specs
+- EJS view engine wiring
+- static asset serving
+- base layouts/partials
+- initial CI scaffolding if practical
+- gitignore and basic project hygiene files
+
+Do not create an unrelated toy app. Create the beginning of the real app architecture described in the spec.
+
+### 2. Database / migrations
+Create the database migration(s) needed to introduce the calendar module tables and constraints.
+
+At minimum, plan for:
+- calendar config
+- items
+- occurrences
+- bookings
+- booking selections
+- availability rules
+- availability rule targets
+
+Include:
+- primary keys
+- foreign keys
+- timestamps
+- practical indexes
+- status fields where specified
+- snapshot-related fields on booking selections
+- fields for confirmation refs / submission tokens where appropriate
+- fields supporting canonical event time zone
+- fields supporting structured config storage where appropriate
+
+Keep the schema aligned with the conventions described in the specifications.
+
+If the repo also needs foundational migration tooling/bootstrap to support these migrations, include that.
+
+### 3. Model layer
+Create model files or model-layer modules for the new calendar entities consistent with the intended app structure.
+
+At minimum, include:
+- basic CRUD-oriented functions where appropriate
+- finder/query skeletons needed for later phases
+- event-scoped lookup helpers
+- archive/deactivate-friendly methods rather than delete-first assumptions
+
+These do not need to be feature-complete yet, but they should be real enough to support later work.
+
+### 4. Service layer scaffolding
+Create service modules consistent with the Phase 3 service split, such as:
+- `calendarConfigService`
+- `calendarAvailabilityService`
+- `calendarBookingService`
+- `calendarOccurrenceService`
+- `calendarExportService`
+- `calendarPermissionService`
+
+For Phase 4A, these services should include:
+- real function signatures
+- basic structure
+- foundational logic where easy and low-risk
+- specific TODO markers only where necessary
+
+Do not leave vague placeholders everywhere. The scaffolding should be meaningful.
+
+### 5. Route skeletons
+Register the route families for:
+- public calendar routes
+- organizer calendar routes
+
+They should exist in the correct route structure and not collide with the generic `/:code` public event routing.
+
+Implement route files with sensible grouping and middleware usage.
+
+Do not implement the full booking UI flow yet, but route structure should be real and testable.
+
+### 6. Controller skeletons
+Create controllers for the new routes with:
+- consistent controller structure
+- placeholder rendering or responses where the full feature is not yet built
+- clear integration points for later phases
+
+These should be real controllers, not empty files.
+
+### 7. Permission helpers and enforcement scaffolding
+Implement the calendar permission constants/helpers/middleware integration needed for:
+- `calendar.view`
+- `calendar.view.details`
+- `calendar.edit`
+- `calendar.edit.items`
+- `calendar.edit.availability`
+- `calendar.edit.bookings`
+- `calendar.export`
+
+The code should be merge-ready with the main app’s access model, even if some enforcement is temporarily broad in practice.
+
+### 8. Minimal views
+Create minimal EJS pages/partials needed to verify integration and routing for:
+- public calendar placeholder page
+- organizer calendar landing page
+- organizer setup placeholder page
+- organizer items placeholder page
+- organizer availability placeholder page
+- organizer bookings placeholder page
+- organizer export placeholder page
+
+These do **not** need polished feature-complete UI yet, but they should:
+- use the correct layouts/partials
+- feel integrated with the app
+- not look like throwaway debug pages
+
+### 9. Basic tests
+Add tests that are practical at this stage, such as:
+- migration/schema existence or model persistence tests
+- route registration / route accessibility basics
+- route collision safety where practical
+- permission enforcement basics where practical
+- confirmation ref / token helper tests if implemented in this phase
+
+You do not need to exhaustively test later-phase business logic yet.
+
+---
+
+# Out of scope for Phase 4A
+
+Do **not** fully implement these yet unless a small stub is necessary:
+
+- full auth/account/dashboard/event-management product flows beyond needed scaffolding
+- full block editor
+- full public selection/cart UI
+- final public submission flow
+- full occurrence management UI
+- full availability recurrence engine
+- overlap detection engine
+- full organizer booking edit/reschedule flow
+- CSV export generation
+- email sending
+- add-to-calendar output
+- polished front-end interactions
+- complete service logic for all business rules
+
+If you touch these areas, do so only enough to support the foundations for later phases.
+
+---
+
+# Implementation guidance
+
+## Build the real app foundation, not a disposable prototype
+Even though only the calendar subsystem is being implemented now, the repository should be created as the beginning of the long-term `progr.am` codebase.
+
+That means:
+- app structure should be reusable
+- naming should align with the main project
+- route organization should anticipate future app growth
+- layout/view organization should match the intended full app
+- CI and config should be real, not fake placeholders
+
+## Match the intended codebase conventions
+Follow the specifications closely for:
+- naming style
+- folder structure
+- route/controller/model/service separation
+- middleware patterns
+- view/layout style
+- migration conventions
+- testing style
+
+Do not introduce a conflicting architecture.
+
+## Be careful with public route collisions
+The app is designed around `/:code`. The new `/:code/calendar` route must be registered carefully so it does not get swallowed by or break generic event code handling.
+
+If needed, explain in your final notes exactly how you handled route ordering.
+
+## Use archive-friendly design
+Prefer archive/deactivate semantics over destructive deletion for Items and occurrences where history could exist.
+
+## Keep config structured
+Use structured storage for bounded configuration where appropriate, as described in Phase 3. Do not build a freeform form-builder system.
+
+## Keep source of truth on server
+Even though later phases may use client-side JS for progressive enhancement, do not shift booking authority to the client.
+
+## Be conservative where the full main app is not yet implemented
+If the main project spec references broader app features not being fully built in this phase, scaffold them only as needed so the Phase 4A work has a coherent home.
+
+---
+
+# Deliverables
+
+At the end of Phase 4A, provide:
+
+## 1. GitHub repo creation
+Create the private GitHub repo and place the code there.
+
+## 2. Implemented code
+Make the actual code changes in the repository.
+
+## 3. A concise implementation summary
+Explain:
+- what you created
+- which files/directories were added
+- notable schema decisions
+- route-ordering considerations
+- what was intentionally stubbed for later phases
+- any assumptions you had to make while starting from an empty repo
+
+## 4. Commit summary
+List the commits you made and what each one covered.
+
+## 5. Phase 4A completion check
+State whether Phase 4A is complete according to scope.
+
+## 6. Short next-step list for Phase 4B
+Keep this brief and aligned to the Phase 3 sequencing.
+
+---
+
+# Quality bar
+
+Your work should be:
+- coherent
+- merge-friendly
+- faithful to the attached specifications
+- cleanly structured
+- conservative where ambiguity exists
+- practical for a real long-term codebase
+
+Do not overreach.
+Do not redesign the app.
+Do not skip foundational pieces that later phases depend on.
+
+If a small assumption is required, make the safest assumption consistent with the attached files and mention it in your summary.
+
+Begin by reading the three attached files, then create the private GitHub repo and implement Phase 4A.

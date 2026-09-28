@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Bookings · progr.am</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+</head>
+<body data-shell="organizer" data-nav="bookings" data-crumbs="Ward Missionary Meals|Calendar|Bookings">
+	<template data-topbar-actions>
+		<a class="btn btn--sm" href="export.html"><svg class="icon"><use href="#i-download"/></svg><span>Export</span></a>
+	</template>
+
+	<div class="content content--wide" data-shell-content>
+		<div class="page-head">
+			<div>
+				<h1 class="page-head__title">Bookings</h1>
+				<p class="page-head__sub">38 active signups. Each row is one person's signups on one date.</p>
+			</div>
+		</div>
+
+		<div class="toolbar">
+			<div class="input-affix">
+				<svg class="icon input-affix__icon"><use href="#i-search"/></svg>
+				<input class="input" type="search" placeholder="Search names, phones, notes" aria-label="Search bookings">
+			</div>
+			<div class="select" style="width: 11rem">
+				<button class="select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter by item"><span class="select-trigger__value">All items</span><svg class="icon icon--chev"><use href="#i-chev-down"/></svg></button>
+				<div class="popover" hidden style="min-width: 15rem"><ul class="listbox" role="listbox" aria-label="Filter by item">
+					<li class="option" role="option" aria-selected="true" data-value="all">All items<svg class="icon option__check"><use href="#i-check"/></svg></li>
+					<li class="option" role="option" aria-selected="false" data-value="1" data-label="Ramos & Chen"><span class="marker" data-color="blue" data-shape="circle"></span><span class="option__label">Elders Ramos &amp; Chen</span><svg class="icon option__check"><use href="#i-check"/></svg></li>
+					<li class="option" role="option" aria-selected="false" data-value="2" data-label="Tuilagi & Brooks"><span class="marker" data-color="amber" data-shape="triangle"></span><span class="option__label">Elders Tuilagi &amp; Brooks</span><svg class="icon option__check"><use href="#i-check"/></svg></li>
+					<li class="option" role="option" aria-selected="false" data-value="3" data-label="Okafor & Lind"><span class="marker" data-color="green" data-shape="square"></span><span class="option__label">Sisters Okafor &amp; Lind</span><svg class="icon option__check"><use href="#i-check"/></svg></li>
+					<li class="option" role="option" aria-selected="false" data-value="4" data-label="Park & Moreau"><span class="marker" data-color="pink" data-shape="diamond"></span><span class="option__label">Sisters Park &amp; Moreau</span><svg class="icon option__check"><use href="#i-check"/></svg></li>
+				</ul></div>
+			</div>
+			<div class="segmented" role="radiogroup" aria-label="When">
+				<button class="segmented__opt" role="radio" aria-checked="true" data-value="upcoming">Upcoming</button>
+				<button class="segmented__opt" role="radio" aria-checked="false" data-value="past">Past</button>
+				<button class="segmented__opt" role="radio" aria-checked="false" data-value="canceled">Canceled</button>
+			</div>
+		</div>
+
+		<div class="table-wrap">
+			<table class="table">
+				<thead>
+					<tr>
+						<th aria-sort="descending"><button type="button">Date <svg class="icon"><use href="#i-chev-down"/></svg></button></th>
+						<th>Item(s)</th>
+						<th><button type="button">Name</button></th>
+						<th>Phone</th>
+						<th>Contact</th>
+						<th>WhatsApp</th>
+						<th><span class="sr-only">Notes</span><svg class="icon" aria-hidden="true"><use href="#i-message"/></svg></th>
+						<th><span class="sr-only">Details</span></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="nowrap tabular">Sat, Oct 24</td>
+						<td><span class="item-chip"><span class="marker" data-color="green" data-shape="square"></span>Okafor &amp; Lind</span></td>
+						<td>Maya Castillo</td>
+						<td class="nowrap tabular">801-555-0148</td>
+						<td>Text</td>
+						<td>No</td>
+						<td></td>
+						<td class="num"><a class="table__link" href="booking.html" aria-label="Details for Maya Castillo"><svg class="icon"><use href="#i-chev-right"/></svg></a></td>
+					</tr>
+					<tr>
+						<td class="nowrap tabular">Thu, Oct 22</td>
+						<td><div class="stack" style="--stack-gap: 2px"><span class="item-chip"><span class="marker" data-color="blue" data-shape="circle"></span>Ramos &amp; Chen</span><span class="item-chip"><span class="marker" data-color="pink" data-shape="diamond"></span>Park &amp; Moreau</span></div></td>
+						<td>The Nguyen family</td>
+						<td class="nowrap tabular">385-555-0102</td>
+						<td>Call</td>
+						<td>No</td>
+						<td><svg class="icon muted" aria-label="Has notes"><use href="#i-message"/></svg></td>
+						<td class="num"><a class="table__link" href="booking.html" aria-label="Details"><svg class="icon"><use href="#i-chev-right"/></svg></a></td>
+					</tr>
+					<tr>
+						<td class="nowrap tabular">Wed, Oct 21</td>
+						<td><span class="item-chip"><span class="marker" data-color="amber" data-shape="triangle"></span>Tuilagi &amp; Brooks</span></td>
+						<td>Sione Fifita</td>
+						<td class="nowrap tabular">+676 555 0190</td>
+						<td>Text</td>
+						<td><span class="badge badge--success">Yes</span></td>
+						<td><svg class="icon muted" aria-label="Has notes"><use href="#i-message"/></svg></td>
+						<td class="num"><a class="table__link" href="booking.html" aria-label="Details"><svg class="icon"><use href="#i-chev-right"/></svg></a></td>
+					</tr>
+					<tr>
+						<td class="nowrap tabular">Tue, Oct 20</td>
+						<td><span class="item-chip"><span class="marker" data-color="blue" data-shape="circle"></span>Ramos &amp; Chen</span></td>
+						<td>Jordan Whitaker</td>
+						<td class="nowrap tabular">801-555-0123</td>
+						<td>Text</td>
+						<td>No</td>
+						<td></td>
+						<td class="num"><a class="table__link" href="booking.html" aria-label="Details"><svg class="icon"><use href="#i-chev-right"/></svg></a></td>
+					</tr>
+					<tr>
+						<td class="nowrap tabular">Sat, Oct 17</td>
+						<td><div class="stack" style="--stack-gap: 2px"><span class="item-chip"><span class="marker" data-color="amber" data-shape="triangle"></span>Tuilagi &amp; Brooks</span><span class="item-chip"><span class="marker" data-color="green" data-shape="square"></span>Okafor &amp; Lind</span></div></td>
+						<td>Hannah &amp; Peter Lund</td>
+						<td class="nowrap tabular">801-555-0177</td>
+						<td>Call</td>
+						<td>No</td>
+						<td><svg class="icon muted" aria-label="Has notes"><use href="#i-message"/></svg></td>
+						<td class="num"><a class="table__link" href="booking.html" aria-label="Details"><svg class="icon"><use href="#i-chev-right"/></svg></a></td>
+					</tr>
+					<tr>
+						<td class="nowrap tabular">Thu, Oct 15</td>
+						<td><span class="item-chip"><span class="marker" data-color="pink" data-shape="diamond"></span>Park &amp; Moreau</span></td>
+						<td>Grace Whitfield</td>
+						<td class="nowrap tabular">801-555-0165</td>
+						<td>Text</td>
+						<td>No</td>
+						<td></td>
+						<td class="num"><a class="table__link" href="booking.html" aria-label="Details"><svg class="icon"><use href="#i-chev-right"/></svg></a></td>
+					</tr>
+					<tr>
+						<td class="nowrap tabular">Tue, Oct 13</td>
+						<td><span class="item-chip"><span class="marker" data-color="blue" data-shape="circle"></span>Ramos &amp; Chen</span></td>
+						<td>Ruth Adeyemi</td>
+						<td class="nowrap tabular">+234 803 555 0111</td>
+						<td>Text</td>
+						<td><span class="badge badge--success">Yes</span></td>
+						<td></td>
+						<td class="num"><a class="table__link" href="booking.html" aria-label="Details"><svg class="icon"><use href="#i-chev-right"/></svg></a></td>
+					</tr>
+					<tr>
+						<td class="nowrap tabular">Tue, Oct 13</td>
+						<td><span class="item-chip is-archived"><span class="marker" data-color="teal" data-shape="glyph">E</span>Nakamura &amp; Ruiz <span class="badge badge--outline">Archived</span></span></td>
+						<td>Eli Thompson</td>
+						<td class="nowrap tabular">801-555-0130</td>
+						<td>Call</td>
+						<td>No</td>
+						<td></td>
+						<td class="num"><a class="table__link" href="booking.html" aria-label="Details"><svg class="icon"><use href="#i-chev-right"/></svg></a></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="pager"><span class="tabular">Showing 1–8 of 38</span><div class="row"><button class="btn btn--sm" type="button" disabled>Previous</button><button class="btn btn--sm" type="button">Next</button></div></div>
+
+		<h2 class="caps" style="margin: var(--space-8) 0 var(--space-3)">Empty state (filters match nothing)</h2>
+		<div class="empty">
+			<div class="empty__icon"><svg class="icon"><use href="#i-filter"/></svg></div>
+			<div class="empty__title">No bookings match</div>
+			<p class="empty__text">Nobody has signed up for Sisters Park &amp; Moreau in the past yet.</p>
+			<button class="btn btn--sm" type="button">Clear filters</button>
+		</div>
+
+		<h2 class="caps" style="margin: var(--space-8) 0 var(--space-3)">Permission denied (member without calendar.view.details)</h2>
+		<div class="empty">
+			<div class="empty__icon"><svg class="icon"><use href="#i-lock"/></svg></div>
+			<div class="empty__title">You can't see signup details</div>
+			<p class="empty__text">Your role on this event shows booking counts only. Ask the event owner for access to names and contact details.</p>
+		</div>
+	</div>
+
+	<script src="assets/mock.js"></script>
+</body>
+</html>

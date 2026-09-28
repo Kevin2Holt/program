@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Events · progr.am</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+</head>
+<body data-shell="organizer" data-nav="dashboard" data-event="none" data-crumbs="Events">
+	<div class="content" data-shell-content>
+		<div class="page-head">
+			<div>
+				<h1 class="page-head__title">Events</h1>
+				<p class="page-head__sub">Programs and signup calendars you manage.</p>
+			</div>
+			<button class="btn btn--primary" type="button" data-open="new-event"><svg class="icon"><use href="#i-plus"/></svg>New event</button>
+		</div>
+
+		<div class="toolbar">
+			<div class="input-affix">
+				<svg class="icon input-affix__icon"><use href="#i-search"/></svg>
+				<input class="input" type="search" placeholder="Search events" aria-label="Search events">
+			</div>
+			<div class="segmented" role="radiogroup" aria-label="Filter events">
+				<button class="segmented__opt" role="radio" aria-checked="true" data-value="active">Active</button>
+				<button class="segmented__opt" role="radio" aria-checked="false" data-value="archived">Archived</button>
+			</div>
+		</div>
+
+		<div class="card event-list">
+			<a class="event-row" href="calendar-overview.html">
+				<div>
+					<div class="event-row__name">Ward Missionary Meals</div>
+					<div class="event-row__code">progr.am/elm-ward-meals</div>
+				</div>
+				<div class="event-row__meta event-row__meta--hide-sm">
+					<span class="row" style="--row-gap: var(--space-1-5)"><svg class="icon"><use href="#i-file"/></svg>Program <span class="badge">Draft</span></span>
+					<span class="row" style="--row-gap: var(--space-1-5)"><svg class="icon"><use href="#i-calendar"/></svg>Calendar <span class="badge badge--success">Open</span></span>
+				</div>
+				<div class="event-row__meta event-row__meta--hide-sm">
+					<span class="tabular">38 bookings</span>
+					<span class="subtle">Edited 2 h ago</span>
+				</div>
+				<svg class="icon subtle"><use href="#i-chev-right"/></svg>
+			</a>
+			<a class="event-row" href="program-editor.html">
+				<div>
+					<div class="event-row__name">Elm Ward Sacrament Meeting</div>
+					<div class="event-row__code">progr.am/elm-ward</div>
+				</div>
+				<div class="event-row__meta event-row__meta--hide-sm">
+					<span class="row" style="--row-gap: var(--space-1-5)"><svg class="icon"><use href="#i-file"/></svg>Program <span class="badge badge--success">Published</span></span>
+					<span class="row subtle" style="--row-gap: var(--space-1-5)"><svg class="icon"><use href="#i-calendar"/></svg>No calendar</span>
+				</div>
+				<div class="event-row__meta event-row__meta--hide-sm">
+					<span class="tabular">Draft has changes</span>
+					<span class="subtle">Edited yesterday</span>
+				</div>
+				<svg class="icon subtle"><use href="#i-chev-right"/></svg>
+			</a>
+			<a class="event-row" href="calendar-overview.html">
+				<div>
+					<div class="event-row__name">Fall Leadership Summit</div>
+					<div class="event-row__code">progr.am/fls-2026</div>
+				</div>
+				<div class="event-row__meta event-row__meta--hide-sm">
+					<span class="row" style="--row-gap: var(--space-1-5)"><svg class="icon"><use href="#i-file"/></svg>Program <span class="badge badge--success">Published</span></span>
+					<span class="row" style="--row-gap: var(--space-1-5)"><svg class="icon"><use href="#i-calendar"/></svg>Calendar <span class="badge badge--warning">Closed</span></span>
+				</div>
+				<div class="event-row__meta event-row__meta--hide-sm">
+					<span class="tabular">212 bookings</span>
+					<span class="subtle">Edited Sep 20</span>
+				</div>
+				<svg class="icon subtle"><use href="#i-chev-right"/></svg>
+			</a>
+		</div>
+
+		<h2 class="caps" style="margin: var(--space-8) 0 var(--space-3)">Empty state (new account)</h2>
+		<div class="empty">
+			<div class="empty__icon"><svg class="icon"><use href="#i-sparkle"/></svg></div>
+			<div class="empty__title">Create your first event</div>
+			<p class="empty__text">An event gets a short link like progr.am/your-code. Add a program, a signup calendar, or both.</p>
+			<button class="btn btn--primary" type="button" data-open="new-event" style="margin-top: var(--space-2)"><svg class="icon"><use href="#i-plus"/></svg>New event</button>
+		</div>
+
+		<h2 class="caps" style="margin: var(--space-8) 0 var(--space-3)">Loading state</h2>
+		<div class="card event-list" aria-busy="true" aria-label="Loading events">
+			<div class="event-row"><div class="stack" style="--stack-gap: 6px"><span class="skeleton" style="width: 12rem; height: 0.875rem"></span><span class="skeleton" style="width: 8rem; height: 0.625rem"></span></div><span class="skeleton event-row__meta--hide-sm" style="width: 7rem; height: 0.75rem"></span><span class="skeleton event-row__meta--hide-sm" style="width: 5rem; height: 0.75rem"></span><span></span></div>
+			<div class="event-row"><div class="stack" style="--stack-gap: 6px"><span class="skeleton" style="width: 9rem; height: 0.875rem"></span><span class="skeleton" style="width: 6rem; height: 0.625rem"></span></div><span class="skeleton event-row__meta--hide-sm" style="width: 7rem; height: 0.75rem"></span><span class="skeleton event-row__meta--hide-sm" style="width: 5rem; height: 0.75rem"></span><span></span></div>
+		</div>
+	</div>
+
+	<div class="overlay" id="new-event" hidden>
+		<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="new-event-title">
+			<div class="dialog__body stack" style="--stack-gap: var(--space-4)">
+				<h2 class="dialog__title" id="new-event-title">New event</h2>
+				<div class="field">
+					<label class="label" for="ev-name">Event name</label>
+					<input class="input" id="ev-name" value="Youth Conference 2027" data-autofocus>
+				</div>
+				<div class="field">
+					<label class="label" for="ev-code">Short link</label>
+					<div class="input-prefix">
+						<span class="input-prefix__text">progr.am/</span>
+						<input class="input" id="ev-code" value="youth-conf-27" aria-describedby="ev-code-status" spellcheck="false" autocapitalize="off">
+					</div>
+					<span class="hint row" id="ev-code-status" style="--row-gap: var(--space-1); color: var(--color-success)"><svg class="icon"><use href="#i-check"/></svg>Available</span>
+				</div>
+				<div class="field has-error">
+					<label class="label" for="ev-code-2">Short link <span class="label__opt">(error example)</span></label>
+					<div class="input-prefix">
+						<span class="input-prefix__text">progr.am/</span>
+						<input class="input" id="ev-code-2" value="dashboard" aria-invalid="true" aria-describedby="ev-code-2-err">
+					</div>
+					<span class="error-msg" id="ev-code-2-err"><svg class="icon"><use href="#i-alert-circle"/></svg>“dashboard” is reserved. Try another link.</span>
+				</div>
+				<p class="hint">3–32 characters: lowercase letters, numbers, and hyphens. You can change it later; the old link keeps working.</p>
+			</div>
+			<div class="dialog__foot">
+				<button class="btn btn--ghost" type="button" data-close>Cancel</button>
+				<button class="btn btn--primary" type="button" data-close data-toast="Event created">Create event</button>
+			</div>
+		</div>
+	</div>
+
+	<script src="assets/mock.js"></script>
+</body>
+</html>

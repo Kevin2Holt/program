@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Program editor · progr.am</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+</head>
+<body data-shell="organizer" data-nav="program" data-event-name="Elm Ward Sacrament Meeting" data-event-code="elm-ward"data-crumbs="Elm Ward Sacrament Meeting|Program">
+	<template data-topbar-actions>
+		<span class="save-state is-saved" id="save-state" aria-live="polite"><svg class="icon"><use href="#i-cloud-check"/></svg><span>Saved</span></span>
+		<span class="badge badge--warning">Unpublished changes</span>
+		<button class="btn btn--sm preview-toggle" type="button" onclick="document.querySelector('.editor').classList.toggle('show-preview')"><svg class="icon"><use href="#i-eye"/></svg><span>Preview</span></button>
+		<div class="select">
+			<button class="btn btn--sm btn--icon" type="button" data-popover-trigger aria-haspopup="menu" aria-expanded="false" aria-label="More publish actions"><svg class="icon"><use href="#i-more"/></svg></button>
+			<div class="popover popover--right menu" hidden role="menu" style="min-width: 15rem">
+				<a class="menu__item" role="menuitem" href="program.html" target="_blank"><svg class="icon"><use href="#i-external"/></svg>View published page</a>
+				<button class="menu__item" role="menuitem" data-open="rollback-dialog"><svg class="icon"><use href="#i-undo"/></svg>Roll back to previous version</button>
+				<button class="menu__item menu__item--danger" role="menuitem" data-open="unpublish-dialog"><svg class="icon"><use href="#i-power"/></svg>Unpublish</button>
+			</div>
+		</div>
+		<button class="btn btn--primary btn--sm" type="button" data-toast="Published. progr.am/elm-ward is updated." data-toast-icon="globe"><svg class="icon"><use href="#i-send"/></svg><span>Publish</span></button>
+	</template>
+
+	<div data-shell-content>
+		<div class="editor">
+			<div class="editor__canvas">
+				<div class="editor__canvas-inner stack" style="--stack-gap: 0">
+
+					<section class="card" style="margin-bottom: var(--space-4)" aria-label="Program header">
+						<div class="card__body form-grid" style="--cols: 3">
+							<div class="field"><label class="label" for="h-eyebrow">Eyebrow</label><input class="input" id="h-eyebrow" value="Sacrament Meeting"></div>
+							<div class="field" style="grid-column: span 2"><label class="label" for="h-title">Title</label><input class="input" id="h-title" value="Elm Ward"></div>
+							<div class="field"><label class="label" for="h-date">Date</label><input class="input" id="h-date" value="Sunday, October 4, 2026"></div>
+							<div class="field"><label class="label" for="h-time">Time</label><input class="input" id="h-time" value="10:00 am"></div>
+							<div class="field"><label class="label" for="h-place">Place</label><input class="input" id="h-place" value="Elm Chapel"></div>
+						</div>
+					</section>
+
+					<div class="ed-insert"><button class="ed-insert__btn" type="button" aria-label="Insert block here"><svg class="icon"><use href="#i-plus"/></svg></button></div>
+
+					<article class="ed-block" draggable="true">
+						<button class="ed-block__grip" type="button" aria-label="Reorder: Label and value block 1. Press space, then arrow keys."><svg class="icon"><use href="#i-grip"/></svg></button>
+						<div>
+							<div class="ed-block__head">
+								<span class="ed-block__type caps"><svg class="icon"><use href="#i-rows"/></svg>Label / value</span>
+								<div class="ed-block__tools">
+									<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Duplicate block" data-toast="Block duplicated"><svg class="icon"><use href="#i-copy"/></svg></button>
+									<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Delete block" data-toast="Block deleted" data-toast-icon="trash" data-toast-action="Undo"><svg class="icon"><use href="#i-trash"/></svg></button>
+								</div>
+							</div>
+							<div class="lv-rows">
+								<div class="lv-row"><span class="lv-row__grip subtle"><svg class="icon"><use href="#i-grip"/></svg></span><input class="input lv-row__label" value="Presiding" aria-label="Label"><input class="input" value="Bishop Daniel Arroyo" aria-label="Value"><button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Remove row"><svg class="icon"><use href="#i-x"/></svg></button></div>
+								<div class="lv-row"><span class="lv-row__grip subtle"><svg class="icon"><use href="#i-grip"/></svg></span><input class="input lv-row__label" value="Conducting" aria-label="Label"><input class="input" value="Brother Marcus Lee" aria-label="Value"><button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Remove row"><svg class="icon"><use href="#i-x"/></svg></button></div>
+								<div class="lv-row"><span class="lv-row__grip subtle"><svg class="icon"><use href="#i-grip"/></svg></span><input class="input lv-row__label" value="Organist" aria-label="Label"><input class="input" value="Sister Ana Kealoha" aria-label="Value"><button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Remove row"><svg class="icon"><use href="#i-x"/></svg></button></div>
+								<div class="lv-row"><span class="lv-row__grip subtle"><svg class="icon"><use href="#i-grip"/></svg></span><input class="input lv-row__label" value="Chorister" aria-label="Label"><input class="input" value="Sister Grace Whitfield" aria-label="Value"><button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Remove row"><svg class="icon"><use href="#i-x"/></svg></button></div>
+								<button class="btn btn--ghost btn--sm" type="button" style="align-self: flex-start"><svg class="icon"><use href="#i-plus"/></svg>Add row</button>
+							</div>
+						</div>
+					</article>
+
+					<div class="ed-insert"><button class="ed-insert__btn" type="button" aria-label="Insert block here"><svg class="icon"><use href="#i-plus"/></svg></button></div>
+
+					<article class="ed-block" draggable="true">
+						<button class="ed-block__grip" type="button" aria-label="Reorder separator block"><svg class="icon"><use href="#i-grip"/></svg></button>
+						<div>
+							<div class="ed-block__head" style="margin-bottom: 0">
+								<span class="ed-block__type caps"><svg class="icon"><use href="#i-separator"/></svg>Separator</span>
+								<div class="row">
+									<div class="segmented" role="radiogroup" aria-label="Separator style">
+										<button class="segmented__opt" role="radio" aria-checked="true" data-value="line">Line</button>
+										<button class="segmented__opt" role="radio" aria-checked="false" data-value="space">Space</button>
+									</div>
+									<div class="ed-block__tools">
+										<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Duplicate block"><svg class="icon"><use href="#i-copy"/></svg></button>
+										<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Delete block"><svg class="icon"><use href="#i-trash"/></svg></button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</article>
+
+					<div class="ed-insert"><button class="ed-insert__btn" type="button" aria-label="Insert block here"><svg class="icon"><use href="#i-plus"/></svg></button></div>
+
+					<article class="ed-block is-focused" draggable="true">
+						<button class="ed-block__grip" type="button" aria-label="Reorder text block"><svg class="icon"><use href="#i-grip"/></svg></button>
+						<div>
+							<div class="ed-block__head">
+								<span class="ed-block__type caps"><svg class="icon"><use href="#i-type"/></svg>Text</span>
+								<div class="ed-block__tools">
+									<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Duplicate block"><svg class="icon"><use href="#i-copy"/></svg></button>
+									<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Delete block"><svg class="icon"><use href="#i-trash"/></svg></button>
+								</div>
+							</div>
+							<div class="rte-toolbar" role="toolbar" aria-label="Text formatting">
+								<button type="button" aria-pressed="false" aria-label="Heading"><svg class="icon"><use href="#i-heading"/></svg></button>
+								<span class="rte-toolbar__sep"></span>
+								<button type="button" aria-pressed="true" aria-label="Bold"><svg class="icon"><use href="#i-bold"/></svg></button>
+								<button type="button" aria-pressed="false" aria-label="Italic"><svg class="icon"><use href="#i-italic"/></svg></button>
+								<button type="button" aria-pressed="false" aria-label="Underline"><svg class="icon"><use href="#i-underline"/></svg></button>
+								<span class="rte-toolbar__sep"></span>
+								<button type="button" aria-pressed="false" aria-label="Bulleted list"><svg class="icon"><use href="#i-list"/></svg></button>
+								<button type="button" aria-pressed="false" aria-label="Numbered list"><svg class="icon"><use href="#i-list-ol"/></svg></button>
+								<button type="button" aria-pressed="false" aria-label="Link"><svg class="icon"><use href="#i-link"/></svg></button>
+							</div>
+							<div class="rte" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Text" id="rte">
+								<h2>Speakers</h2>
+								<p>This week our youth speakers share what they learned at <strong>youth conference</strong>, followed by a musical number from the Primary children.</p>
+							</div>
+						</div>
+					</article>
+
+					<div class="ed-insert"><button class="ed-insert__btn" type="button" aria-label="Insert block here"><svg class="icon"><use href="#i-plus"/></svg></button></div>
+
+					<div class="select" style="margin-top: var(--space-2)">
+						<button class="btn btn--block" type="button" data-popover-trigger aria-haspopup="menu" aria-expanded="false" style="border-style: dashed; height: 2.5rem"><svg class="icon"><use href="#i-plus"/></svg>Add block</button>
+						<div class="popover menu" hidden role="menu" style="width: 100%">
+							<button class="menu__item" role="menuitem" data-toast="Text block added"><svg class="icon"><use href="#i-type"/></svg>Text<span class="option__meta">Paragraphs, headings, lists</span></button>
+							<button class="menu__item" role="menuitem" data-toast="Label / value block added"><svg class="icon"><use href="#i-rows"/></svg>Label / value<span class="option__meta">Who does what</span></button>
+							<button class="menu__item" role="menuitem" data-toast="Separator added"><svg class="icon"><use href="#i-separator"/></svg>Separator<span class="option__meta">Line or space</span></button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<aside class="editor__preview" aria-label="Live preview">
+				<div class="editor__preview-bar">
+					<span class="caps">Live preview</span>
+					<div class="segmented" role="radiogroup" aria-label="Preview size">
+						<button class="segmented__opt" role="radio" aria-checked="true" data-value="phone" aria-label="Phone"><svg class="icon"><use href="#i-phoneDevice"/></svg></button>
+						<button class="segmented__opt" role="radio" aria-checked="false" data-value="desktop" aria-label="Desktop"><svg class="icon"><use href="#i-monitor"/></svg></button>
+					</div>
+				</div>
+				<div class="device">
+					<article class="program">
+						<p class="program__eyebrow caps">Sacrament Meeting</p>
+						<h1 class="program__title">Elm Ward</h1>
+						<div class="program__meta">
+							<span><svg class="icon"><use href="#i-calendar"/></svg>Sunday, October 4, 2026</span>
+							<span><svg class="icon"><use href="#i-clock"/></svg>10:00 am</span>
+							<span><svg class="icon"><use href="#i-pin"/></svg>Elm Chapel</span>
+						</div>
+						<div class="program__blocks">
+							<dl class="pblock-lv"><dt>Presiding</dt><dd>Bishop Daniel Arroyo</dd><dt>Conducting</dt><dd>Brother Marcus Lee</dd><dt>Organist</dt><dd>Sister Ana Kealoha</dd><dt>Chorister</dt><dd>Sister Grace Whitfield</dd></dl>
+							<hr class="pblock-sep">
+							<div class="pblock-text" id="rte-preview"><h2>Speakers</h2><p>This week our youth speakers share what they learned at <strong>youth conference</strong>, followed by a musical number from the Primary children.</p></div>
+						</div>
+					</article>
+				</div>
+			</aside>
+		</div>
+	</div>
+
+	<div class="overlay" id="unpublish-dialog" hidden>
+		<div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="up-t" aria-describedby="up-d">
+			<div class="dialog__body">
+				<div class="dialog__icon"><svg class="icon"><use href="#i-power"/></svg></div>
+				<h2 class="dialog__title" id="up-t">Unpublish the program?</h2>
+				<p class="dialog__text" id="up-d">progr.am/elm-ward will show “This program isn't available right now.” Your draft is kept, and you can publish again any time.</p>
+			</div>
+			<div class="dialog__foot">
+				<button class="btn btn--ghost" type="button" data-close data-autofocus>Cancel</button>
+				<button class="btn btn--danger" type="button" data-close data-toast="Program unpublished" data-toast-icon="power">Unpublish</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="overlay" id="rollback-dialog" hidden>
+		<div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="rb-t" aria-describedby="rb-d">
+			<div class="dialog__body">
+				<div class="dialog__icon" style="background: var(--color-warning-tint); color: var(--color-warning)"><svg class="icon"><use href="#i-undo"/></svg></div>
+				<h2 class="dialog__title" id="rb-t">Roll back to the previous version?</h2>
+				<p class="dialog__text" id="rb-d">The version published Sep 27 at 6:40 pm goes live again. The current published version becomes the “previous” one, so you can switch back. Your draft isn't changed.</p>
+			</div>
+			<div class="dialog__foot">
+				<button class="btn btn--ghost" type="button" data-close data-autofocus>Cancel</button>
+				<button class="btn btn--primary" type="button" data-close data-toast="Rolled back to Sep 27 version" data-toast-icon="undo">Roll back</button>
+			</div>
+		</div>
+	</div>
+
+	<style>
+		.preview-toggle { display: none; }
+		@media (max-width: 1100px) { .preview-toggle { display: inline-flex; } }
+		@media (max-width: 640px) { .topbar .badge { display: none; } }
+	</style>
+	<script src="assets/mock.js"></script>
+	<script>
+		// Mockup of autosave + live preview: typing mirrors into the preview and
+		// the save indicator goes Saving… -> Saved after a debounce.
+		const AUTOSAVE_DEBOUNCE_MS = 600;
+		const FAKE_SAVE_LATENCY_MS = 350;
+		let saveTimer = null;
+
+		document.addEventListener("input", (event) => {
+			const state = document.getElementById("save-state");
+			if (!state) {
+				return;
+			}
+			if (event.target.id === "rte") {
+				document.getElementById("rte-preview").innerHTML = event.target.innerHTML;
+			}
+			state.className = "save-state is-saving";
+			state.innerHTML = window.mock.buildIcon("loader") + "<span>Saving…</span>";
+			clearTimeout(saveTimer);
+			saveTimer = setTimeout(() => {
+				setTimeout(() => {
+					state.className = "save-state is-saved";
+					state.innerHTML = window.mock.buildIcon("cloud-check") + "<span>Saved</span>";
+				}, FAKE_SAVE_LATENCY_MS);
+			}, AUTOSAVE_DEBOUNCE_MS);
+		});
+	</script>
+</body>
+</html>

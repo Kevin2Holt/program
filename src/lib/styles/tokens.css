@@ -1,0 +1,240 @@
+/*
+	progr.am design tokens.
+	Every visual value used by components comes from here. Components never use raw
+	colors, sizes, radii, shadows, or durations.
+
+	Theme handling: <html data-theme="dark|light">. Dark is the default. The server
+	writes the attribute from the theme cookie, so there is no wrong-theme flash.
+*/
+
+
+/* ---------- Theme-independent scales ---------- */
+
+:root {
+	/* Type: Inter variable. Tabular figures are switched on where numbers align. */
+	--font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	--font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+	--text-2xs: 0.6875rem;	/* 11px  marker glyphs, dense captions */
+	--text-xs: 0.75rem;	/* 12px  captions, table meta */
+	--text-sm: 0.8125rem;	/* 13px  organizer secondary */
+	--text-md: 0.875rem;	/* 14px  organizer body */
+	--text-base: 1rem;	/* 16px  public body */
+	--text-lg: 1.125rem;	/* 18px */
+	--text-xl: 1.25rem;	/* 20px  section titles */
+	--text-2xl: 1.5rem;	/* 24px  page titles */
+	--text-3xl: 1.875rem;	/* 30px  public event title (phone) */
+	--text-4xl: 2.25rem;	/* 36px  public event title (desktop) */
+
+	--leading-tight: 1.2;
+	--leading-snug: 1.35;
+	--leading-normal: 1.5;
+	--leading-relaxed: 1.65;
+
+	--weight-regular: 400;
+	--weight-medium: 500;
+	--weight-semibold: 600;
+	--weight-bold: 700;
+
+	--tracking-tight: -0.015em;
+	--tracking-caps: 0.06em;
+
+	/* Spacing: 4px base. */
+	--space-0: 0;
+	--space-px: 1px;
+	--space-0-5: 0.125rem;	/* 2 */
+	--space-1: 0.25rem;	/* 4 */
+	--space-1-5: 0.375rem;	/* 6 */
+	--space-2: 0.5rem;	/* 8 */
+	--space-3: 0.75rem;	/* 12 */
+	--space-4: 1rem;	/* 16 */
+	--space-5: 1.25rem;	/* 20 */
+	--space-6: 1.5rem;	/* 24 */
+	--space-8: 2rem;	/* 32 */
+	--space-10: 2.5rem;	/* 40 */
+	--space-12: 3rem;	/* 48 */
+	--space-16: 4rem;	/* 64 */
+
+	/* Radius. */
+	--radius-xs: 3px;
+	--radius-sm: 5px;
+	--radius-md: 7px;
+	--radius-lg: 10px;
+	--radius-xl: 14px;
+	--radius-2xl: 20px;
+	--radius-full: 999px;
+
+	/* Borders. */
+	--border-width: 1px;
+	--border-width-strong: 1.5px;
+	--focus-ring-width: 2px;
+	--focus-ring-offset: 2px;
+
+	/* Control sizing. Organizer is compact; public is touch-sized. */
+	--control-h-sm: 1.75rem;	/* 28 */
+	--control-h-md: 2rem;	/* 32  organizer default */
+	--control-h-lg: 2.75rem;	/* 44  public / touch default */
+	--touch-target: 2.75rem;	/* 44  WCAG 2.5.8 comfortable target */
+
+	/* Layout. */
+	--layout-sidebar-w: 14rem;
+	--layout-topbar-h: 3rem;
+	--layout-content-max: 72rem;
+	--layout-reading-max: 40rem;
+	--layout-panel-w: 22rem;
+	--layout-gutter: var(--space-4);
+
+	/* Motion. Short and purposeful. */
+	--dur-instant: 80ms;
+	--dur-fast: 120ms;
+	--dur-base: 180ms;
+	--dur-slow: 260ms;
+	--ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+	--ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+	--ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+	/* Layering. */
+	--z-sticky: 10;
+	--z-dropdown: 30;
+	--z-sheet: 40;
+	--z-dialog: 50;
+	--z-toast: 60;
+}
+
+
+/* ---------- Dark theme (default) ---------- */
+
+:root,
+:root[data-theme="dark"] {
+	color-scheme: dark;
+
+	--color-bg: #0d0f13;
+	--color-surface-1: #14171d;
+	--color-surface-2: #1a1e26;
+	--color-surface-3: #222732;
+	--color-surface-inset: #0a0c0f;
+	--color-overlay: rgb(4 5 8 / 0.62);
+
+	--color-border: #262b35;
+	--color-border-strong: #353c49;
+	--color-divider: #1f232b;
+
+	--color-text: #e8ebf1;
+	--color-text-muted: #a2aab8;
+	--color-text-subtle: #7f8898;
+	--color-text-disabled: #555d6b;
+	--color-text-on-accent: #ffffff;
+
+	--color-accent: #5a5ee8;
+	--color-accent-hover: #4e52dc;
+	--color-accent-pressed: #4448cc;
+	--color-accent-text: #a9acff;
+	--color-accent-tint: rgb(106 110 240 / 0.14);
+	--color-accent-tint-strong: rgb(106 110 240 / 0.24);
+
+	--color-success: #4ade80;
+	--color-success-tint: rgb(74 222 128 / 0.12);
+	--color-warning: #fbbf24;
+	--color-warning-tint: rgb(251 191 36 / 0.12);
+	--color-danger: #f87171;
+	--color-danger-strong: #cf3434;
+	--color-danger-tint: rgb(248 113 113 / 0.12);
+	--color-info: #60a5fa;
+	--color-info-tint: rgb(96 165 250 / 0.12);
+
+	--color-focus: #8f92ff;
+
+	--shadow-xs: 0 1px 0 rgb(0 0 0 / 0.35);
+	--shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.02);
+	--shadow-md: 0 6px 16px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(255 255 255 / 0.03);
+	--shadow-lg: 0 18px 48px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(255 255 255 / 0.04);
+
+	/* Item palette. Stored on the Item as a key; the theme picks the value. */
+	--item-ink: #0d0f13;
+	--item-red: #f87171;
+	--item-orange: #fb923c;
+	--item-amber: #fbbf24;
+	--item-lime: #a3e635;
+	--item-green: #4ade80;
+	--item-teal: #2dd4bf;
+	--item-sky: #38bdf8;
+	--item-blue: #7aa7ff;
+	--item-violet: #b197fc;
+	--item-pink: #f472b6;
+	--item-brown: #d6a77a;
+	--item-slate: #cbd5e1;
+}
+
+
+/* ---------- Light theme ---------- */
+
+:root[data-theme="light"] {
+	color-scheme: light;
+
+	--color-bg: #f5f6f8;
+	--color-surface-1: #ffffff;
+	--color-surface-2: #f3f4f7;
+	--color-surface-3: #e9ecf1;
+	--color-surface-inset: #eceef2;
+	--color-overlay: rgb(18 21 27 / 0.38);
+
+	--color-border: #dfe2e8;
+	--color-border-strong: #c7ccd5;
+	--color-divider: #eceef2;
+
+	--color-text: #11141a;
+	--color-text-muted: #4c5464;
+	--color-text-subtle: #616979;
+	--color-text-disabled: #a4aab5;
+	--color-text-on-accent: #ffffff;
+
+	--color-accent: #4a4ee0;
+	--color-accent-hover: #3f43d2;
+	--color-accent-pressed: #3538bf;
+	--color-accent-text: #3d41cf;
+	--color-accent-tint: rgb(74 78 224 / 0.09);
+	--color-accent-tint-strong: rgb(74 78 224 / 0.16);
+
+	--color-success: #166534;
+	--color-success-tint: rgb(22 101 52 / 0.09);
+	--color-warning: #a15c07;
+	--color-warning-tint: rgb(217 119 6 / 0.11);
+	--color-danger: #c42b2b;
+	--color-danger-strong: #c42b2b;
+	--color-danger-tint: rgb(196 43 43 / 0.08);
+	--color-info: #1d64d8;
+	--color-info-tint: rgb(29 100 216 / 0.08);
+
+	--color-focus: #4a4ee0;
+
+	--shadow-xs: 0 1px 0 rgb(17 20 26 / 0.04);
+	--shadow-sm: 0 1px 2px rgb(17 20 26 / 0.06), 0 0 0 1px rgb(17 20 26 / 0.02);
+	--shadow-md: 0 6px 18px rgb(17 20 26 / 0.09), 0 1px 3px rgb(17 20 26 / 0.05);
+	--shadow-lg: 0 20px 50px rgb(17 20 26 / 0.16), 0 2px 6px rgb(17 20 26 / 0.06);
+
+	--item-ink: #ffffff;
+	--item-red: #b91c1c;
+	--item-orange: #c2410c;
+	--item-amber: #a15c07;
+	--item-lime: #4d7c0f;
+	--item-green: #15803d;
+	--item-teal: #0f766e;
+	--item-sky: #0369a1;
+	--item-blue: #2563eb;
+	--item-violet: #7c3aed;
+	--item-pink: #be185d;
+	--item-brown: #92400e;
+	--item-slate: #475569;
+}
+
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--dur-instant: 1ms;
+		--dur-fast: 1ms;
+		--dur-base: 1ms;
+		--dur-slow: 1ms;
+	}
+}

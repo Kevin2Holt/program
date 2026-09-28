@@ -1,0 +1,271 @@
+You are continuing work in the same repository and chat as the previous phases.
+
+The repo is `Kevin2Holt/program` on `main`. Do **not** recreate the repo or redo previous phases. The current code and `CLAUDE.md` are the primary source of truth for architecture and conventions.
+
+This prompt covers **one combined milestone**:
+
+1. Finish the calendar availability recurrence engine and ensure availability resolution is production-ready for public use.
+2. Implement the **public calendar browsing + selection + booking submission + confirmation** flow.
+3. Implement the **organizer booking management** basics (list / view / edit / cancel).
+
+Do **not** implement exports (CSV/ICS), email sending, or CSRF/rate-limit wiring in this prompt.
+
+---
+
+## Before you code
+
+1. Read `CLAUDE.md` in the repo to refresh the architecture and calendar module rules.
+2. Inspect the existing calendar-related services, routes, controllers, views, and tests, especially:
+   - `calendarAvailabilityService`
+   - `calendarBookingService`
+   - public calendar routes and controllers
+   - organizer calendar routes and controllers
+   - existing tests for services and organizer setup/items/occurrences/availability
+
+Use the repo as your main reference; only look at the long specs if something is truly ambiguous.
+
+---
+
+## Part 1 – Complete recurrence support in availability service
+
+Goal: bring the availability engine to the level needed for public browsing and booking to be correct.
+
+You already added one-time rules and organizer CRUD; now:
+
+1. **Implement recurrence patterns** as outlined in the earlier specs and partially encoded in the service:
+   - Weekly (selected weekday(s)).
+   - Bi-weekly (every other week).
+   - Monthly by date.
+   - Monthly by weekday pattern (e.g. first Monday).
+   - Respect rule start/end boundaries.
+   - Respect rule target scope (all items vs selected items).
+
+2. **Integrate rules into the availability resolution used by public/organizer views**:
+   - Availability should treat dates/occurrences as:
+     - available,
+     - blocked by rule,
+     - full due to capacity.
+   - Public output should only see “available vs unavailable”.
+   - Organizer output can distinguish available / full / blocked.
+
+3. **Time zone behavior**:
+   - Use the canonical event time zone as already established in `CalendarConfig`.
+   - You do not need to solve DST edge cases perfectly; be consistent and conservative.
+
+4. **Tests**:
+   - Extend `calendarAvailabilityService` tests to cover:
+     - one-time + recurring rules together,
+     - weekly/bi-weekly/monthly patterns,
+     - rule start/end limits,
+     - different target scopes,
+     - interactions with capacity/fullness.
+
+Keep the service API shape compatible with the existing call sites in public/organizer contexts.
+
+---
+
+## Part 2 – Public calendar browsing + selection
+
+Goal: implement the **public calendar page** that lets users browse availability and build a pending selection.
+
+Use the existing route plan (adjust to match current file names):
+
+- `GET /:code/calendar` – public calendar page
+- `POST /:code/calendar/selections` – update pending selection state
+
+Assumptions:
+- Pending selections are stored in server-side session state (as already planned).
+- Booking authority remains on the server; the browser is only a client.
+
+Implement:
+
+1. **Public calendar view**
+   - Build out `public/calendar/index` (or equivalent) EJS view:
+     - Shows a calendar or date-grid for the configured window.
+     - Uses the availability engine to display, for each date:
+       - which items are available (indicator per item, colored/shaped).
+       - unavailable items as faded/disabled.
+     - Supports optional item filtering (show only selected items, default to all).
+   - Respect the event’s `CalendarConfig` (enabled, visibility, date window, time behavior).
+   - For timed mode:
+     - Provide a way for the user to drill into available occurrences per date and item (this can be a second step or a modal-like partial).
+
+2. **Pending selection behavior**
+   - Implement the server-side handlers and session integration to:
+     - Add a selection (item + date [+ occurrence if timed]).
+     - Remove a selection.
+     - Prevent impossible combinations (e.g., same item twice on the same date in date-only mode).
+   - Use the booking unit design from Phase 3: one booking can contain multiple selections.
+   - Keep pending selections in a clear structure in the session so they can be passed into the form/confirmation.
+
+3. **Validation on selection update**
+   - On selection updates (POST `/selections`):
+     - Normalize input into canonical selection objects.
+     - Re-resolve availability for the selections against current config/items/occurrences/availability.
+     - Reject invalid or stale selections with clear error messaging.
+     - Preserve valid selections when possible, dropping only the invalid ones.
+
+4. **Views/partials**
+   - The public calendar page should:
+     - show the date grid/list,
+     - show a sidebar or section summarizing the pending selections,
+     - present a “continue” or “go to signup” button leading to the booking form page.
+
+5. **Tests**
+   - Integration tests for:
+     - GET calendar page for a configured event (happy path).
+     - behaviour when calendar is disabled/hidden.
+     - POST selections add/remove flows.
+     - invalid selection attempts (e.g., outside date window, blocked, full).
+
+---
+
+## Part 3 – Public booking submission + confirmation
+
+Goal: implement the **public signup form**, final booking creation, and confirmation page.
+
+Use the route plan:
+
+- `POST /:code/calendar/submit` – final booking submission.
+- `GET  /:code/calendar/confirmation/:ref` – confirmation page.
+
+Implement:
+
+1. **Signup form page**
+   - You can either:
+     - render the signup form on the same calendar page (multi-step in one view), or
+     - render a dedicated signup form page reached after selection.
+   - The form should:
+     - show pending selections,
+     - include the structured public fields configured in `CalendarConfig`:
+       - Name (always enabled + required).
+       - Phone number + preferred contact method (call/text) + number type (cell/WhatsApp) if phone is enabled.
+       - Email field if enabled.
+       - Notes field if `notes_enabled` is true.
+     - respect which fields are enabled/required as per config.
+
+2. **Submission handling**
+   - Implement `POST /:code/calendar/submit` handler:
+     - Re-load event, config, items, occurrences, availability.
+     - Read and normalize pending selections from session.
+     - Validate:
+       - required fields and field formats,
+       - selection consistency with current availability (date window, items, occurrences, rules),
+       - capacity (no overbooking),
+       - overlap rules for timed selections (per `calendarBookingService` abilities),
+       - email-confirmation requirement (can’t enable without email field).
+     - If validation fails:
+       - re-render the form with errors,
+       - maintain safe pending selections information.
+     - If validation passes:
+       - call the booking service to create `CalendarBooking` + `CalendarBookingSelection` records transactionally.
+       - clear or suitably mark the pending selection session.
+       - redirect to `/confirmation/:ref`.
+
+3. **Confirmation page**
+   - Implement confirmation route + view:
+     - Look up booking by confirmation ref.
+     - Render a summarized view:
+       - booked items and dates/times,
+       - registrant name and relevant contact details (no secrets),
+       - an optional “add to calendar” placeholder (but do NOT implement ICS generation yet).
+   - Only expose read-only data; no edit links here.
+
+4. **Tests**
+   - Service-level tests for booking service if not already covered by Phase 4A.
+   - Route-level tests:
+     - happy-path submission (with one or more selections).
+     - conflict scenario (capacity reached between selection and submit).
+     - invalid form data.
+     - confirmation page rendering by ref.
+   - Ensure final booking creation respects the availability and capacity rules.
+
+---
+
+## Part 4 – Organizer booking management (basic)
+
+Goal: give organizers basic visibility and control over bookings.
+
+Implement organizer routes under the existing calendar organizer namespace, e.g.:
+
+- `GET /events/:eventId/calendar/bookings` – list bookings.
+- `GET /events/:eventId/calendar/bookings/:bookingId` – booking detail.
+- `POST /events/:eventId/calendar/bookings/:bookingId/cancel` – cancel booking.
+- (Optional but nice) `GET /events/:eventId/calendar/bookings/:bookingId/edit` + `POST` – reschedule/edit.
+
+All should be guarded with `calendar.edit.bookings` (and appropriate generic auth).
+
+Implement:
+
+1. **List + detail**
+   - Booking list:
+     - Show key fields (name, dates, items, created-at, status).
+     - Basic filtering/sorting by date/status is a nice-to-have but not required.
+   - Booking detail:
+     - Show all selections, including snapshot information,
+     - Indicate status (active/canceled).
+
+2. **Cancel behavior**
+   - Implement a cancel action:
+     - Change booking status to canceled (do not delete).
+     - Ensure capacity calculations treat canceled selections as no longer active.
+   - Booking service should be updated to treat only active bookings when computing availability/capacity.
+
+3. **Edit/reschedule (if you implement)**
+   - If you add this, keep it conservative:
+     - Validate as strictly as initial booking.
+     - Avoid partial updates that would violate capacity/availability rules.
+   - If you decide not to implement full edit/reschedule in this pass, leave clear TODOs and do not build a half-working UI.
+
+4. **Tests**
+   - Organizer booking list and detail rendering.
+   - Cancel behavior:
+     - booking status updated,
+     - future availability reflects freed capacity.
+   - Permission enforcement.
+
+---
+
+## What is explicitly out of scope for this prompt
+
+Do **not** implement, beyond stubs/placeholders:
+
+- CSV export and ICS/add-to-calendar file generation.
+- Actual email sending or integration with any mail provider.
+- CSRF wiring (`csurf`) and rate limiting (these are noted seams but can wait for a final hardening pass).
+- Any major redesign of layouts or CSS beyond what’s necessary to support the new pages.
+
+If you add small placeholders (e.g., a “Download CSV” button or “Email confirmation will be sent” text), they must be clearly non-functional and not wired to backend logic yet.
+
+---
+
+## General constraints
+
+- Reuse the existing services and patterns; extend them rather than creating parallel logic.
+- Keep booking authority and validation on the server.
+- Keep public pages simple, mobile-friendly, and aligned with the existing design system.
+- Avoid introducing new dependencies unless absolutely necessary, and explain any that you do introduce.
+- Keep changes scoped to the calendar module and necessary shared components.
+
+---
+
+## Workflow and output
+
+Before coding:
+- Re-read `CLAUDE.md`.
+- Inspect only the relevant parts of the repo; avoid scanning everything if not needed.
+
+While coding:
+- Keep commits logically grouped (e.g., recurrence engine, public flow, booking management, tests).
+- Maintain consistency with the existing test and lint setup.
+
+After coding:
+1. Run tests, lint, and syntax-check.
+2. Provide a summary including:
+   - Files changed/added.
+   - New/updated routes, controllers, services, and views.
+   - Tests added or updated and their results.
+   - Any conservative design decisions or assumptions made (especially around recurrence and overlap rules).
+   - What remains for the final pass (exports, email, CSRF/rate limiting, polish).
+
+Stop after this milestone; do not move on to exports/email/CSRF until a later prompt.

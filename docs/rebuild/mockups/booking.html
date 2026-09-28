@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Booking · progr.am</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+</head>
+<body data-shell="organizer" data-nav="bookings" data-crumbs="Ward Missionary Meals|Bookings|The Nguyen family">
+	<div class="content" data-shell-content style="max-width: 60rem">
+		<a class="step-back" href="bookings.html" style="font-size: var(--text-sm)"><svg class="icon"><use href="#i-arrow-left"/></svg>Bookings</a>
+		<div class="page-head">
+			<div>
+				<h1 class="page-head__title">The Nguyen family</h1>
+				<p class="page-head__sub">Signed up Sep 26, 2026 at 8:14 pm · 3 signups <span class="badge badge--success" style="margin-left: var(--space-1)">Active</span></p>
+			</div>
+			<div class="row">
+				<button class="btn" type="button" data-open="edit-drawer"><svg class="icon"><use href="#i-pencil"/></svg>Edit</button>
+				<button class="btn btn--danger-quiet" type="button" data-open="cancel-dialog">Cancel booking</button>
+			</div>
+		</div>
+
+		<div class="stack" style="--stack-gap: var(--space-4)">
+			<section class="card" aria-labelledby="sel-h">
+				<div class="card__head">
+					<h2 class="card__title" id="sel-h">Signups</h2>
+					<button class="btn btn--sm" type="button" data-open="edit-drawer"><svg class="icon"><use href="#i-calendar"/></svg>Reschedule</button>
+				</div>
+				<div class="table-wrap" style="border: 0; border-radius: 0 0 var(--radius-lg) var(--radius-lg)">
+					<table class="table">
+						<thead><tr><th>Date</th><th>Item</th><th></th></tr></thead>
+						<tbody>
+							<tr><td class="tabular nowrap">Thu, Oct 22, 2026</td><td><span class="item-chip"><span class="marker" data-color="blue" data-shape="circle"></span>Elders Ramos &amp; Chen</span></td><td class="num"><span class="status status--available">Upcoming</span></td></tr>
+							<tr><td class="tabular nowrap">Thu, Oct 22, 2026</td><td><span class="item-chip"><span class="marker" data-color="pink" data-shape="diamond"></span>Sisters Park &amp; Moreau</span></td><td class="num"><span class="status status--available">Upcoming</span></td></tr>
+							<tr class="is-muted"><td class="tabular nowrap">Tue, Sep 29, 2026</td><td><span class="item-chip"><span class="marker" data-color="amber" data-shape="triangle"></span>Elders Tuilagi &amp; Brooks</span></td><td class="num"><span class="status status--out">Past</span></td></tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<div class="form-grid" style="--cols: 2; align-items: start">
+				<section class="card" aria-labelledby="contact-h">
+					<div class="card__head"><h2 class="card__title" id="contact-h">Contact</h2></div>
+					<div class="card__body">
+						<dl class="dl">
+							<dt>Name</dt><dd>The Nguyen family</dd>
+							<dt>Phone</dt><dd class="tabular"><a href="tel:+13855550102">385-555-0102</a></dd>
+							<dt>Prefers</dt><dd>Call</dd>
+							<dt>Number type</dt><dd>Cell</dd>
+							<dt>Email</dt><dd><a href="mailto:nguyen.family@example.com">nguyen.family@example.com</a></dd>
+						</dl>
+					</div>
+				</section>
+				<section class="card" aria-labelledby="notes-h">
+					<div class="card__head"><h2 class="card__title" id="notes-h">Notes</h2></div>
+					<div class="card__body">
+						<p style="white-space: pre-line">We'll bring dinner to the apartment around 5:30. Elder Chen mentioned a peanut allergy, so no peanuts.</p>
+					</div>
+				</section>
+			</div>
+
+			<section class="card" aria-labelledby="meta-h">
+				<div class="card__head"><h2 class="card__title" id="meta-h">Record</h2></div>
+				<div class="card__body">
+					<dl class="dl">
+						<dt>Confirmation</dt><dd><a href="confirmation.html" class="tabular" style="font-family: var(--font-mono); font-size: var(--text-sm)">…/confirmation/q7Jx2mVf…Q3iUk</a></dd>
+						<dt>Email sent</dt><dd>Sep 26, 8:14 pm</dd>
+						<dt>Last edited</dt><dd>Sep 27, 9:02 am by Kevin Holt (moved Oct 20 → Oct 22)</dd>
+					</dl>
+				</div>
+			</section>
+		</div>
+	</div>
+
+	<div class="overlay" id="edit-drawer" hidden>
+		<aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="edit-t" style="width: min(100%, 34rem)">
+			<div class="drawer__head">
+				<h2 class="dialog__title" id="edit-t">Edit booking</h2>
+				<button class="btn btn--ghost btn--icon" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+			</div>
+			<div class="drawer__body stack" style="--stack-gap: var(--space-5)">
+				<div class="field">
+					<span class="label">Signups</span>
+					<div class="card">
+						<div class="stack" style="--stack-gap: var(--space-2); padding: var(--space-3)">
+							<div class="row">
+								<div class="select grow" data-datepicker="2026-10-22">
+									<button class="select-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="Date" data-popover-trigger><span class="select-trigger__value">Thu, Oct 22, 2026</span><svg class="icon"><use href="#i-calendar"/></svg></button>
+									<div class="popover datepicker" hidden role="dialog" aria-label="Choose date"></div>
+								</div>
+								<span class="item-chip grow"><span class="marker" data-color="blue" data-shape="circle"></span>Ramos &amp; Chen</span>
+								<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Remove"><svg class="icon"><use href="#i-x"/></svg></button>
+							</div>
+							<div class="field has-error">
+								<div class="row">
+									<div class="select grow" data-datepicker="2026-10-24">
+										<button class="select-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="Date" data-popover-trigger><span class="select-trigger__value">Sat, Oct 24, 2026</span><svg class="icon"><use href="#i-calendar"/></svg></button>
+										<div class="popover datepicker" hidden role="dialog" aria-label="Choose date"></div>
+									</div>
+									<span class="item-chip grow"><span class="marker" data-color="pink" data-shape="diamond"></span>Park &amp; Moreau</span>
+									<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Remove"><svg class="icon"><use href="#i-x"/></svg></button>
+								</div>
+								<span class="error-msg"><svg class="icon"><use href="#i-alert-circle"/></svg>Park &amp; Moreau is full on Sat, Oct 24 (1 of 1 taken by Grace Whitfield).</span>
+							</div>
+							<button class="btn btn--ghost btn--sm" type="button" style="align-self: flex-start"><svg class="icon"><use href="#i-plus"/></svg>Add a signup</button>
+						</div>
+					</div>
+				</div>
+				<div class="form-grid">
+					<div class="field span-all"><label class="label" for="e-name">Name</label><input class="input" id="e-name" value="The Nguyen family"></div>
+					<div class="field"><label class="label" for="e-phone">Phone</label><input class="input tabular" id="e-phone" value="385-555-0102"></div>
+					<div class="field"><label class="label" for="e-email">Email</label><input class="input" id="e-email" value="nguyen.family@example.com"></div>
+					<div class="field"><span class="label" id="e-c">Prefers</span><div class="segmented segmented--block" role="radiogroup" aria-labelledby="e-c"><button class="segmented__opt" role="radio" aria-checked="false" data-value="text">Text</button><button class="segmented__opt" role="radio" aria-checked="true" data-value="call">Call</button></div></div>
+					<div class="field"><span class="label" id="e-t">Number type</span><div class="segmented segmented--block" role="radiogroup" aria-labelledby="e-t"><button class="segmented__opt" role="radio" aria-checked="true" data-value="cell">Cell</button><button class="segmented__opt" role="radio" aria-checked="false" data-value="whatsapp">WhatsApp</button></div></div>
+					<div class="field span-all"><label class="label" for="e-notes">Notes</label><textarea class="textarea" id="e-notes">We'll bring dinner to the apartment around 5:30. Elder Chen mentioned a peanut allergy, so no peanuts.</textarea></div>
+				</div>
+			</div>
+			<div class="drawer__foot">
+				<button class="btn btn--ghost" type="button" data-close>Cancel</button>
+				<button class="btn btn--primary" type="button" aria-disabled="true" title="Fix the full signup first">Save changes</button>
+			</div>
+		</aside>
+	</div>
+
+	<div class="overlay" id="cancel-dialog" hidden>
+		<div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="c-t" aria-describedby="c-d">
+			<div class="dialog__body">
+				<div class="dialog__icon"><svg class="icon"><use href="#i-alert-triangle"/></svg></div>
+				<h2 class="dialog__title" id="c-t">Cancel this booking?</h2>
+				<p class="dialog__text" id="c-d">The Nguyen family's 2 upcoming signups will open up for others. The booking stays in your records as canceled.</p>
+			</div>
+			<div class="dialog__foot">
+				<button class="btn btn--ghost" type="button" data-close data-autofocus>Keep booking</button>
+				<button class="btn btn--danger" type="button" data-close data-toast="Booking canceled" data-toast-action="Undo">Cancel booking</button>
+			</div>
+		</div>
+	</div>
+
+	<script src="assets/mock.js"></script>
+</body>
+</html>

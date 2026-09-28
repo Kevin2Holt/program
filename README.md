@@ -1,63 +1,65 @@
 # progr.am
 
-`progr.am` is a server-rendered web application for creating and viewing event
-programs and itineraries. Event organizers create structured programs, and
-attendees access them through short event-code URLs (`progr.am/<CODE>`).
+progr.am has two parts:
 
-This repository is the long-term home for the full `progr.am` application. The
-current implementation status focuses on the **calendar signup module**, which
-lives at `/:code/calendar` publicly and at `/events/:eventId/calendar/...` for
-organizers.
+- **Event programs** that people read on their phones.
+- **Signup calendars** for meals, sessions, or volunteer slots. They never double-book.
 
-## Stack
+## Quick start (Windows, PowerShell)
 
-- Node.js + Express
-- EJS server-rendered templates with partials
-- PostgreSQL
-- Session-backed authentication (pg-backed store)
-- CSRF protection, rate limiting, sanitization
-- No bundler — client-side enhancement via plain JS and importmap/CDN where
-  needed
+1. Install Node.js 22+ and PostgreSQL 17.
+2. Create the app user and two databases (`progr_am_dev`, `progr_am_test`).
+3. Copy the example config, then set the two database URLs in `.env`:
 
-## Layout
+   ```bash
+   copy .env.example .env
+   ```
 
-```
-src/
-  config/         App configuration (env, db pool, session)
-  controllers/    HTTP orchestration (public/, organizer/)
-  db/             DB pool, migration runner, SQL migrations
-  middleware/     attach-user, require-auth, CSRF, rate limiting, permissions
-  models/         Data access (one module per entity)
-  routes/         Route registration (public + organizer)
-  services/       Business logic (booking, availability, export, etc.)
-  views/          EJS templates
-    layouts/      Application layouts (main, public-event)
-    partials/     Shared partials (header, footer, flash, calendar bits)
-    public/       Public-facing pages
-    events/       Organizer event-management pages
-public/
-  css/            Stylesheets (custom-property based, dark default)
-  js/             Client-side scripts (progressive enhancement only)
-.github/workflows/ CI (lint, test, syntax check)
-test/             Tests
-```
+4. Install and prepare:
 
-## Getting started
+   ```bash
+   npm install
+   ```
+
+   ```bash
+   npm run db:migrate
+   ```
+
+5. Start the dev server and open http://localhost:5173:
+
+   ```bash
+   npm run dev
+   ```
+
+Checks:
 
 ```bash
-cp .env.example .env
-npm install
-npm run migrate
-npm run dev
+npm run verify
 ```
 
-## Repository conventions
+```bash
+npm run test:e2e
+```
 
-- Default branch: `main`
-- Trunk-based development with short-lived feature branches
-- Layered commits: scaffold → schema → app/middleware → models/services →
-  routes/controllers → views/partials → static assets / CI
+- **For developers and agents:** see [CLAUDE.md](CLAUDE.md) for architecture and conventions.
+- **For the plan and design system:** see [docs/rebuild/](docs/rebuild/README.md).
 
-## License
+## Production
 
-Private / internal.
+Build it, then start it:
+
+```bash
+npm run build
+```
+
+```bash
+node build
+```
+
+Set these environment variables:
+
+- `NODE_ENV=production`
+- `ORIGIN` (the site's public URL)
+- `DATABASE_URL`
+- `PUBLIC_BASE_URL`
+- the mail settings in `.env.example`

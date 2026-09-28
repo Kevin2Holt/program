@@ -1,0 +1,173 @@
+# Auth + Organizer Scaffold Prompt
+
+You are working in the `program` repo for **prog.am**, a server-rendered event-program web app.
+
+Before coding, read `CLAUDE.md` once and use it as the repo working guide. If repo reality differs from `CLAUDE.md`, prefer the existing implemented code unless this task explicitly requires migration.
+
+Do not re-derive the architecture from scratch. Preserve the current stack and patterns:
+- Node.js
+- Express
+- EJS
+- PostgreSQL
+- server-rendered pages, not SPA
+- session-backed auth
+- existing layered architecture (routes/controllers/services/models/views)
+- existing CSS custom-property design system
+- dark mode default, light mode optional
+
+You may consult `program_project_specification.txt` only if needed for clarification, but stay focused on this task and do not expand scope.
+
+## Task
+
+Implement the **auth/account/dashboard/create-event scaffold** needed for the main app’s organizer side.
+
+The goal is to establish the authenticated organizer flow and event ownership flow that the rest of the application can build on.
+
+## Product context
+
+`prog.am` is a web application for creating and viewing event programs and itineraries. Public users access events through short code-based URLs. Organizers need authenticated pages for managing their account and events. [file:2]
+
+The main project already assumes organizer-facing authenticated pages for:
+- Authentication
+- Account settings
+- Dashboard
+- Event editor
+- Event preview
+- Event settings
+- Event team management [file:2]
+
+This task is only for the early organizer/auth scaffold, not the full product.
+
+## Implement in scope
+
+Build the following, using the repo’s existing patterns wherever possible:
+
+### 1. Authentication pages and flow
+Implement basic organizer auth pages and routes:
+- sign up
+- log in
+- log out
+
+Use the repo’s session-backed authentication architecture and PostgreSQL-backed session storage patterns. [file:2][file:159]
+
+Minimum expected behavior:
+- sign up creates a user account
+- log in starts an authenticated session
+- log out destroys the session / ends the authenticated session
+- authenticated pages redirect anonymous users appropriately
+- already-authenticated users should not be shown useless auth pages if the repo already has a preferred redirect pattern
+
+### 2. Attach-user / require-auth wiring
+Make sure the app has the middleware flow needed so authenticated organizer pages can access the current user cleanly and anonymous users are redirected away from protected organizer pages. `CLAUDE.md` indicates this should be handled through middleware such as `attachUser.js` and `requireAuth.js`, so follow that pattern if present. [file:159]
+
+### 3. Dashboard scaffold
+Implement a basic authenticated organizer dashboard page.
+
+The dashboard does not need to be feature-complete. It should at least:
+- require auth
+- identify the signed-in user
+- show the user’s events, even if the state is empty
+- include a clear way to create a new event
+- render a useful empty state when the user has no events yet
+
+### 4. Create-event flow
+Implement the initial create-event flow for organizers.
+
+Minimum expected behavior:
+- authenticated organizer can open a create-event form
+- organizer can create an event
+- event is associated with that organizer appropriately
+- event code is validated against the existing code rules and reserved-word behavior already established in the project spec
+- successful creation redirects using PRG
+- validation failures re-render with field errors and preserved values [file:2][file:159]
+
+Do not implement the full editor here unless necessary to land the scaffold. It is enough for successful event creation to redirect to the most appropriate next authenticated page already supported by the repo structure.
+
+### 5. Basic account page
+Implement a simple authenticated account page scaffold.
+
+It only needs enough structure to prove the authenticated account surface exists and is wired correctly.
+
+## Architectural requirements
+
+Follow these constraints carefully:
+
+- Do **not** convert anything to a SPA. [file:2][file:159]
+- Do **not** introduce a frontend framework or bundler. [file:159]
+- Use EJS server-rendered views and the existing layout/partial approach. [file:2][file:159]
+- Keep controllers thin.
+- Put business logic in services.
+- Keep models thin and pg-backed.
+- Use SQL migrations for schema changes; create new migration files only, never edit shipped migrations. [file:159]
+- Use PRG on successful POST requests. [file:159]
+- On validation failures, re-render forms with inline errors and the submitted values preserved. [file:159]
+- Keep public/authenticated route structure aligned with the existing repo and event-code-first public model. [file:2]
+- Stay in scope; do not start unrelated features. [file:159]
+
+## UI requirements
+
+Use the existing design system and patterns:
+- dark mode default
+- light mode optional
+- no ad-hoc colors or font sizes if base tokens already exist
+- mobile-usable, simple, readable pages
+- authenticated organizer layout/context where appropriate
+- inline field errors and general error summary where appropriate [file:2][file:159]
+
+The auth/dashboard/account pages can be simple, but they should feel like part of the real app rather than placeholders.
+
+## Data / domain expectations
+
+The project spec already establishes:
+- users
+- sessions
+- events
+- event members
+- event codes
+- reserved words
+- old codes / code history as part of the broader design [file:2]
+
+Use the existing schema and code patterns where possible. If something essential is missing for this scaffold, add it in the smallest correct way rather than inventing a broad new system.
+
+For event creation:
+- event codes must be unique
+- event codes must not be reserved
+- codes are part of the public URL path
+- old code handling exists in the broader design, but do only what is necessary for this scaffold unless more is already present in the repo [file:2]
+
+## Expected files / areas likely involved
+
+Audit the repo first, then work within the existing structure. `CLAUDE.md` suggests patterns like:
+- `src/app.js`
+- `src/middleware/attachUser.js`
+- `src/middleware/requireAuth.js`
+- `src/routes/authRoutes.js`
+- `src/controllers/`
+- `src/services/`
+- `src/models/`
+- `src/views/auth/`
+- `src/views/account/`
+- `src/views/dashboard/`
+- `src/views/events/` [file:159]
+
+Use the real repo structure you find.
+
+## Testing and completion requirements
+
+Before finishing:
+- run `npm test`
+- run `npm run lint`
+- run `npm run syntax-check` [file:159]
+
+Treat failures as blocking.
+
+Add or update tests for the new auth/dashboard/create-event behavior using the repo’s existing testing style. `CLAUDE.md` indicates tests live under `test/` and the app should be exercised through the real Express app patterns where appropriate. [file:159]
+
+## Output expectations
+
+When you respond:
+1. Briefly state your plan in 3–6 lines before coding.
+2. Audit the repo and identify what already exists vs what is missing.
+3. Implement only the auth/account/dashboard/create-event scaffold in this prompt.
+4. Summarize exactly what you changed.
+5. Mention any important assumptions or follow-up gaps, but do not start the next milestone.

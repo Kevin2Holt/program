@@ -1,216 +1,170 @@
-# CLAUDE.md — Working in the `program` repo
+# CLAUDE.md: working in the progr.am repo
 
-This file is the short, high-signal guide for AI coding agents (Claude, Codex,
-etc.) working in this repo. Read it once at the start of each session. Do not
-re-derive these conventions from scratch and do not re-paste the long
-specification documents into prompts — read the specs only when a question
-truly requires them.
+progr.am is a web app for event **programs** (block-based, published to `progr.am/<code>`) and **signup calendars** (people sign up for Items on dates or timed occurrences). This is the rebuild (branch `rebuild`). The plan, design system, and decisions live in `docs/rebuild/`: read `README.md` there first. The old implementation stays on `main` for reference only.
 
-Deeper specs live in the workspace root:
+## Commands (all work on Windows)
 
-- `program_project_specification.txt`
-- `Phase-2-Final-Specification.txt`
-- `Phase-3-Final-Specification.txt`
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server at http://localhost:5173 (uses `DATABASE_URL`) |
+| `npm run db:migrate` / `db:rollback` / `db:status` | Apply, undo the last, or list migrations |
+| `npm run db:seed` | Load demo data into the **dev** database through the real services (re-runnable; login in `scripts/seed.js`) |
+| `npm run check` | svelte-check (types, a11y, template errors) |
+| `npm run lint` / `lint:fix` | ESLint, including the style rules below |
+| `npm test` | Vitest: unit and service tests against the real `progr_am_test` database |
+| `npm run test:e2e` | Playwright against a production build on :4173 (test database) |
+| `npm run test:screens` then `node scripts/screen-sheets.js` | Screenshots of every screen in both themes at 390 px and 1280 px, plus review sheets |
+| `npm run verify` | check + lint + test. **Must pass before any commit that ends a milestone.** `verify:full` adds e2e. |
 
-Read those **only when needed** for a specific feature. Treat them as
-reference, not as the working brief.
+Tests reset `progr_am_test` from migrations each run. Never point tests at the dev database; the setup refuses to.
 
----
+## Architecture
 
-## 1. Architecture summary
+- **SvelteKit 2 + Svelte 5 (runes)**, `adapter-node`, **JavaScript with JSDoc**. `src/app.d.ts` is the only TypeScript file, because the framework needs it.
+- **PostgreSQL via postgres.js** (`src/lib/server/db.js`). Only tagged-template queries, so values are always parameters.
+  - `DATE` → `"YYYY-MM-DD"` string, `TIME` → `"HH:MM:SS"` string, ids are `integer` (JS numbers).
+  - Never convert calendar dates through JS `Date` in local time.
+- **Migrations:** `db/migrations/NNN_name.up.sql` plus a **required** `.down.sql`, run by `scripts/migrate.js`. A migration can be edited until it's committed on a pushed milestone; after that, add a new one.
 
-- **Server**: Node 20+, Express 4, server-rendered EJS. **No SPA**, no
-  bundler, no client framework.
-- **DB**: PostgreSQL, accessed through `pg` via `src/db/pool.js`. Schema
-  changes are SQL migrations in `src/db/migrations/NNN_*.sql` (with `-- UP`
-  and `-- DOWN`), run by `npm run migrate` (`src/db/migrate.js`).
-- **Sessions**: `express-session` with `connect-pg-simple`; tests inject an
-  in-memory store via `createApp({ sessionStore })`.
-- **Test runner**: Node built-in (`node --test test/**/*.test.js`).
-- **Lint**: ESLint flat config (`eslint.config.js`).
-- **CI**: GitHub Actions workflow runs `lint`, `syntax-check`, `test`.
+### Layers (keep them separate)
 
-### Folder layout
+| Layer | Where | Rules |
+|---|---|---|
+| Routes and handlers | `src/routes/**/+page.server.js`, `+server.js` | Parse input, check permission, call a service, return data, or `fail()`/redirect. No business rules. |
+| Services | `src/lib/server/services/` | All business rules and validation. Return `succeed(value)` / `fail(code, message, errors)` from `$lib/result.js` for expected outcomes; throw only for real faults. |
+| Data access | `src/lib/server/data/` | Thin SQL functions. No rules. |
+| Pure shared logic | `src/lib/*.js`, `src/lib/calendar/` | No I/O. Runs in the browser and on the server (dates, times, validation, calendar engine). |
+| Views | `src/lib/components/`, `+page.svelte` | Render only. |
 
-```
-src/
-  app.js                         Express factory (createApp)
-  server.js                      Boot
-  config/env.js                  Env parsing
-  db/
-    pool.js                      pg pool
-    migrate.js                   migration runner
-    migrations/*.sql             schema migrations
-  middleware/
-    attachUser.js                pulls req.user from session
-    requireAuth.js               redirects anon users
-    loadEvent.js                 loadById / loadByCode -> req.event
-    requireCalendarPermission.js calendar.* permission guard
-  models/                        thin pg-backed row repositories
-  services/                      domain logic; controllers should call these
-  controllers/
-    public/                      public-facing handlers
-    organizer/calendarController.js
-  routes/
-    index.js                     mounts route families
-    publicEventRoutes.js
-    publicCalendarRoutes.js
-    organizerCalendarRoutes.js
-    authRoutes.js
-  views/                         EJS templates (see UI section)
-public/
-  css/base.css                   global tokens + base styles
-  css/calendar.css               calendar module styles
-test/                            node --test files
-```
+Aliases: `$lib` → `src/lib`, `$server` → `src/lib/server` (server-only; SvelteKit refuses to bundle it for the browser).
 
-### Conventions
+### Request pipeline (`src/hooks.server.js`)
 
-- Models: thin, return rows; never throw structured errors. Service layer
-  owns validation and product rules.
-- Services: pure / I/O-light helpers + cross-cutting domain rules. Throw
-  errors with `err.status = 400/404/...` for the controller to render.
-- Controllers: parse `req.body`, call service, render or redirect. Never
-  call models directly when a service exists for that entity.
-- Routes: declarative — `requireAuth → loadEvent → requireCalendarPermission
-  → controller`. One handler per HTTP verb.
-- Use **PRG** (Post-Redirect-Get) on success. On validation failure,
-  re-render the form with field errors and the user's submitted values.
+1. Theme cookie → `<html data-theme>`, so the page never flashes the wrong theme.
+2. A per-visitor **CSRF token** in an HttpOnly cookie. Forms send it as a hidden `csrf` field (`<Form>` adds it); fetches send the `x-csrf-token` header (`page.data.csrfToken`).
+3. The session cookie is resolved to `locals.user`. Only a SHA-256 hash of the token is stored.
+4. Every non-GET request must be **same-origin and carry the token**, or it's refused with a 403.
+5. Security headers are added to every response. Errors log a reference id; users see only the id.
 
----
+Other protections:
+- **Rate limits** (`$server/http/rateLimit.js`, stored in Postgres) cover login, signup, account changes, and all public writes, through `limitFormAction` / `limitEndpoint`.
+- Organizer routes live in the `(org)` route group, whose layout calls `requireUser`.
+- **Every** organizer handler calls `loadEventAccess(event, PERMISSION.x)` (`src/lib/server/http/eventAccess.js`).
 
-## 2. Calendar module
+## Design system (non-negotiable)
 
-### Entities
+- **Tokens:** `src/lib/styles/tokens.css`. **Components:** `src/lib/styles/components.css` plus `src/lib/components/ui/*.svelte`.
+- Use tokens only: no raw colors, sizes, radii, shadows, or durations in components.
+- **No browser-default controls.** Use:
+  - `Select` (with `searchable` for a combobox)
+  - `DatePicker`, `TimeInput`, `NumberStepper`
+  - `Switch`, `Checkbox`, `Segmented`, `ChoiceCards`, `WeekdayPicker`
+  - `Dialog` (modal or `variant="drawer"`)
+  - `confirmAction()` instead of `confirm()`
+  - `showToast()` for feedback
+  - `Menu`, `Alert`, `EmptyState`, `Skeleton`, `SaveState`, `Status`, `Badge`, `ItemMarker`
+- Wrap every input in `Field`, which provides the label, hint, inline error, and aria wiring. Wrap forms in `Form`, which adds the CSRF field, avoids a reload, and tracks pending state.
+- **Themes:** dark is the default and light is first-class. Check both (use `npm run test:screens`).
+- **Density:** public pages are phone-first (16 px text, 44 px targets, `body.is-public`); organizer pages are compact (14 px, 32 px controls).
+- **States:** every screen needs empty, loading, error, and permission-denied states, plus validation next to the field.
+- **Motion:** transitions are short (120–260 ms) and come from tokens; reduced motion is honored.
+- The mockups in `docs/rebuild/mockups/` are the approved look. The dev-only `/design-system` page shows every component live.
 
-- `calendar_configs`     — one row per event when the calendar exists.
-                           Bounded structured fields in `form_config` /
-                           `export_defaults` JSONB.
-- `calendar_items`       — bookable units. Archive instead of delete once
-                           bookings may reference them.
-- `calendar_occurrences` — timed instances of an item (only for `timed`
-                           mode). Date-only items have **no** occurrence
-                           rows.
-- `calendar_bookings`    — booking parent row (one per submission).
-- `calendar_booking_selections` — child rows (one per item/date/occurrence
-                           selected). Capacity is enforced at this layer.
-- `calendar_availability_rules` — one-time or recurring blocking rules.
-                           Stored as rules; **never** materialised into
-                           blackout occurrence rows.
-- `calendar_availability_rule_targets` — join table for `selected` /
-                           `single` scope.
+## Code style (Kevin's rules; ESLint enforces most)
 
-### Route families
+- **Tabs**, never spaces.
+- **Braces:**
+  - Opening brace at the end of the line.
+  - A multi-line block's closing brace on its own line at the opener's indentation. `});` is fine.
+  - `else` and `catch` start on the line after the `}` (Stroustrup style).
+- **Blank lines group code:**
+  - 1 between related parts.
+  - 2–4 between less related sections.
+  - **Exactly one blank line after a function declaration line.** A local ESLint rule enforces this; arrow callbacks are exempt.
+- **File order:** constants/settings, then reusable library-style functions, then program-specific functions, then the code that runs everything.
+- **No magic numbers:** use named constants (e.g. `HTTP.notFound`, `SESSION_LIFETIME_MS`). Sentinel values get a reference-key comment.
+- **Errors:** handle them gracefully. Services return results; throw only when that's clearly better.
+- **Comments** do one of three things: say what the code should do, explain why a choice was made, or give a reference key.
+- **Names:**
+  - Functions contain a verb.
+  - Variables say what they hold and in what form (`duration_min`, `date_iso`, `retryAfterS`).
+  - camelCase, with underscores separating hierarchical parts, highest level first (`calendar_itemIds`).
+- **Framework conventions win where required,** e.g. `+page.svelte` file names and `let { … } = $props()` (so `prefer-const` is off in `.svelte` files). Prettier is intentionally not used, because it would delete the blank line after function declarations.
+- **Double quotes, semicolons, no trailing commas.**
 
-- `/` and `/:code`                       — public landing / event by code.
-- `/c/:code` (public calendar)           — public browse, submit, confirm.
-- `/events/:eventId/calendar/...`        — organizer config and management.
-- `/auth/...`                            — login / logout placeholders.
+## Workflow
 
-### Booking rules (high level)
+- Work milestone by milestone (plan: `docs/rebuild/02-build-plan.md`).
+- Each milestone:
+  1. Implement it and write its tests.
+  2. Run `npm run verify` and `npm run test:e2e`.
+  3. Run the screens pass and review the sheets.
+  4. Update this file.
+  5. Commit and push `rebuild`.
+- **Commits:** small and logical. A short readable summary line, then detail lines only when needed.
+- **Versioning:** milestone N is version `0.N.0`, and fixes between milestones are `0.N.x`. Stay on 0.x until Kevin declares a release.
+- Never commit `.env` or secrets; keep `.env.example` current.
+- Don't touch other databases or services on the machine.
 
-- A booking = one parent row + 1..N selection rows.
-- Capacity is per `(item_id, service_date[, occurrence_id])`. Enforced
-  server-side at submission time with a transaction.
-- No overbooking. The server is the single source of truth — client JS
-  is optional, never authoritative.
-- One-time availability rules take precedence over recurring rules.
-- Public availability collapses `blocked` / `full` into `unavailable`.
-  Organizer-side views can distinguish them.
+## Status
 
-### Availability resolution order (Phase 3 §availability)
-
-1. Date window boundary
-2. Item active/archive status
-3. One-time and recurring block rules
-4. Remaining capacity
-
----
-
-## 3. Permissions and auth
-
-- Permission constants live in `src/services/calendarPermissions.js` under
-  the `calendar.*` namespace:
-  - `calendar.view`
-  - `calendar.view.details`
-  - `calendar.edit`
-  - `calendar.edit.items`
-  - `calendar.edit.availability`
-  - `calendar.edit.bookings`
-  - `calendar.export`
-- Standalone-phase policy: any authenticated user on an event gets all
-  `calendar.*` permissions. The full role matrix is a later concern; do
-  **not** widen the public surface to compensate.
-- Every organizer route is guarded:
-  `requireAuth → loadById('eventId') → requireCalendarPermission(P) →
-  ctrl.handler`.
-- Public routes use `loadByCode('code')` and have no auth.
-
----
-
-## 4. UI / design constraints
-
-- Dark mode is the default (`<html data-theme="dark">`); light mode is an
-  optional override. Use the existing CSS custom-property tokens
-  (`--color-*`, `--space-*`, `--radius-*`, `--font-*`) from `base.css`.
-  Do **not** introduce ad-hoc colors or font sizes.
-- Layouts use plain-EJS partial composition, not a layout engine. View
-  files open with `include('../layouts/main', { stage: 'open', layoutContext })`
-  and close with the same partial at `stage: 'close'`.
-- Two layout contexts: `organizer` and `public`. Pick the right one in
-  every view.
-- Public UI is intentionally simple, readable, mobile-friendly, and
-  works without JavaScript. Any client JS must be progressive
-  enhancement only — server validation is the source of truth.
-- Forms: render errors inline next to the field using the
-  `errorsByField` map shape (`{ [fieldName]: [messages] }`) and an
-  outer error list. Keep the user's submitted `values` on the page on
-  re-render so input is never lost.
-- Prefer `data-*` attributes for progressive disclosure (e.g.
-  `data-control`, `data-when`, `data-dependent-on`) over inline `style`
-  toggles. See `src/views/events/calendar/setup.ejs` for the pattern.
-
----
-
-## 5. Workflow rules
-
-- **Plan briefly before coding.** A 3–6 line plan is enough; do not
-  write essays.
-- **Stay in scope.** Modify only what the current milestone touches.
-  No drive-by refactors, no "while I'm here" extras, no broad reformat.
-- **Reuse existing services and models.** Extend them rather than
-  introducing parallel abstractions. If you must add a new service,
-  state why.
-- **Always run before declaring done:**
-  - `npm test`
-  - `npm run lint`
-  - `npm run syntax-check`
-  Treat any failure as blocking.
-- **Commits**: logically grouped, short imperative subject. Examples:
-  - `feat(calendar): organizer item CRUD (Phase 4B.2)`
-  - `fix(views): make layouts/main.ejs compile in EJS`
-  - `test: occurrence service overlap detection`
-- **Tests** live under `test/` mirroring `src/`. Integration tests stub
-  models via `require.cache` hijacking and drive the real Express app
-  through Node's `http` — see `test/routes/organizerSetupRoute.test.js`.
-- **Validation is server-side.** Any client-side enhancement must be
-  optional and additive.
-- **Schema changes** are new migration files only; never edit an
-  existing migration once it has shipped.
-- **Stop at the milestone boundary.** Do not begin the next milestone
-  in the same prompt unless explicitly asked.
-
----
-
-## 6. Quick file map for the calendar module
-
-| Concern        | Files                                                         |
-| -------------- | ------------------------------------------------------------- |
-| Config         | `services/calendarConfigService.js`, `models/calendarConfig.js`, view `events/calendar/setup.ejs` |
-| Items          | `services/calendarItemService.js` *(extend as needed)*, `models/calendarItem.js`, views `events/calendar/items/*` |
-| Occurrences    | `services/calendarOccurrenceService.js`, `models/calendarOccurrence.js`, views `events/calendar/occurrences/*` |
-| Availability   | `services/calendarAvailabilityService.js`, `models/calendarAvailabilityRule.js`, views `events/calendar/availability/*` |
-| Bookings       | `services/calendarBookingService.js`, `models/calendarBooking.js` |
-| Export         | `services/calendarExportService.js`                           |
-| Permissions    | `services/calendarPermissions.js`, `middleware/requireCalendarPermission.js` |
-| Refs/tokens    | `services/calendarReferences.js`                              |
+- **0.1 foundation (done):**
+  - SvelteKit scaffold, migrations, auth (sign up, log in, log out, account), sessions, CSRF, rate limits, and security headers
+  - The design-system components, the theme cookie, and the organizer shell
+  - Tests: Vitest service tests, Playwright e2e, and the screens pass
+- **0.2 events and routing (done):**
+  - Events with custom codes: shape, reserved words (seeded, and a test that every top-level route is reserved), and one namespace for current and retired codes, enforced by a DB trigger.
+  - Old codes 308-redirect to the current code, subpaths included (`loadPublicEvent`).
+  - `event_members` roles and `permissionService` (`PERMISSION.*`).
+  - `loadEventAccess(event, PERMISSION.x)` in every event route: non-members get 404, members lacking the permission get 403.
+  - Dashboard with create dialog and live code check (`/api/codes/check`), event settings (rename, change code, archive), and the public `/[code]` shell.
+  - `RATE_LIMIT_SCALE` is raised only for browser tests.
+- **0.3 programs (done):**
+  - `program_versions` (draft / published / previous, unique per event) and `program_blocks`.
+  - `programService` locks the draft row and keeps blocks and `block_order` in sync in one transaction, checked by `assertOrderMatchesBlocks`.
+  - **Lifecycle:** publish deep-copies the draft (the old published becomes previous); unpublish moves published to previous; rollback swaps them (deferrable unique constraint).
+  - **Block registry:** `src/lib/blocks/registry.js`. Adding a type means updating the registry, `ProgramView`, an editor component, and the DB check constraint.
+  - Text HTML is sanitized on the server (`sanitizeHtml.js`).
+  - **Editor:** Tiptap text blocks, label/value rows, separators, and the header.
+  - **Saving:** autosave per block via `saveQueue.svelte.js`. Structural changes (add, duplicate, delete with Undo, reorder) save immediately.
+  - **Reordering:** pointer drag, or keyboard (focus grip, Space, arrows, Space).
+  - The live preview and the public `/[code]` both render with `ProgramView`.
+  - The JSON API is under `/api/events/[eventId]/program/…` (client helper: `src/lib/api.js`).
+- **0.4 calendar engine and organizer setup (done):**
+  - **Pure engine** in `src/lib/calendar/` (shared by browser and server; exhaustively tested in `tests/unit/calendarEngine.test.js`):
+    - `dateWindow` (fixed / rolling = current period + N, minimum days ahead)
+    - `recurrence`
+    - `availability` (the approved Allow/Block order; recurring Allows whitelist only within their bounds)
+    - `capacity` (usage keys)
+    - `overlap`, `palette`, `formFields`, `describeRule`
+  - **Schema** (`004_calendar`): calendar tables with composite `(event_id, id)` foreign keys, so nothing crosses events. The bookings and selections tables exist now.
+  - **Services:** `calendarConfigService` (partial updates, whole-config validation), `calendarItemService` (Items with times; removed times are archived), `calendarRuleService` (`Applies to` normalized: none or all checked = all), and `calendarAvailabilityService` (loads context and usage, runs the engine).
+  - **Organizer pages:**
+    - Overview: stats and a weekly status grid, with the reason on hover or focus.
+    - Setup: autosave, progressive disclosure, searchable Event Time Zone.
+    - Items: drawer with color, shape, and times.
+    - Availability: drawer, toggle, and delete confirmation.
+  - The JSON API is under `/api/events/[eventId]/calendar/…`.
+- **0.5 public signup (done):**
+  - `/[code]/calendar`: paper-calendar grid (`CalendarGrid`), day panel (desktop side / phone bottom sheet), `PicksSummary`, and the details step through shallow routing.
+  - One `picks` list drives markers, panel, and summary. It persists in `sessionStorage` until submit.
+  - Public data (`buildPublicCalendar`) includes only *available* offerings.
+  - `createBooking`: form validation, then per-offering advisory locks, then the idempotency key, then `evaluateSelections` (shared with organizer edits), then insert with snapshots.
+  - Conflicts return per-selection reasons (`SELECTION_REASON`); the page drops only the failed ones.
+  - Confirmation at `/[code]/calendar/confirmation/[ref]` (32-byte ref, full link from `PUBLIC_BASE_URL`), plus `calendar.ics` (combined or separate; UTC; folded).
+  - Mail transport `log`/`smtp` (`src/lib/server/mail/mailer.js`); a mail failure never fails a booking.
+- **0.6 organizer bookings and export (done):**
+  - **Bookings table:** one row per booking per date, latest first. Columns: Date, Item(s), Name, Phone, Contact, WhatsApp, Notes, and a details link. Search, Item, and when filters; paged; on phones each row becomes a labeled card.
+  - **Details page:** signups, contact, notes, confirmation link, and activity log (`calendar_booking_log`).
+  - **`calendarBookingAdminService`:**
+    - `updateBooking`: reschedules through `evaluateSelections` (unchanged selections exempt; organizers aren't window-limited, but full, blocked, archived, or overlapping targets are refused with reasons).
+    - `cancelBooking`: soft cancel.
+    - `restoreBooking`: only if every spot is still free. The cancel toast offers Undo, which calls restore.
+  - **`calendarExportService`:** fixed columns per detail level (count / names / count_names / contact + chosen fields); contact details can't leak at other levels; CSV cells beginning with `= + - @` are neutralized.
+  - The export page previews exactly the exported columns and downloads through the API.
+- **0.7 seeds, accessibility, polish (done):**
+  - `scripts/seed.js`: a demo organizer with three events (date-only missionary meals with mixed rules, a timed summit with overlaps, and a published sacrament program). It runs the real services through `scripts/lib/registerAliases.js`, which maps `$lib`/`$server` for plain Node.
+  - `tests/e2e/accessibility.spec.js`: axe (WCAG 2.1 AA) on every main page in both themes. It must stay at zero violations.
+  - Links in running text are underlined, scrollable tables are focusable regions, and the light success color was darkened for contrast.
+  - The public booking API returns only `{ ok, reference }`.
+  - Handoff: `docs/rebuild/HANDOFF.md`.

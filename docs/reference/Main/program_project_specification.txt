@@ -1,0 +1,406 @@
+# prog.am Project Specification
+
+## Purpose
+
+prog.am is a web application for creating and viewing event programs and itineraries. Event organizers create structured programs, and attendees access them through short event-code URLs.
+
+## Product Scope Decided So Far
+
+The product has two primary experiences:
+
+- Public viewing of an event program
+- Organizer creation, editing, and administration of an event program
+
+The intended public-facing URL model is `prog.am/<CODE>`. Organizers choose custom event codes as long as they are unique and not reserved.
+
+The eventual production domain is `prog.am`. The system is designed so it can be deployed to a temporary domain first while preserving the same routing model.
+
+## Core Technology Stack
+
+### Application stack
+
+- Frontend: HTML, CSS, JavaScript
+- Backend: Node.js
+- Server framework: Express
+- Templating engine: EJS [1]
+- Database: PostgreSQL
+
+### Current repository conventions
+
+- Primary branch: `main`
+- Repository name: `program`
+- Local project/workspace/package naming may use `progam`
+
+## Routing Model
+
+### Public routes
+
+The application is designed around short event-code URLs using Express route parameters. Public event access resolves through `/:code` style routing. Express supports route parameters as part of normal routing structure, and EJS is used for server-rendered pages and partial-based layouts. [1][2]
+
+Public access behavior is designed around:
+
+- Active event code resolves to the event
+- Old event code may redirect to the current code
+- Unknown code renders not-found behavior
+- Password-gated public events are supported in the architecture
+
+### Organizer/application routes
+
+The application includes authenticated server-rendered organizer pages for:
+
+- Authentication
+- Account settings
+- Dashboard
+- Event editor
+- Event preview
+- Event settings
+- Event team management
+
+### API routes
+
+The application includes authenticated JSON API endpoints under `/api` for block editor operations.
+
+## User Roles and Access Model
+
+### Public users
+
+- Can view public event programs through the event code URL
+- May encounter a password gate for protected events
+
+### Authenticated organizers
+
+The application includes organizer-facing account and event management flows.
+
+Role-aware access exists for team/event editing operations. Step 8 explicitly established editor-or-higher access requirements for block operations.
+
+## Event Codes
+
+### Event code behavior
+
+- Each event has a custom code
+- Codes must be unique
+- Codes must not be reserved
+- Codes are part of the public URL path
+- Old codes are tracked separately for redirect/history behavior
+
+### Reserved words
+
+The schema includes a reserved-words table and seed data. Event code validation checks both active codes and old codes.
+
+### Code history
+
+The data model includes:
+
+- Current active event code
+- Old code records
+- Reserved words
+
+## Data Architecture Decided So Far
+
+### Core entities present in the design
+
+- Users
+- Sessions
+- Events
+- Event members
+- Old codes
+- Reserved words
+- Password tokens
+- Event versions
+- Blocks
+- Additional remaining tables defined in migration 011
+
+### Versioning model
+
+The event architecture includes explicit version records for:
+
+- Draft
+- Published
+- Previous published
+
+The schema constrains each event to one row per version type. Publish, unpublish, rollback, and deep-copy lifecycle behavior are part of the design, even if some of that lifecycle is not yet implemented.
+
+### Block storage model
+
+Blocks are stored as rows and ordered through the event version’s `block_order` JSONB array, which is the source of truth for top-to-bottom block order.
+
+Block mutation operations are designed to keep block rows and `block_order` synchronized transactionally.
+
+## Program Content Model
+
+### General model
+
+A program is composed of ordered blocks displayed from top to bottom.
+
+The system is intentionally block-based so additional block types can be added later without redesigning the full application.
+
+### Block types decided so far
+
+#### Original baseline block types
+
+- Text block
+- Label-value block
+- Column block
+
+#### Implemented in Step 8
+
+- Text block
+- Label-value block
+- Separator block
+
+The column block remains part of the product design but is explicitly deferred and not implemented in Step 8.
+
+### Text block
+
+Text blocks support structured rich text editing through Tiptap in the editor implementation. Text content stores both:
+
+- Sanitized HTML for rendering
+- ProseMirror JSON for round-trip editing
+
+Sanitized HTML is rendered as pre-sanitized content.
+
+### Label-value block
+
+Label-value blocks are structured rows of paired fields rendered in a definition-list style in the read-only rendering layer.
+
+### Separator block
+
+Separator blocks support a visual separator or spacing variant.
+
+### Column block
+
+The column block is part of the system design and is intended to allow side-by-side content blocks. It is explicitly out of scope for the current implemented editor step.
+
+## Editor and Authoring Experience
+
+### Core editing goals
+
+The authoring experience is intended to let organizers:
+
+- Create blocks
+- Edit block content
+- Reorder blocks
+- Duplicate blocks
+- Delete blocks
+- Preview draft content
+
+### Current editor implementation decisions
+
+The Step 8 implementation established the following design decisions:
+
+- Draft content editing occurs in the event editor
+- Block editing is draft-oriented
+- Auto-save is used instead of a required manual save button
+- Drag-and-drop reordering is used for top-level blocks
+- Block insertion is available between blocks
+- Editor and preview use shared read-only block rendering concepts
+
+### Save behavior
+
+- Auto-save uses debounced requests
+- Save-state feedback includes saving/saved states
+- CSRF protection applies to block API requests
+
+### Libraries and loading strategy for editor
+
+- Tiptap is used for rich text editing
+- SortableJS is used for drag-and-drop block reordering
+- The implementation intentionally avoids introducing a bundler at this stage
+- Client-side editor dependencies are loaded through importmap/CDN strategy rather than a build pipeline
+
+## Rendering Model
+
+### Server-rendered UI
+
+The application is server-rendered with EJS templates and partials. EJS supports includes/partial-based layout composition and is used for layouts, views, and reusable partials. [1]
+
+### Layout structure decided so far
+
+The application includes at least these layout layers:
+
+- Main authenticated layout
+- Public-event layout
+- Shared partials such as header, footer, and flash messages
+
+### Read-only block rendering
+
+Read-only block partials exist for:
+
+- Renderer dispatcher
+- Text block
+- Label-value block
+- Separator block
+
+These partials are intended to support preview and future public rendering consistency.
+
+## Visual Design System
+
+### Theme model
+
+- Dark mode is the default theme
+- Light mode is available as an option
+- Theme switching exists in the application
+- Theme preference is currently handled client-side in the main app implementation
+
+### Design goals decided so far
+
+The product direction is:
+
+- Clean
+- Elegant
+- Simple
+- Readable
+- Useful for real events
+- Mobile-usable
+- Distraction-light on public pages
+- Dependable rather than flashy
+
+### CSS system
+
+The codebase uses a shared CSS custom-property approach as part of the project styling system.
+
+The editor-specific implementation adds a dedicated stylesheet for editor and preview behavior while still using project CSS custom properties.
+
+### Public page intent
+
+Public event pages are intended to be:
+
+- Fast
+- Legible
+- Mobile-friendly
+- Suitable for in-event use on phones
+
+## Security and Request Handling Decisions Already Established
+
+### Authentication/session architecture
+
+The application includes:
+
+- Session-backed authentication
+- PostgreSQL-backed session storage
+- CSRF protection
+- Rate limiting
+- Attach-user middleware
+- Require-auth middleware
+
+### CSRF
+
+CSRF protection is globally applied in the Express middleware stack and block-editor API requests include CSRF headers.
+
+### Sanitization
+
+Text-block HTML is sanitized server-side using `sanitize-html` before storage or rendering. `sanitize-html` works on HTML strings and is being used specifically as the HTML sanitization boundary in this design. [3]
+
+The allowlist established for text-block sanitization includes:
+
+- Tags: `p`, `br`, `strong`, `em`, `u`, `s`, `ul`, `ol`, `li`, `a`, `span`, `h1`, `h2`, `h3`, `h4`, `h5`, `h6`
+- Link protocol restrictions: `http`, `https`, `mailto`
+- External-link hardening for links opening in a new tab with `rel="noopener noreferrer"`, which prevents opened pages from gaining access to the opener context. [4][5]
+
+## Repository and Integration Conventions
+
+### Commit and repository conventions
+
+The repository history was intentionally structured into layered commits covering:
+
+- Scaffold/tooling
+- Database schema
+- Express app/middleware/session wiring
+- Models/services
+- Routes/controllers
+- Views/layouts/partials
+- Static assets/CI
+
+### Branching approach
+
+The project uses trunk-based development with short-lived feature branches and `main` as the deployable branch.
+
+### CI structure
+
+The repository includes GitHub Actions CI with separate lint, test, and syntax-check jobs. GitHub’s `setup-node` action supports specifying the Node version and npm caching, which matches the established CI structure. [6]
+
+## File and Template Organization Already Established
+
+### Major top-level structure in use
+
+- `src/config/`
+- `src/controllers/`
+- `src/db/`
+- `src/middleware/`
+- `src/models/`
+- `src/routes/`
+- `src/services/`
+- `src/views/`
+- `public/css/`
+- `public/js/`
+- `.github/workflows/`
+
+### View organization patterns in use
+
+- `src/views/layouts/`
+- `src/views/partials/`
+- `src/views/auth/`
+- `src/views/account/`
+- `src/views/dashboard/`
+- `src/views/events/`
+- `src/views/public/`
+- `src/views/partials/editor/`
+- `src/views/partials/blocks/`
+
+### Asset organization patterns in use
+
+- Global site styles under `public/css/`
+- Client-side scripts under `public/js/`
+- Dedicated editor script and stylesheet for block editing
+
+## Current Implemented Block Editor Design Decisions
+
+The Step 8 implementation established these concrete block-editor design decisions:
+
+- `block.js` is the block data-access layer
+- Block CRUD is server-mediated through authenticated API endpoints
+- All create/delete/duplicate block operations keep `block_order` synchronized transactionally
+- The editor page renders blocks through EJS partials
+- Rich text editing uses Tiptap
+- Drag-and-drop ordering uses SortableJS
+- Read-only preview uses shared block rendering partials
+- The editor stylesheet is separate from the main stylesheet
+- The editor script is an ES module
+- The editor uses importmap/CDN dependency loading rather than a JS bundler
+
+## Implemented and Deferred Boundaries
+
+### Implemented through the current state
+
+- Auth/account/dashboard/event management scaffold
+- Event editor page
+- Event preview page
+- Block CRUD foundation
+- Text, label-value, and separator block editing
+- Read-only draft preview rendering
+
+### Explicitly deferred but still part of the project design
+
+- Column blocks
+- Publish flow
+- Unpublish flow
+- Rollback flow
+- Public published block rendering flow
+- Additional advanced block types
+- Future theming expansion
+- Possible attachments/embeds and related future content features
+
+## Integration Notes for Side Projects
+
+Any side project intended to merge cleanly into this codebase should preserve the already-established decisions in this document, especially:
+
+- Express + EJS server-rendered architecture [1][2]
+- PostgreSQL-backed data model
+- Event-code-first public routing model
+- Draft/published version architecture
+- Block-row plus `block_order` ordering model
+- Dark-default, light-optional theme behavior
+- CSS custom-property styling approach
+- Partial-based EJS rendering organization [1]
+- Server-side sanitization boundary for rich text [3]
+- Existing repository folder organization and layered architecture

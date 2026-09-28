@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Availability · progr.am</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+</head>
+<body data-shell="organizer" data-nav="availability" data-crumbs="Ward Missionary Meals|Calendar|Availability">
+	<div class="content" data-shell-content style="max-width: 60rem">
+		<div class="page-head">
+			<div>
+				<h1 class="page-head__title">Availability</h1>
+				<p class="page-head__sub">Allow rules open dates; Block rules close them. One-date rules override repeating ones.</p>
+			</div>
+			<button class="btn btn--primary" type="button" data-open="rule-drawer"><svg class="icon"><use href="#i-plus"/></svg>Add rule</button>
+		</div>
+
+		<div class="toolbar">
+			<div class="segmented" role="radiogroup" aria-label="Filter rules">
+				<button class="segmented__opt" role="radio" aria-checked="true" data-value="all">All <span class="subtle tabular">6</span></button>
+				<button class="segmented__opt" role="radio" aria-checked="false" data-value="allow">Allow <span class="subtle tabular">2</span></button>
+				<button class="segmented__opt" role="radio" aria-checked="false" data-value="block">Block <span class="subtle tabular">4</span></button>
+			</div>
+		</div>
+
+		<div class="card rule-list" id="rules">
+			<div class="rule">
+				<span class="rule__kind rule__kind--block" title="Block"><svg class="icon"><use href="#i-ban"/></svg></span>
+				<div class="rule__main">
+					<div class="rule__title">Block every Monday</div>
+					<div class="rule__meta"><span class="row" style="--row-gap: 4px"><svg class="icon"><use href="#i-repeat"/></svg>Weekly</span><span>All items</span><span>P-day</span></div>
+				</div>
+				<div class="rule__actions">
+					<label class="switch" title="Active"><input type="checkbox" checked aria-label="Rule active"><span class="switch__track"></span></label>
+					<button class="btn btn--ghost btn--icon btn--sm" type="button" data-open="rule-drawer" aria-label="Edit rule"><svg class="icon"><use href="#i-pencil"/></svg></button>
+					<button class="btn btn--danger-quiet btn--icon btn--sm" type="button" data-open="delete-dialog" aria-label="Delete rule"><svg class="icon"><use href="#i-trash"/></svg></button>
+				</div>
+			</div>
+			<div class="rule">
+				<span class="rule__kind rule__kind--allow" title="Allow"><svg class="icon"><use href="#i-shield-check"/></svg></span>
+				<div class="rule__main">
+					<div class="rule__title">Allow Monday, October 12</div>
+					<div class="rule__meta"><span class="row" style="--row-gap: 4px"><svg class="icon"><use href="#i-calendar"/></svg>One date</span><span>All items</span><span>Transfer week: P-day moved</span></div>
+				</div>
+				<div class="rule__actions">
+					<label class="switch"><input type="checkbox" checked aria-label="Rule active"><span class="switch__track"></span></label>
+					<button class="btn btn--ghost btn--icon btn--sm" type="button" data-open="rule-drawer" aria-label="Edit rule"><svg class="icon"><use href="#i-pencil"/></svg></button>
+					<button class="btn btn--danger-quiet btn--icon btn--sm" type="button" data-open="delete-dialog" aria-label="Delete rule"><svg class="icon"><use href="#i-trash"/></svg></button>
+				</div>
+			</div>
+			<div class="rule">
+				<span class="rule__kind rule__kind--allow" title="Allow"><svg class="icon"><use href="#i-shield-check"/></svg></span>
+				<div class="rule__main">
+					<div class="rule__title">Allow Tue, Thu, Sat</div>
+					<div class="rule__meta"><span class="row" style="--row-gap: 4px"><svg class="icon"><use href="#i-repeat"/></svg>Weekly</span><span class="item-chip"><span class="marker marker--sm" data-color="pink" data-shape="diamond"></span>Sisters Park &amp; Moreau</span></div>
+				</div>
+				<div class="rule__actions">
+					<label class="switch"><input type="checkbox" checked aria-label="Rule active"><span class="switch__track"></span></label>
+					<button class="btn btn--ghost btn--icon btn--sm" type="button" data-open="rule-drawer" aria-label="Edit rule"><svg class="icon"><use href="#i-pencil"/></svg></button>
+					<button class="btn btn--danger-quiet btn--icon btn--sm" type="button" data-open="delete-dialog" aria-label="Delete rule"><svg class="icon"><use href="#i-trash"/></svg></button>
+				</div>
+			</div>
+			<div class="rule">
+				<span class="rule__kind rule__kind--block"><svg class="icon"><use href="#i-ban"/></svg></span>
+				<div class="rule__main">
+					<div class="rule__title">Block the first Sunday of each month</div>
+					<div class="rule__meta"><span class="row" style="--row-gap: 4px"><svg class="icon"><use href="#i-repeat"/></svg>Monthly</span><span>All items</span><span>Fast Sunday</span></div>
+				</div>
+				<div class="rule__actions">
+					<label class="switch"><input type="checkbox" checked aria-label="Rule active"><span class="switch__track"></span></label>
+					<button class="btn btn--ghost btn--icon btn--sm" type="button" data-open="rule-drawer" aria-label="Edit rule"><svg class="icon"><use href="#i-pencil"/></svg></button>
+					<button class="btn btn--danger-quiet btn--icon btn--sm" type="button" data-open="delete-dialog" aria-label="Delete rule"><svg class="icon"><use href="#i-trash"/></svg></button>
+				</div>
+			</div>
+			<div class="rule">
+				<span class="rule__kind rule__kind--block"><svg class="icon"><use href="#i-ban"/></svg></span>
+				<div class="rule__main">
+					<div class="rule__title">Block Saturday, October 10</div>
+					<div class="rule__meta"><span class="row" style="--row-gap: 4px"><svg class="icon"><use href="#i-calendar"/></svg>One date</span><span>All items</span><span>Zone conference</span></div>
+				</div>
+				<div class="rule__actions">
+					<label class="switch"><input type="checkbox" checked aria-label="Rule active"><span class="switch__track"></span></label>
+					<button class="btn btn--ghost btn--icon btn--sm" type="button" data-open="rule-drawer" aria-label="Edit rule"><svg class="icon"><use href="#i-pencil"/></svg></button>
+					<button class="btn btn--danger-quiet btn--icon btn--sm" type="button" data-open="delete-dialog" aria-label="Delete rule"><svg class="icon"><use href="#i-trash"/></svg></button>
+				</div>
+			</div>
+			<div class="rule is-inactive">
+				<span class="rule__kind rule__kind--block"><svg class="icon"><use href="#i-ban"/></svg></span>
+				<div class="rule__main">
+					<div class="rule__title">Block every other Wednesday <span class="badge" style="margin-left: var(--space-1)">Inactive</span></div>
+					<div class="rule__meta"><span class="row" style="--row-gap: 4px"><svg class="icon"><use href="#i-repeat"/></svg>Every 2 weeks · from Sep 2</span><span class="item-chip"><span class="marker marker--sm" data-color="amber" data-shape="triangle"></span>Elders Tuilagi &amp; Brooks</span><span>District council</span></div>
+				</div>
+				<div class="rule__actions">
+					<label class="switch"><input type="checkbox" aria-label="Rule active"><span class="switch__track"></span></label>
+					<button class="btn btn--ghost btn--icon btn--sm" type="button" data-open="rule-drawer" aria-label="Edit rule"><svg class="icon"><use href="#i-pencil"/></svg></button>
+					<button class="btn btn--danger-quiet btn--icon btn--sm" type="button" data-open="delete-dialog" aria-label="Delete rule"><svg class="icon"><use href="#i-trash"/></svg></button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="overlay" id="rule-drawer" hidden>
+		<aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="rule-title">
+			<div class="drawer__head">
+				<h2 class="dialog__title" id="rule-title">New rule</h2>
+				<button class="btn btn--ghost btn--icon" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+			</div>
+			<div class="drawer__body stack" style="--stack-gap: var(--space-5)">
+				<div class="field">
+					<span class="label" id="kind-l">Rule</span>
+					<div class="segmented segmented--block" role="radiogroup" aria-labelledby="kind-l" data-group="kind" data-summary>
+						<button class="segmented__opt" role="radio" aria-checked="false" data-value="allow"><svg class="icon" style="color: var(--color-success)"><use href="#i-shield-check"/></svg>Allow</button>
+						<button class="segmented__opt" role="radio" aria-checked="true" data-value="block"><svg class="icon" style="color: var(--color-danger)"><use href="#i-ban"/></svg>Block</button>
+					</div>
+					<span class="hint" data-when="kind:allow" hidden>Items with an Allow rule are only open on the dates their Allow rules match.</span>
+				</div>
+
+				<div class="field">
+					<span class="label" id="when-l">When</span>
+					<div class="segmented segmented--block" role="radiogroup" aria-labelledby="when-l" data-group="when">
+						<button class="segmented__opt" role="radio" aria-checked="false" data-value="once">One date</button>
+						<button class="segmented__opt" role="radio" aria-checked="true" data-value="repeat">Repeats</button>
+					</div>
+				</div>
+
+				<div class="reveal" data-when="when:once">
+					<div class="field">
+						<span class="label" id="once-l">Date</span>
+						<div class="select" data-datepicker="2026-10-10">
+							<button class="select-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="once-l" data-popover-trigger><span class="select-trigger__value">Sat, Oct 10, 2026</span><svg class="icon"><use href="#i-calendar"/></svg></button>
+							<div class="popover datepicker" hidden role="dialog" aria-label="Choose date"></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="reveal" data-when="when:repeat">
+					<div class="stack" style="--stack-gap: var(--space-4)">
+						<div class="field">
+							<span class="label" id="freq-l">Repeats</span>
+							<div class="select" id="freq">
+								<button class="select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="freq-l"><span class="select-trigger__value">Weekly</span><svg class="icon icon--chev"><use href="#i-chev-down"/></svg></button>
+								<div class="popover" hidden>
+									<ul class="listbox" role="listbox" aria-labelledby="freq-l">
+										<li class="option" role="option" aria-selected="false" data-value="daily">Daily<svg class="icon option__check"><use href="#i-check"/></svg></li>
+										<li class="option" role="option" aria-selected="true" data-value="weekly">Weekly<svg class="icon option__check"><use href="#i-check"/></svg></li>
+										<li class="option" role="option" aria-selected="false" data-value="biweekly">Every 2 weeks<svg class="icon option__check"><use href="#i-check"/></svg></li>
+										<li class="option" role="option" aria-selected="false" data-value="monthly-date">Monthly on a date<svg class="icon option__check"><use href="#i-check"/></svg></li>
+										<li class="option" role="option" aria-selected="false" data-value="monthly-weekday">Monthly on a weekday<svg class="icon option__check"><use href="#i-check"/></svg></li>
+									</ul>
+								</div>
+							</div>
+						</div>
+
+						<div class="field" data-when="freq:weekly,biweekly">
+							<span class="label" id="wd-l">On</span>
+							<div class="weekdays" role="group" aria-labelledby="wd-l">
+								<button class="weekday" type="button" aria-pressed="false" aria-label="Sunday">S</button>
+								<button class="weekday" type="button" aria-pressed="true" aria-label="Monday">M</button>
+								<button class="weekday" type="button" aria-pressed="false" aria-label="Tuesday">T</button>
+								<button class="weekday" type="button" aria-pressed="false" aria-label="Wednesday">W</button>
+								<button class="weekday" type="button" aria-pressed="false" aria-label="Thursday">T</button>
+								<button class="weekday" type="button" aria-pressed="false" aria-label="Friday">F</button>
+								<button class="weekday" type="button" aria-pressed="false" aria-label="Saturday">S</button>
+							</div>
+						</div>
+
+						<div class="field" data-when="freq:monthly-date" hidden>
+							<label class="label" for="dom">On day</label>
+							<div class="row"><input class="input tabular" id="dom" value="15" style="width: 4.5rem" inputmode="numeric"><span class="hint">of each month (skipped in months without that day)</span></div>
+						</div>
+
+						<div class="field" data-when="freq:monthly-weekday" hidden>
+							<span class="label">On the</span>
+							<div class="row">
+								<div class="select" style="width: 8rem">
+									<button class="select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Which week"><span class="select-trigger__value">First</span><svg class="icon icon--chev"><use href="#i-chev-down"/></svg></button>
+									<div class="popover" hidden><ul class="listbox" role="listbox" aria-label="Which week">
+										<li class="option" role="option" aria-selected="true" data-value="1">First</li>
+										<li class="option" role="option" aria-selected="false" data-value="2">Second</li>
+										<li class="option" role="option" aria-selected="false" data-value="3">Third</li>
+										<li class="option" role="option" aria-selected="false" data-value="4">Fourth</li>
+										<li class="option" role="option" aria-selected="false" data-value="last">Last</li>
+									</ul></div>
+								</div>
+								<div class="select" style="width: 9rem">
+									<button class="select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Weekday"><span class="select-trigger__value">Sunday</span><svg class="icon icon--chev"><use href="#i-chev-down"/></svg></button>
+									<div class="popover" hidden><ul class="listbox" role="listbox" aria-label="Weekday">
+										<li class="option" role="option" aria-selected="true" data-value="0">Sunday</li>
+										<li class="option" role="option" aria-selected="false" data-value="1">Monday</li>
+										<li class="option" role="option" aria-selected="false" data-value="2">Tuesday</li>
+										<li class="option" role="option" aria-selected="false" data-value="3">Wednesday</li>
+										<li class="option" role="option" aria-selected="false" data-value="4">Thursday</li>
+										<li class="option" role="option" aria-selected="false" data-value="5">Friday</li>
+										<li class="option" role="option" aria-selected="false" data-value="6">Saturday</li>
+									</ul></div>
+								</div>
+							</div>
+						</div>
+
+						<div class="form-grid">
+							<div class="field">
+								<span class="label" id="from-l">Starts <span class="label__opt">(optional)</span></span>
+								<div class="select" data-datepicker="2026-09-01">
+									<button class="select-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="from-l" data-popover-trigger><span class="select-trigger__value is-placeholder">Any time</span><svg class="icon"><use href="#i-calendar"/></svg></button>
+									<div class="popover datepicker" hidden role="dialog" aria-label="Choose start"></div>
+								</div>
+							</div>
+							<div class="field">
+								<span class="label" id="to-l">Ends <span class="label__opt">(optional)</span></span>
+								<div class="select" data-datepicker="2026-12-31">
+									<button class="select-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="to-l" data-popover-trigger><span class="select-trigger__value is-placeholder">No end</span><svg class="icon"><use href="#i-calendar"/></svg></button>
+									<div class="popover datepicker popover--right" hidden role="dialog" aria-label="Choose end"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="field">
+					<span class="label" id="applies-l">Applies to</span>
+					<div class="segmented segmented--block" role="radiogroup" aria-labelledby="applies-l" id="applies">
+						<button class="segmented__opt" role="radio" aria-checked="true" data-value="all">All Items</button>
+						<button class="segmented__opt" role="radio" aria-checked="false" data-value="selected">Selected Items</button>
+					</div>
+					<div class="card" style="margin-top: var(--space-1)">
+						<div class="stack" style="--stack-gap: var(--space-2); padding: var(--space-3)" id="applies-items">
+							<label class="check"><input type="checkbox" checked><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span><span class="item-chip"><span class="marker" data-color="blue" data-shape="circle"></span>Elders Ramos &amp; Chen</span></label>
+							<label class="check"><input type="checkbox" checked><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span><span class="item-chip"><span class="marker" data-color="amber" data-shape="triangle"></span>Elders Tuilagi &amp; Brooks</span></label>
+							<label class="check"><input type="checkbox" checked><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span><span class="item-chip"><span class="marker" data-color="green" data-shape="square"></span>Sisters Okafor &amp; Lind</span></label>
+							<label class="check"><input type="checkbox" checked><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span><span class="item-chip"><span class="marker" data-color="pink" data-shape="diamond"></span>Sisters Park &amp; Moreau</span></label>
+						</div>
+					</div>
+					<span class="hint" id="applies-hint">Includes Items you add later.</span>
+				</div>
+
+				<div class="field">
+					<label class="label" for="reason">Label <span class="label__opt">(optional)</span></label>
+					<input class="input" id="reason" value="P-day" placeholder="e.g. Zone conference">
+				</div>
+
+				<div class="alert" style="font-size: var(--text-sm)">
+					<svg class="icon subtle"><use href="#i-info"/></svg>
+					<div id="rule-summary"><strong>Blocks every Monday</strong> for all items.</div>
+				</div>
+			</div>
+			<div class="drawer__foot">
+				<label class="switch" style="margin-right: auto"><input type="checkbox" checked><span class="switch__track"></span><span class="switch__text">Active</span></label>
+				<button class="btn btn--ghost" type="button" data-close>Cancel</button>
+				<button class="btn btn--primary" type="button" data-close data-toast="Rule saved">Save rule</button>
+			</div>
+		</aside>
+	</div>
+
+	<div class="overlay" id="delete-dialog" hidden>
+		<div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="del-t" aria-describedby="del-d">
+			<div class="dialog__body">
+				<div class="dialog__icon"><svg class="icon"><use href="#i-trash"/></svg></div>
+				<h2 class="dialog__title" id="del-t">Delete this rule?</h2>
+				<p class="dialog__text" id="del-d"><strong>Block every Monday</strong> will be deleted for good. Dates it closed will open again unless another rule closes them. To keep it for later, turn it off instead.</p>
+			</div>
+			<div class="dialog__foot">
+				<button class="btn btn--ghost" type="button" data-close data-autofocus>Cancel</button>
+				<button class="btn btn--danger" type="button" data-close data-toast="Rule deleted" data-toast-icon="trash">Delete rule</button>
+			</div>
+		</div>
+	</div>
+
+	<script src="assets/mock.js"></script>
+	<script>
+		// Mockup of the "Applies to" rule: checkbox changes drive the choice.
+		// All checked or none checked -> All Items; some checked -> Selected Items.
+		document.addEventListener("mock:ready", () => {
+			const applies = document.getElementById("applies");
+			const boxes = [...document.querySelectorAll("#applies-items input")];
+			const hint = document.getElementById("applies-hint");
+
+			function setApplies(value) {
+
+				applies.querySelectorAll(".segmented__opt").forEach((opt) => opt.setAttribute("aria-checked", String(opt.dataset.value === value)));
+			}
+
+			function syncFromBoxes() {
+
+				const count = boxes.filter((box) => box.checked).length;
+				setApplies(count > 0 && count < boxes.length ? "selected" : "all");
+				hint.textContent = count === 0 ? "No items checked, so this applies to all items." : count === boxes.length ? "Includes Items you add later." : `Applies to ${count} of ${boxes.length} items only.`;
+			}
+
+			boxes.forEach((box) => box.addEventListener("change", syncFromBoxes));
+			applies.addEventListener("segmented:change", (event) => {
+				if (event.detail.value === "all") {
+					boxes.forEach((box) => { box.checked = true; });
+				}
+				else {
+					boxes.forEach((box) => { box.checked = false; });
+					boxes[0].focus();
+				}
+				syncFromBoxes();
+				if (event.detail.value === "selected") {
+					setApplies("selected");
+					hint.textContent = "Check the items this rule applies to.";
+				}
+			});
+
+			document.getElementById("freq").addEventListener("select:change", (event) => {
+				document.querySelectorAll('[data-when^="freq:"]').forEach((panel) => {
+					panel.hidden = !panel.dataset.when.split(":")[1].split(",").includes(event.detail.value);
+				});
+			});
+
+			document.querySelectorAll("#rules .switch input").forEach((input) => {
+				input.addEventListener("change", () => {
+					input.closest(".rule").classList.toggle("is-inactive", !input.checked);
+					window.mock.showToast(input.checked ? "Rule activated" : "Rule deactivated", { icon: input.checked ? "check" : "power" });
+				});
+			});
+		});
+	</script>
+</body>
+</html>

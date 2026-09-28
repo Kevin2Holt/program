@@ -1,0 +1,256 @@
+You are continuing work in the same repository and same chat.
+
+The repo is `Kevin2Holt/program` on `main`. Do not recreate the repo or redo prior phases. The current codebase plus `CLAUDE.md` are the primary source of truth.
+
+This is the **final planned implementation pass** for the calendar module.
+
+Your goals in this pass are to complete:
+
+1. Organizer booking edit / reschedule flow
+2. CSV export wiring
+3. ICS / add-to-calendar generation
+4. Email confirmation sending scaffolding/integration
+5. CSRF protection across mutating routes
+6. Rate limiting on sensitive public endpoints
+7. Final cleanup, validation tightening, and tests
+
+Do not expand scope beyond those items.
+
+---
+
+## Before coding
+
+1. Read `CLAUDE.md`.
+2. Inspect only the relevant current files for:
+   - booking routes/controllers/services/views
+   - export service
+   - confirmation flow
+   - app middleware wiring
+   - public mutating routes
+   - existing tests
+3. Use the repo as the main source of truth; consult long specs only if absolutely necessary.
+
+---
+
+## Part 1 – Organizer booking edit / reschedule
+
+Implement the organizer-side ability to edit or reschedule an existing booking.
+
+Recommended routes under the existing organizer namespace:
+- `GET /events/:eventId/calendar/bookings/:bookingId/edit`
+- `POST /events/:eventId/calendar/bookings/:bookingId`
+
+Use `calendar.edit.bookings` permission protection.
+
+Requirements:
+- Allow organizer to update:
+  - selected date(s)
+  - selected item(s)
+  - selected occurrence(s) in timed mode
+  - notes
+  - relevant registrant fields if appropriate
+- Reuse the booking validation logic as much as possible rather than duplicating rules.
+- Enforce the same rules as initial booking:
+  - date window
+  - blocked dates
+  - capacity
+  - overlap constraints
+- Be conservative:
+  - if the edited selection conflicts, reject with clear error messages
+  - do not partially save invalid booking changes
+- Preserve historical clarity in booking selections/snapshots.
+- Canceled bookings should not be editable unless you decide on a clear safe rule; default to non-editable if uncertain.
+
+Views:
+- booking edit form
+- reuse existing styling patterns
+- make it understandable on mobile, even if not heavily polished
+
+Tests:
+- happy-path reschedule
+- attempt to move into blocked/full/unavailable slot
+- permission enforcement
+- canceled-booking behavior
+
+---
+
+## Part 2 – CSV export wiring
+
+Wire organizer export UI and backend to the existing `calendarExportService`.
+
+Expected route family:
+- `GET /events/:eventId/calendar/export`
+- `POST /events/:eventId/calendar/export` or direct download GET if consistent with current app style
+
+Requirements:
+- Export at least booking-level CSV using the existing service.
+- If the service supports multiple detail levels, expose them cleanly.
+- Use correct response headers for CSV download.
+- Restrict to organizer users with `calendar.export`.
+- Keep the UI simple and server-rendered.
+
+Tests:
+- authorized export succeeds
+- unauthorized export blocked
+- CSV content type / attachment headers correct
+- exported rows reflect booking status appropriately
+
+---
+
+## Part 3 – ICS / add-to-calendar generation
+
+Implement actual add-to-calendar output for booking confirmation.
+
+You may choose one of these approaches:
+- generate a downloadable `.ics` file on demand from a route, or
+- generate in-memory ICS content for download
+
+Recommended route:
+- `GET /:code/calendar/confirmation/:ref/calendar.ics`
+or another route that is consistent and safe
+
+Requirements:
+- Support the already-decided export mode:
+  - default single combined event
+  - separate-per-item if config supports it
+- Use booking confirmation data and canonical event time zone
+- Be conservative and correct:
+  - valid ICS format
+  - clear summary/title
+  - date/time info correct for date-only vs timed selections
+- Do not make this an edit/auth route; it should be tied to possession of the confirmation ref, same as the confirmation page
+
+Update the confirmation page to link to the real ICS download instead of a placeholder.
+
+Tests:
+- ICS route returns correct content type / disposition
+- route tied to valid confirmation ref
+- date-only and timed cases render sensible output
+
+---
+
+## Part 4 – Email confirmation sending scaffolding/integration
+
+Implement email confirmation sending in a way that is real enough to support the product, but conservative enough to keep this pass manageable.
+
+Requirements:
+- Only send when:
+  - email field is enabled,
+  - email confirmation is enabled in config,
+  - and the submitted booking includes an email address
+- Trigger email after successful booking creation
+- Include:
+  - booking summary
+  - confirmation page link
+  - optionally the ICS link
+- Use environment/config-based mail setup
+- If the repo does not yet have a mail provider, choose a minimal abstraction that keeps the app clean:
+  - e.g. `src/services/mailService.js`
+  - `src/services/calendarEmailService.js`
+
+Important:
+- Do not hardcode credentials
+- Use env vars
+- If actual provider delivery cannot be tested in CI, structure it so tests can stub/mock it cleanly
+
+Tests:
+- service-level tests for “should send / should not send”
+- route or booking-flow tests verifying the mail service is invoked only when appropriate
+
+---
+
+## Part 5 – CSRF protection
+
+Wire CSRF protection into the application for state-changing routes.
+
+The project previously identified CSRF as a seam to wire later; do that now.
+
+Requirements:
+- Apply CSRF protection to mutating form routes in a way consistent with server-rendered EJS forms.
+- Ensure forms render and submit hidden CSRF tokens properly.
+- Cover organizer and public mutating form routes:
+  - setup/config saves
+  - item/occurrence/availability CRUD
+  - selection updates if applicable
+  - booking submit
+  - booking cancel/edit
+- If some route type needs a special pattern, document it in code comments.
+
+Tests:
+- at least a focused set confirming:
+  - token required on protected mutation routes
+  - valid token accepted
+  - missing/invalid token rejected
+
+Follow established Express/Node security best practices for form-based CSRF protection. [web:72][web:82]
+
+---
+
+## Part 6 – Rate limiting
+
+Add rate limiting on sensitive public routes.
+
+At minimum, apply to:
+- `POST /:code/calendar/selections`
+- `POST /:code/calendar/submit`
+- any email/ICS-sensitive public route if relevant
+
+Also consider login/auth routes if they already exist in the app and can be wired cleanly without scope creep, but do not expand much beyond the calendar needs.
+
+Requirements:
+- Use sane defaults, conservative enough to reduce abuse but not so low that normal usage breaks.
+- Keep configuration centralized and adjustable.
+- Ensure organizer pages are not accidentally made painful to use.
+
+Tests:
+- add focused tests if practical
+- if full rate-limit tests are awkward in current setup, at least add middleware-level coverage where possible and document the chosen thresholds
+
+Express security guidance consistently recommends rate limiting to reduce brute-force and abuse risk on public endpoints. [web:71][web:76]
+
+---
+
+## Part 7 – Final cleanup and polish
+
+Do a final pass on the calendar module for:
+- validation message clarity
+- route/view consistency
+- confirmation page polish
+- organizer bookings page usability
+- dead placeholder removal where now implemented
+- small CSS cleanup only where needed
+- any lightweight test gaps related to the new work
+
+Do not do a broad redesign.
+
+---
+
+## Constraints
+
+- Reuse existing services and patterns; do not build parallel systems.
+- Keep everything server-rendered and EJS-based.
+- Keep changes scoped to the calendar module and necessary app-level middleware wiring.
+- Avoid unnecessary dependencies; if you add one, justify it briefly.
+- Do not introduce secrets into source control.
+- Run tests, lint, and syntax-check before finishing.
+
+---
+
+## Deliverables
+
+At the end, provide:
+
+1. Summary of new/changed files and features for:
+   - booking edit/reschedule
+   - CSV export
+   - ICS
+   - email confirmation
+   - CSRF
+   - rate limiting
+2. Test summary and results
+3. Any new env vars or setup requirements
+4. Commits created
+5. A clear statement of whether the calendar module is now feature-complete for its intended first usable version
+6. A short list of any intentionally deferred non-critical improvements
+
+Stop after this final pass.

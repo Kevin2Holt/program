@@ -1,0 +1,262 @@
+You are continuing work on the private GitHub repository for `progr.am`.
+
+The repository already exists and Phase 4A is complete. Do not recreate the repo, do not restructure the project, and do not redo completed work.
+
+I am attaching the same project specification files used previously. Read them first, but keep your implementation narrowly scoped to this milestone.
+
+Your task is to complete **Phase 4B.1 only: Organizer setup + calendar config**.
+
+---
+
+# Objective
+
+Implement the organizer-facing calendar setup flow for the `progr.am` calendar module.
+
+This phase should allow an authenticated organizer to configure and persist the core event-level calendar settings described in the specifications, with server-rendered pages, validation, and tests.
+
+Do not implement later milestones in this prompt.
+
+---
+
+# Use these files as source of truth
+
+Read and follow:
+1. `program_project_specification.txt`
+2. `Phase-2-Final-Specification.txt`
+3. `Phase-3-Final-Specification.txt`
+
+Also inspect the existing repository and Phase 4A implementation before making changes.
+
+If the specs and the current code conflict, preserve the architecture and completed Phase 4A foundation unless the specs clearly require a correction.
+
+---
+
+# Phase 4A is already complete
+
+Assume the following already exist in the repo and should be reused, not replaced:
+- Express/EJS app structure
+- database/migration tooling
+- calendar tables and models
+- calendar services scaffolding
+- public and organizer calendar routes
+- permission scaffolding
+- minimal placeholder pages
+- test setup
+- CI
+- CSS/layout foundation
+
+Build on top of that work.
+
+---
+
+# Scope for Phase 4B.1
+
+Implement only the organizer setup and calendar configuration layer.
+
+## In scope
+
+### 1. Organizer setup page
+Implement the organizer setup page at:
+
+- `/events/:eventId/calendar/setup`
+
+This page should be a real server-rendered configuration form, not a placeholder.
+
+It should load the existing calendar config for the event if present, or provide sensible defaults for a not-yet-configured event.
+
+### 2. Event-level calendar config persistence
+Implement persistence for the event-level calendar configuration described in the specifications.
+
+At minimum, support editing and saving:
+
+- calendar enabled/disabled
+- public visibility state
+- public title / label if supported by schema
+- date window mode
+- fixed date range fields where relevant
+- rolling window fields where relevant
+- rolling window unit behavior
+- time behavior mode
+- canonical event time zone
+- structured public form configuration
+- notes enabled
+- email confirmation enabled
+- add-to-calendar enabled
+- calendar export mode default
+- any bounded config fields already planned in Phase 3 and supported by Phase 4A schema
+
+Use the existing schema and services where possible. If a small migration adjustment is truly necessary, make the minimum safe change and explain why.
+
+### 3. Validation
+Implement server-side validation for the setup form.
+
+Validation should cover at minimum:
+- required fields
+- invalid enum values
+- valid fixed date ranges
+- valid rolling window configuration
+- canonical time zone presence/format if the app expects a bounded list or string
+- email confirmation cannot be enabled unless email collection is enabled
+- structured form config must remain within the bounded supported field system
+- no acceptance of arbitrary freeform form-builder config
+
+If client-side enhancement is added, it must be optional and must not replace server validation.
+
+### 4. Structured public form config UI
+Implement the organizer UI for the bounded field system.
+
+The setup form should support the structured configuration model already decided, rather than a freeform builder.
+
+At minimum, support organizer control over the enabled/required state of the predefined public fields relevant to the current specifications, including:
+- name
+- phone number
+- email if supported in the Phase 2/3 spec and schema
+- notes toggle as separately controlled behavior if that is modeled separately
+
+Also include the phone metadata assumptions already established:
+- preferred contact method: call / text
+- number type: cell / WhatsApp
+
+Do not invent a drag-and-drop custom form system.
+
+### 5. Email confirmation dependency behavior
+Implement the rule that email confirmation cannot be enabled unless email collection is enabled.
+
+The UI should:
+- show the email confirmation control
+- disable or gray it out when unavailable
+- preserve clear explanatory text
+
+The server must enforce the same rule regardless of UI state.
+
+### 6. Setup page UX
+Keep the page clean, server-rendered, and aligned with the existing app style.
+
+Use progressive disclosure where appropriate so the form does not feel overwhelming.
+
+A good approach would be grouped sections such as:
+- Calendar visibility
+- Date window
+- Time behavior
+- Public signup fields
+- Confirmation and export preferences
+
+Do not overdesign this page, but it should feel intentional and integrated.
+
+### 7. Organizer calendar landing page integration
+Update the organizer calendar landing page as needed so it meaningfully links to or summarizes setup state.
+
+At minimum, it should no longer feel disconnected from the setup flow.
+
+### 8. Tests
+Add focused tests for this milestone.
+
+At minimum, cover:
+- GET setup page
+- POST/PATCH save behavior
+- valid config persistence
+- invalid config rejection
+- email confirmation dependency enforcement
+- fixed vs rolling window validation
+- permission protection for organizer setup route
+
+Use the existing test framework and project conventions.
+
+---
+
+# Out of scope for Phase 4B.1
+
+Do not implement these in this prompt:
+- item create/edit/archive flows
+- occurrence CRUD
+- recurring availability UI
+- one-time availability UI
+- public browsing/selection flow
+- public submit flow
+- confirmation page completion
+- organizer booking list/edit flow
+- export download wiring
+- email sending
+- add-to-calendar generation
+- auth system expansion beyond what is needed to support this milestone
+- broad visual redesign
+- unrelated refactors
+
+If you touch any of these, keep it minimal and only because it is strictly required to complete Phase 4B.1 cleanly.
+
+---
+
+# Implementation constraints
+
+- Reuse the current architecture.
+- Do not introduce a SPA.
+- Keep source-of-truth validation on the server.
+- Reuse existing services and expand them instead of creating overlapping abstractions.
+- Keep route structure consistent with the existing organizer route family.
+- Keep permissions explicit.
+- Keep changes narrowly scoped to this milestone.
+- Avoid unnecessary new dependencies.
+- Prefer extending the current CSS/view patterns over inventing a new UI layer.
+
+---
+
+# Workflow requirements
+
+Before coding:
+1. Inspect the existing repo state.
+2. Briefly identify the files you expect to modify.
+3. State any ambiguity you are resolving with the safest assumption.
+4. Then implement.
+
+While coding:
+- Keep changes small and directly tied to this milestone.
+- Do not rewrite working Phase 4A code unless necessary.
+- Prefer a small number of coherent commits.
+
+After coding:
+- Run the relevant tests.
+- Run lint.
+- Summarize exactly what changed.
+
+---
+
+# Deliverables
+
+Provide:
+
+## 1. Implemented code
+Make the changes in the repository.
+
+## 2. Short implementation summary
+Include:
+- files changed
+- key validation rules added
+- config fields now supported
+- whether any migration changes were required
+
+## 3. Test summary
+Include:
+- tests added/updated
+- pass/fail result
+
+## 4. Commit summary
+List the commit(s) created for this milestone.
+
+## 5. Phase status
+State whether **Phase 4B.1** is complete.
+
+## 6. Stop after Phase 4B.1
+Do not proceed into the next milestone.
+
+---
+
+# Cost-efficiency rule
+
+Keep this milestone tightly bounded.
+
+Do not implement “while I’m here” extras.
+Do not produce long prose.
+Do not restate the specs at length.
+Focus on code changes necessary to complete Phase 4B.1 only.
+
+Begin by reading the attached files and inspecting the current repository state.

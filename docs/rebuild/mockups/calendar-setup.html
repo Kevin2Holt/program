@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Calendar setup · progr.am</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+</head>
+<body data-shell="organizer" data-nav="setup" data-crumbs="Ward Missionary Meals|Calendar|Setup">
+	<template data-topbar-actions>
+		<span class="save-state is-saved"><svg class="icon"><use href="#i-cloud-check"/></svg>Saved</span>
+		<a class="btn btn--sm" href="calendar.html" target="_blank"><svg class="icon"><use href="#i-external"/></svg><span>View public page</span></a>
+	</template>
+
+	<div class="content" data-shell-content style="max-width: 56rem">
+		<div class="page-head">
+			<div>
+				<h1 class="page-head__title">Calendar setup</h1>
+				<p class="page-head__sub">Changes save automatically.</p>
+			</div>
+		</div>
+
+		<div class="stack" style="--stack-gap: var(--space-4)">
+
+			<section class="card" aria-labelledby="basics-h">
+				<div class="card__head"><h2 class="card__title" id="basics-h">Basics</h2></div>
+				<div class="settings-row">
+					<div><div class="settings-row__label">Title</div><div class="settings-row__desc">Shown at the top of the public calendar.</div></div>
+					<div class="field"><input class="input" value="Missionary meals" aria-label="Title"></div>
+				</div>
+				<div class="settings-row">
+					<div><div class="settings-row__label">Status</div><div class="settings-row__desc">Closed shows the calendar but stops new signups.</div></div>
+					<div>
+						<div class="segmented" role="radiogroup" aria-label="Status">
+							<button class="segmented__opt" role="radio" aria-checked="false" data-value="draft">Draft</button>
+							<button class="segmented__opt" role="radio" aria-checked="true" data-value="open"><span class="dot" style="color: var(--color-success)"></span>Open</button>
+							<button class="segmented__opt" role="radio" aria-checked="false" data-value="closed">Closed</button>
+						</div>
+					</div>
+				</div>
+				<div class="settings-row">
+					<div><div class="settings-row__label" id="tz-label">Event Time Zone</div><div class="settings-row__desc">Used for dates, times, confirmations, and calendar files.</div></div>
+					<div class="select" style="max-width: 22rem">
+						<button class="select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="tz-label">
+							<span class="select-trigger__value">America/Denver <span class="subtle">· Mountain (UTC−6)</span></span>
+							<svg class="icon icon--chev"><use href="#i-chev-down"/></svg>
+						</button>
+						<div class="popover" hidden>
+							<div class="combobox__search">
+								<div class="input-affix"><svg class="icon input-affix__icon"><use href="#i-search"/></svg><input class="input" placeholder="Search time zones" aria-label="Search time zones"></div>
+							</div>
+							<ul class="listbox" role="listbox" aria-labelledby="tz-label">
+								<li class="option" role="option" aria-selected="false" data-value="Pacific/Honolulu"><span class="option__label">Pacific/Honolulu</span><span class="option__meta">UTC−10</span></li>
+								<li class="option" role="option" aria-selected="false" data-value="America/Anchorage"><span class="option__label">America/Anchorage</span><span class="option__meta">UTC−8</span></li>
+								<li class="option" role="option" aria-selected="false" data-value="America/Los_Angeles"><span class="option__label">America/Los_Angeles</span><span class="option__meta">UTC−7</span></li>
+								<li class="option" role="option" aria-selected="false" data-value="America/Phoenix"><span class="option__label">America/Phoenix</span><span class="option__meta">UTC−7</span></li>
+								<li class="option" role="option" aria-selected="true" data-value="America/Denver"><span class="option__label">America/Denver</span><span class="option__meta">UTC−6</span></li>
+								<li class="option" role="option" aria-selected="false" data-value="America/Chicago"><span class="option__label">America/Chicago</span><span class="option__meta">UTC−5</span></li>
+								<li class="option" role="option" aria-selected="false" data-value="America/New_York"><span class="option__label">America/New_York</span><span class="option__meta">UTC−4</span></li>
+								<li class="option" role="option" aria-selected="false" data-value="America/Sao_Paulo"><span class="option__label">America/Sao_Paulo</span><span class="option__meta">UTC−3</span></li>
+								<li class="option" role="option" aria-selected="false" data-value="Europe/London"><span class="option__label">Europe/London</span><span class="option__meta">UTC+1</span></li>
+								<li class="option" role="option" aria-selected="false" data-value="Europe/Berlin"><span class="option__label">Europe/Berlin</span><span class="option__meta">UTC+2</span></li>
+								<li class="option" role="option" aria-selected="false" data-value="Africa/Lagos"><span class="option__label">Africa/Lagos</span><span class="option__meta">UTC+1</span></li>
+								<li class="option" role="option" aria-selected="false" data-value="Asia/Manila"><span class="option__label">Asia/Manila</span><span class="option__meta">UTC+8</span></li>
+								<li class="option" role="option" aria-selected="false" data-value="Pacific/Auckland"><span class="option__label">Pacific/Auckland</span><span class="option__meta">UTC+13</span></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="card" aria-labelledby="dates-h">
+				<div class="card__head"><h2 class="card__title" id="dates-h">Dates</h2></div>
+				<div class="settings-row">
+					<div><div class="settings-row__label">Date window</div><div class="settings-row__desc">Which dates people can sign up for.</div></div>
+					<div class="stack">
+						<div class="segmented" role="radiogroup" aria-label="Date window" data-group="window">
+							<button class="segmented__opt" role="radio" aria-checked="false" data-value="fixed">Fixed dates</button>
+							<button class="segmented__opt" role="radio" aria-checked="true" data-value="rolling">Rolling window</button>
+						</div>
+
+						<div class="reveal" data-when="window:fixed">
+							<div>
+								<div class="form-grid" style="max-width: 28rem">
+									<div class="field">
+										<span class="label" id="start-l">Start date</span>
+										<div class="select" data-datepicker="2026-10-15">
+											<button class="select-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="start-l" data-popover-trigger>
+												<span class="select-trigger__value">Thu, Oct 15, 2026</span><svg class="icon"><use href="#i-calendar"/></svg>
+											</button>
+											<div class="popover datepicker" hidden role="dialog" aria-label="Choose start date"></div>
+										</div>
+									</div>
+									<div class="field">
+										<span class="label" id="end-l">End date</span>
+										<div class="select" data-datepicker="2026-10-17">
+											<button class="select-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="end-l" data-popover-trigger>
+												<span class="select-trigger__value">Sat, Oct 17, 2026</span><svg class="icon"><use href="#i-calendar"/></svg>
+											</button>
+											<div class="popover datepicker popover--right" hidden role="dialog" aria-label="Choose end date"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="reveal" data-when="window:rolling">
+							<div class="stack" style="--stack-gap: var(--space-2)">
+								<div class="row">
+									<span class="muted">Show</span>
+									<input class="input tabular" style="width: 4.5rem" value="3" inputmode="numeric" aria-label="Window size">
+									<div class="select" style="width: 8rem">
+										<button class="select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Window unit">
+											<span class="select-trigger__value">weeks</span><svg class="icon icon--chev"><use href="#i-chev-down"/></svg>
+										</button>
+										<div class="popover" hidden>
+											<ul class="listbox" role="listbox" aria-label="Window unit">
+												<li class="option" role="option" aria-selected="false" data-value="days">days<svg class="icon option__check"><use href="#i-check"/></svg></li>
+												<li class="option" role="option" aria-selected="true" data-value="weeks">weeks<svg class="icon option__check"><use href="#i-check"/></svg></li>
+												<li class="option" role="option" aria-selected="false" data-value="months">months<svg class="icon option__check"><use href="#i-check"/></svg></li>
+											</ul>
+										</div>
+									</div>
+									<span class="muted">ahead</span>
+								</div>
+								<p class="hint">This week plus the next 3 whole weeks (Sunday–Saturday). Right now: <strong class="tabular">Sep 27 – Oct 24</strong>. The next week opens on Sunday.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="card" aria-labelledby="time-h">
+				<div class="card__head"><h2 class="card__title" id="time-h">Times</h2></div>
+				<div class="settings-row">
+					<div><div class="settings-row__label">Timed signups</div><div class="settings-row__desc">Off: people pick a day. On: people pick a time on a day.</div></div>
+					<div class="stack">
+						<label class="switch"><input type="checkbox" data-reveal="timed"><span class="switch__track"></span><span class="switch__text">Use times</span></label>
+						<div class="reveal" data-when="timed:on">
+							<div class="stack" style="--stack-gap: var(--space-3)">
+								<label class="switch"><input type="checkbox" checked><span class="switch__track"></span><span class="switch__text">Stop people picking overlapping times on the same day</span></label>
+								<p class="hint">Each Item gets its own times on the Items page. Capacity then counts per time.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="card" aria-labelledby="form-h">
+				<div class="card__head">
+					<div><h2 class="card__title" id="form-h">Signup form</h2><p class="card__desc">Choose which details to ask for.</p></div>
+				</div>
+				<div class="table-wrap" style="border: 0; border-radius: 0">
+					<table class="table">
+						<thead><tr><th>Field</th><th>Ask for it</th><th>Required</th></tr></thead>
+						<tbody>
+							<tr><td>Name</td><td><span class="subtle">Always</span></td><td><span class="subtle">Always</span></td></tr>
+							<tr>
+								<td>Phone</td>
+								<td><label class="switch"><input type="checkbox" checked data-reveal="phone" aria-label="Ask for phone"><span class="switch__track"></span></label></td>
+								<td><label class="check"><input type="checkbox" checked aria-label="Phone required"><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span></label></td>
+							</tr>
+							<tr class="reveal-row" data-when="phone:on">
+								<td style="padding-left: var(--space-8)"><span class="muted">Call or text</span></td>
+								<td><label class="switch"><input type="checkbox" checked aria-label="Ask call or text"><span class="switch__track"></span></label></td>
+								<td><label class="check"><input type="checkbox" aria-label="Call or text required"><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span></label></td>
+							</tr>
+							<tr class="reveal-row" data-when="phone:on">
+								<td style="padding-left: var(--space-8)"><span class="muted">Cell or WhatsApp</span></td>
+								<td><label class="switch"><input type="checkbox" checked aria-label="Ask number type"><span class="switch__track"></span></label></td>
+								<td><label class="check"><input type="checkbox" aria-label="Number type required"><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span></label></td>
+							</tr>
+							<tr>
+								<td>Email</td>
+								<td><label class="switch"><input type="checkbox" data-reveal="email" aria-label="Ask for email"><span class="switch__track"></span></label></td>
+								<td><label class="check"><input type="checkbox" aria-label="Email required"><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span></label></td>
+							</tr>
+							<tr>
+								<td>Notes</td>
+								<td><label class="switch"><input type="checkbox" checked aria-label="Ask for notes"><span class="switch__track"></span></label></td>
+								<td><label class="check"><input type="checkbox" aria-label="Notes required"><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span></label></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<section class="card" aria-labelledby="after-h">
+				<div class="card__head"><h2 class="card__title" id="after-h">After signup</h2></div>
+				<div class="settings-row">
+					<div><div class="settings-row__label">Email confirmation</div><div class="settings-row__desc">Needs the email field.</div></div>
+					<div class="stack" style="--stack-gap: var(--space-1-5)">
+						<label class="switch"><input type="checkbox" disabled aria-describedby="email-conf-hint"><span class="switch__track"></span><span class="switch__text">Send a confirmation email</span></label>
+						<span class="hint" id="email-conf-hint">Turn on “Email” in the signup form to use this.</span>
+					</div>
+				</div>
+				<div class="settings-row">
+					<div><div class="settings-row__label">Add to calendar</div><div class="settings-row__desc">Offer a calendar file on the confirmation page.</div></div>
+					<div class="stack">
+						<label class="switch"><input type="checkbox" checked data-reveal="ics"><span class="switch__track"></span><span class="switch__text">Offer “Add to my calendar”</span></label>
+						<div class="reveal" data-when="ics:on">
+							<div>
+								<div class="segmented" role="radiogroup" aria-label="Calendar file">
+									<button class="segmented__opt" role="radio" aria-checked="true" data-value="combined">One combined event</button>
+									<button class="segmented__opt" role="radio" aria-checked="false" data-value="separate">One per selection</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+
+	<style>
+		/* Table rows can't animate height; they simply show or hide. */
+		.reveal-row.is-collapsed { display: none; }
+	</style>
+	<script src="assets/mock.js"></script>
+</body>
+</html>

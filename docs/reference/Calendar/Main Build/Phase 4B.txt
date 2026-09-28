@@ -1,0 +1,278 @@
+You are continuing work in the **same repository and chat** as Phase 4A and Phase 4B.1.
+
+Do **not** recreate the repo or redo completed work. The current state on `main` at `Kevin2Holt/program` is the source of truth.
+
+This prompt covers TWO things only:
+
+1. Create a concise repo-level context file for Claude.
+2. Implement the **organizer-core calendar features** (items, occurrences, availability) as described below.
+
+Do not go beyond these two scopes.
+
+---
+
+## Part 1 – Create a project context file
+
+Create a root-level context file for this repo so future Claude work doesn’t have to re-derive all the conventions from scratch.
+
+Use a filename like:
+
+- `CLAUDE.md` (preferred), or
+- `AGENTS.md` (if you strongly prefer that naming)
+
+This file should be:
+
+- **Short and high-signal only** (think 1–2 screens, not a full spec dump).
+- Focused on rules and conventions, not on restating requirements in prose.
+- A “how to work in this repo” guide for future AI coding agents.
+
+Include, at minimum:
+
+1. **Architecture summary**
+   - Express + EJS, PostgreSQL, server-rendered, no SPA.
+   - Folder layout (src/controllers, src/routes, src/services, src/models, src/views, public/css, public/js, etc.).
+   - Existing migration/DB tooling.
+   - Test/lint/CI expectations.
+
+2. **Calendar module overview**
+   - Core entities and their purpose (CalendarConfig, CalendarItem, CalendarOccurrence, CalendarBooking, CalendarBookingSelection, CalendarAvailabilityRule, CalendarAvailabilityRuleTarget).
+   - Route families for public vs organizer.
+   - Booking rules at a high level (booking parent + selections, capacity semantics, server-side validation, no overbooking).
+
+3. **Permissions and auth**
+   - `calendar.*` permission namespace used so far.
+   - How `requireAuth`, `requireCalendarPermission`, and event-loading middleware are expected to be used.
+
+4. **UI / design constraints**
+   - Dark mode default, light mode optional.
+   - CSS custom-properties pattern.
+   - EJS layout/partial pattern (`layouts/main`, public vs organizer views).
+   - “Simple, readable, mobile-friendly, no SPA” public UI direction.
+
+5. **Workflow rules**
+   - “Plan briefly before coding.”
+   - “Modify only relevant files; avoid broad refactors.”
+   - “Keep milestones scoped; don’t build beyond the current step.”
+   - “Always run tests + lint + syntax-check before finishing.”
+
+6. **Pointer to deeper specs**
+   - Mention that detailed product and implementation specs exist in `program_project_specification.txt`, Phase 2, and Phase 3 docs, but do **not** paste them.
+   - Note that those spec files should be read only when needed, not blindly re-ingested every time.
+
+Once `CLAUDE.md` exists, you can assume future prompts will say “read CLAUDE.md first” instead of repeating long instructions.
+
+---
+
+## Part 2 – Organizer-core implementation (items, occurrences, availability)
+
+Implement the **organizer-side core calendar functionality** for:
+
+- Item management
+- Occurrence management (timed mode)
+- Availability rules (recurring + one-time)
+
+Do **not** implement public browsing, selection, submission, confirmation, booking management, or export in this prompt.
+
+### 2.1 – Item management (organizer)
+
+Goal: allow organizers to manage `CalendarItem` records for an event:
+
+- list items
+- create item
+- edit item
+- archive/deactivate item (no hard delete where bookings might exist)
+
+Use the existing schema, models, services, and routes from Phase 4A as your base.
+
+Implement:
+
+1. **Organizer routes and controllers**
+   - Organizer-facing routes under the existing calendar organizer family, e.g.:
+     - `GET /events/:eventId/calendar/items`
+     - `GET /events/:eventId/calendar/items/new`
+     - `POST /events/:eventId/calendar/items`
+     - `GET /events/:eventId/calendar/items/:itemId/edit`
+     - `POST /events/:eventId/calendar/items/:itemId` (or PATCH, but if you choose PATCH ensure HTML form support or method override is handled)
+     - `POST /events/:eventId/calendar/items/:itemId/archive` (or similar) for archive/deactivate.
+   - Guard all routes with the appropriate `calendar.edit.items` (or equivalent) permission via the existing permission middleware.
+
+2. **Validation**
+   - Required: name.
+   - Capacity: positive integers only (allow 1 for missionary use case, but design for higher).
+   - Color/shape: validate within supported palette/shape set if you have enums; otherwise, ensure sanitized/normalized input.
+   - Status: enforce valid status values (active/archived/etc. as per schema).
+
+3. **Views**
+   - Organizer item list page:
+     - Show items for the event.
+     - Show status (active vs archived).
+     - Provide links to edit/archive.
+   - Item create/edit form:
+     - Fields for name, capacity, color, shape, status (if applicable).
+     - Use same layout and CSS patterns as the setup page.
+     - Show validation errors.
+
+4. **Archival behavior**
+   - Do not hard delete items that may have bookings or selections.
+   - Ensure archived items:
+     - are excluded from future public availability,
+     - but remain usable for historical booking display.
+
+Add tests for:
+- basic item CRUD (within what’s reasonable),
+- permission enforcement,
+- validation enforcement (e.g., capacity <= 0 is rejected).
+
+### 2.2 – Occurrence management (timed offerings)
+
+Goal: allow organizers to define `CalendarOccurrence` rows for timed offerings when the calendar is in a “timed” mode.
+
+Use the Phase 3 plan as your guide:
+
+- Date-only mode: no occurrences required.
+- Timed mode: each timed offering is an occurrence row.
+
+Implement:
+
+1. **Organizer routes and controllers**
+   - Under the existing calendar organizer namespace:
+     - `GET /events/:eventId/calendar/occurrences`
+     - `GET /events/:eventId/calendar/occurrences/new`
+     - `POST /events/:eventId/calendar/occurrences`
+     - `GET /events/:eventId/calendar/occurrences/:occurrenceId/edit`
+     - `POST /events/:eventId/calendar/occurrences/:occurrenceId`
+     - `POST /events/:eventId/calendar/occurrences/:occurrenceId/archive` (or deactivate)
+   - Guard with appropriate `calendar.edit` or `calendar.edit.items`/`calendar.edit.availability` depending how you split it (stay consistent with your existing permission surface).
+
+2. **Fields/validation**
+   - Associate each occurrence with:
+     - an `item_id`
+     - a `service_date`
+     - `start_time` and either `end_time` or `duration_minutes`
+   - Validation:
+     - service_date must be valid, within the configured date window, and not obviously malformed.
+     - start_time and end_time/duration must define a positive-time range.
+     - respect the canonical event time zone (no need for full DST complexity; just treat times as in that zone).
+   - Optionally support occurrence-level capacity overrides (if schema supports), with validation to ensure positive integers.
+
+3. **Overlap behavior (organizer-side)**
+   - For this phase, implement basic overlap checks on save when time overlap prevention is enabled:
+     - If the Phase 3/Phase 4A services already include overlap math helpers, reuse them.
+     - Ensure you don’t silently save overlapping occurrences that should be prevented.
+   - If there is ambiguity, implement a conservative rule (e.g., prevent overlapping occurrences for the same item by default) and document it in a comment.
+
+4. **Views**
+   - Occurrence list:
+     - Group by item where practical.
+     - Show date, start/end time, capacity override if any, status.
+   - New/edit form:
+     - Use the same layout theming.
+     - Provide item dropdown, date, start time, end time/duration.
+
+Add tests for:
+- valid occurrence creation,
+- invalid times/dates rejection,
+- overlap prevention in the cases you implement,
+- permission protection.
+
+### 2.3 – Availability rules (recurring + one-time)
+
+Goal: allow organizers to define `CalendarAvailabilityRule` entries that block selection on certain dates/repetition patterns, consistent with Phase 2/3.
+
+Implement:
+
+1. **Organizer routes and controllers**
+   - Under the calendar organizer family:
+     - `GET /events/:eventId/calendar/availability`
+     - `GET /events/:eventId/calendar/availability/new`
+     - `POST /events/:eventId/calendar/availability`
+     - `GET /events/:eventId/calendar/availability/:ruleId/edit`
+     - `POST /events/:eventId/calendar/availability/:ruleId`
+     - `POST /events/:eventId/calendar/availability/:ruleId/archive` (or deactivate)
+   - Guard with `calendar.edit.availability`.
+
+2. **Rule types and scopes**
+   Implement at least:
+   - **One-time rules:**
+     - Single date.
+     - Apply to all items, a single item, or a selected subset via the rule-target join table.
+   - **Recurring rules:**
+     - Weekly by weekday (with one or more weekdays).
+     - Optional: monthly by specific day-of-month or by weekday pattern (e.g., first Monday).
+   - Scope:
+     - all items.
+     - selected items via `CalendarAvailabilityRuleTarget`.
+
+The specific recurrence encoding should align with fields and patterns outlined in Phase 3 and the existing schema.
+
+3. **Validation**
+   - Validate rule type (one-time vs recurring).
+   - Validate date values and recurrence parameters.
+   - Ensure at least one target (all items or specific item IDs).
+   - Ensure rules are scoped to the correct `calendar_config_id`.
+
+4. **Integration with existing availability service**
+   - Wire the new CRUD UI and controllers to the existing `calendarAvailabilityService` (created in Phase 4A) so:
+     - organizer-created rules are visible in the service’s resolution,
+     - future public browsing logic can reuse the same resolution API.
+
+5. **Views**
+   - Availability list:
+     - Show rules grouped by type (one-time vs recurring).
+     - Show which items they target and whether they’re active.
+   - Form:
+     - Simple grouped inputs for rule type, date(s), recurrence, and item scope.
+
+Add tests for:
+- creating valid one-time and recurring rules,
+- invalid combinations (e.g., missing recurrence parameters),
+- rule-target behavior (all vs selected items),
+- rules being picked up by the availability service as expected.
+
+---
+
+## General constraints
+
+- Do **not** implement the public browsing, selection, booking submission, confirmation, booking management, or export routes in this prompt. Stub only what is strictly necessary.
+- Do **not** introduce a bundler or SPA framework.
+- Modify only the files needed for:
+  - the `CLAUDE.md`/context file,
+  - organizer item/occurrence/availability management.
+- Reuse existing services and models; extend them rather than duplicating logic.
+- Keep commits logically grouped (e.g., context file, organizer items, occurrences, availability, tests).
+
+---
+
+## Workflow
+
+Before coding:
+1. Read `CLAUDE.md` once you’ve created it (and the existing project specs only as needed).
+2. Inspect current calendar-related routes, controllers, services, models, and views to see what Phase 4A and 4B.1 already provide.
+
+Then:
+- Implement the `CLAUDE.md` file.
+- Implement organizer item/occurrence/availability features.
+- Run tests, lint, syntax-check.
+- Summarize changes.
+
+---
+
+## Deliverables
+
+At the end of this prompt, provide:
+
+1. A brief description of `CLAUDE.md` contents and its purpose.
+2. A summary of new/changed routes, controllers, services, models, and views for:
+   - items,
+   - occurrences,
+   - availability.
+3. A test summary (which tests you added/modified and results).
+4. A list of commits created and what each contains.
+5. A clear statement of what remains for:
+   - public browsing + selection,
+   - booking submission + confirmation,
+   - booking management,
+   - exports,
+   so that the next prompt can focus on those pieces only.
+
+Stop after this organizer-core work; do not implement public flows yet.
