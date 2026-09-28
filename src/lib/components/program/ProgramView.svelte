@@ -6,7 +6,8 @@
 	*/
 	import Icon from "../ui/Icon.svelte";
 
-	let { header, blocks, compact = false, children = undefined } = $props();
+	// The default empty text speaks to organizers; the public page passes its own.
+	let { header, blocks, compact = false, emptyMessage = "Nothing here yet. Add a block to start the program.", children = undefined } = $props();
 
 	let hasMeta = $derived(Boolean(header.date || header.time || header.place));
 	let isEmpty = $derived(!header.title && !header.eyebrow && !hasMeta && blocks.length === 0);
@@ -30,7 +31,7 @@
 	{/if}
 
 	{#if isEmpty}
-		<p class="program__empty">Nothing here yet. Add a block to start the program.</p>
+		<p class="program__empty">{emptyMessage}</p>
 	{/if}
 
 	<div class="program__blocks">

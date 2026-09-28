@@ -3,8 +3,8 @@
 	desktop widths. Output: test-results/screens/<screen>-<theme>-<width>.png
 	Then: node scripts/screen-sheets.js builds one review sheet per screen.
 */
-import { test } from "@playwright/test";
-import { seedCalendar, signUpThroughUi } from "../e2e/helpers.js";
+import { expect, test } from "@playwright/test";
+import { callApi, seedCalendar, signUpThroughUi } from "../e2e/helpers.js";
 
 
 const WIDTHS = { phone: { width: 390, height: 844 }, desktop: { width: 1280, height: 820 } };
@@ -228,7 +228,11 @@ test("public calendar screens", async ({ page }) => {
 		]
 	});
 
+	const published = await callApi(page, "POST", `/api/events/${mealsId}/program/publish`);
+	expect(published.status).toBe(200);
+
 	await captureAll(page, [
+		{ name: "program-with-calendar", path: `/${mealsCode}` },
 		{ name: "public-calendar", path: `/${mealsCode}/calendar`, viewportOnly: true, prepare: (screenPage) => selectDayAndPick(screenPage, ["Elders Ramos & Chen"]) },
 		{ name: "public-calendar-timed", path: `/${summitCode}/calendar`, viewportOnly: true, prepare: async (screenPage) => {
 			await screenPage.evaluate(() => sessionStorage.clear());

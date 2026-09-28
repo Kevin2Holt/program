@@ -222,7 +222,9 @@
 			{:else if !preview.rows.length}
 				<div class="card__body"><EmptyState icon="filter" title="Nothing matches" text="No bookings match these options." /></div>
 			{:else}
-				<div class="table-wrap" style="border: 0; border-radius: 0 0 var(--radius-lg) var(--radius-lg)">
+				<!-- A scrollable region must be keyboard-reachable (WCAG 2.1.1; axe scrollable-region-focusable). -->
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+				<div class="table-wrap" style="border: 0; border-radius: 0 0 var(--radius-lg) var(--radius-lg)" tabindex="0" role="region" aria-label="Exported rows">
 					<table class="table export-preview">
 						<thead><tr>{#each preview.header as column, index (index)}<th>{column}</th>{/each}</tr></thead>
 						<tbody>

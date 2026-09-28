@@ -39,6 +39,7 @@
 	<input
 		class="input tabular stepper__input"
 		{id}
+		aria-label={id ? undefined : label}
 		inputmode="numeric"
 		bind:value={text}
 		aria-describedby={describedBy}

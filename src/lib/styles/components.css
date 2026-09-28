@@ -57,6 +57,12 @@ a:hover {
 	text-decoration: underline;
 }
 
+/* Links inside running text are underlined, so color isn't the only cue (WCAG 1.4.1). */
+:where(p, li, dd, .alert, .muted, .pub-foot) > a:not(.btn) {
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+}
+
 button,
 input,
 select,
@@ -1303,6 +1309,11 @@ svg.icon {
 	border: var(--border-width) solid var(--color-border);
 	border-radius: var(--radius-lg);
 	background: var(--color-surface-1);
+}
+
+.table-wrap:focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: 2px;
 }
 
 .table {
@@ -4394,7 +4405,8 @@ button.cal-day:hover {
 	display: block;
 	font-weight: var(--weight-regular);
 	font-size: var(--text-xs);
-	color: var(--color-text-subtle);
+	/* Muted, not subtle: the selected card's tinted background needs the extra contrast. */
+	color: var(--color-text-muted);
 }
 
 .export-preview td {

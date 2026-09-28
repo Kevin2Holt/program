@@ -15,7 +15,7 @@
 
 {#if data.program}
 	<main>
-		<ProgramView header={data.program.header} blocks={data.program.blocks}>
+		<ProgramView header={data.program.header} blocks={data.program.blocks} emptyMessage="The program for this event is coming soon.">
 			{#if data.hasCalendar}
 				<a class="program-cta" href="/{data.publicEvent.code}/calendar">
 					<span class="program-cta__icon"><Icon name="calendar-plus" /></span>

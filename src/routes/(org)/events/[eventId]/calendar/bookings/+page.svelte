@@ -95,7 +95,9 @@
 	</div>
 
 	{#if data.listing.rows.length}
-		<div class="table-wrap">
+		<!-- A scrollable region must be keyboard-reachable (WCAG 2.1.1; axe scrollable-region-focusable). -->
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+		<div class="table-wrap" tabindex="0" role="region" aria-label="Bookings table">
 			<table class="table bookings-table">
 				<thead>
 					<tr>
