@@ -1,37 +1,26 @@
-# Node
+# Dependencies and build output
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+.svelte-kit/
+build/
 
-# Environment
+# Environment (never commit secrets; .env.example is the template)
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+
+# Test output
+test-results/
+playwright-report/
+coverage/
 
 # Logs
-logs/
 *.log
+
+# Local tooling
+.claude/
+.vscode/
+.idea/
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Editor
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Coverage / test artifacts
-coverage/
-.nyc_output/
-
-# Build artifacts (no bundler today, but reserve)
-dist/
-build/
-
-# Local data
-tmp/
-*.sqlite
