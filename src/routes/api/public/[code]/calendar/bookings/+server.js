@@ -17,5 +17,7 @@ export async function POST(event) {
 	}
 	const body = await readJsonBody(event.request);
 	const result = await createBooking(resolution.event, body, {});
-	return respondWithResult(result, HTTP.created);
+	// Only the reference goes back; the booking row and calendar config stay on the server.
+	const publicResult = result.ok ? { ...result, value: { reference: result.value.reference } } : result;
+	return respondWithResult(publicResult, HTTP.created);
 }
