@@ -13,7 +13,7 @@ import { touchEvent } from "../data/events.js";
 
 
 export const CALENDAR_STATUS = { draft: "draft", open: "open", closed: "closed" };
-export const ICS_MODE = { combined: "combined", separate: "separate" };
+export const ICS_MODE = { combined: "combined", perDay: "per_day", separate: "separate" };
 const DEFAULT_TIME_ZONE = "America/Denver";
 const TITLE_MAX = 120;
 const EDITABLE_KEYS = ["title", "status", "timeZone", "windowMode", "fixedStart", "fixedEnd", "rollingSize", "rollingUnit", "minDaysAhead", "timed", "preventOverlap", "formFields", "emailConfirmation", "icsEnabled", "icsMode"];

@@ -188,7 +188,7 @@ Calendar tables carry `event_id` and use **composite foreign keys**, e.g. `(even
 
 | Table | Key columns |
 |---|---|
-| `calendar_configs` | `event_id pk`, `title`, `status` in (`draft`, `open`, `closed`), `time_zone` (IANA), `window_mode` in (`fixed`, `rolling`), `fixed_start`, `fixed_end`, `rolling_size`, `rolling_unit` in (`days`, `weeks`, `months`), `min_days_ahead int default 0`, `timed bool`, `prevent_overlap bool`, `form_fields jsonb`, `email_confirmation bool`, `ics_enabled bool`, `ics_mode` in (`combined`, `separate`) |
+| `calendar_configs` | `event_id pk`, `title`, `status` in (`draft`, `open`, `closed`), `time_zone` (IANA), `window_mode` in (`fixed`, `rolling`), `fixed_start`, `fixed_end`, `rolling_size`, `rolling_unit` in (`days`, `weeks`, `months`), `min_days_ahead int default 0`, `timed bool`, `prevent_overlap bool`, `form_fields jsonb`, `email_confirmation bool`, `ics_enabled bool`, `ics_mode` in (`combined`, `per_day`, `separate`) (default `per_day` since 005) |
 | `calendar_items` | `id`, `event_id`, `name`, `capacity`, `color` (palette key), `shape` in (`circle`, `square`, `triangle`, `diamond`, `hexagon`, `star`, `glyph`), `glyph char(1)`, `sort_order`, `archived_at` |
 | `calendar_item_times` | `id`, `event_id`, `item_id`, `start_time time`, `duration_minutes`, `label`, `capacity_override`, `only_date date null`, `archived_at` |
 | `calendar_rules` | `id`, `event_id`, `effect` in (`allow`, `block`), `kind` in (`once`, `recurring`), `once_date`, `frequency` in (`daily`, `weekly`, `biweekly`, `monthly_date`, `monthly_weekday`), `weekdays smallint[]`, `month_day`, `month_week` (1–4, or −1 for "last"), `month_weekday`, `starts_on`, `ends_on`, `applies_to` in (`all`, `selected`), `label`, `active` |

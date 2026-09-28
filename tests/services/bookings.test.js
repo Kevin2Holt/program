@@ -195,4 +195,28 @@ describe("confirmation references and calendar files", () => {
 		expect(allDay).toContain("DTEND;VALUE=DATE:20300201");
 		expect(foldIcsLine("x".repeat(160)).split("\r\n ").every((part) => part.length <= 75)).toBe(true);
 	});
+
+	it("per-day ICS files make one event per date, never one spanning the gap", () => {
+		const base = { eventName: "Elm Ward", calendarTitle: "Missionary meals", timeZone: "America/Denver", reference: "ref", confirmationUrl: "https://progr.am/x/calendar/confirmation/ref", now: NOW };
+		const dateOnly = buildIcs({ ...base, mode: "per_day", selections: [
+			{ itemName: "East Elders", date: "2030-01-30", startTime: null, durationMinutes: null },
+			{ itemName: "Sisters", date: "2030-01-22", startTime: null, durationMinutes: null },
+			{ itemName: "West Elders", date: "2030-01-22", startTime: null, durationMinutes: null }
+		] });
+		expect(dateOnly.match(/BEGIN:VEVENT/g)).toHaveLength(2);
+		expect(dateOnly).toContain("DTSTART;VALUE=DATE:20300122\r\nDTEND;VALUE=DATE:20300123");
+		expect(dateOnly).toContain("DTSTART;VALUE=DATE:20300130\r\nDTEND;VALUE=DATE:20300131");
+		expect(dateOnly).toContain("SUMMARY:Missionary meals · Elm Ward");
+		expect(dateOnly).toContain("SUMMARY:East Elders · Elm Ward");
+		expect(new Set(dateOnly.match(/^UID:.*$/gm)).size).toBe(2);
+
+		const timed = buildIcs({ ...base, mode: "per_day", selections: [
+			{ itemName: "Leading", date: "2030-01-10", startTime: "09:00", durationMinutes: 60 },
+			{ itemName: "Budget", date: "2030-01-10", startTime: "14:00", durationMinutes: 30 },
+			{ itemName: "Keynote", date: "2030-01-11", startTime: "13:00", durationMinutes: 45 }
+		] });
+		expect(timed.match(/BEGIN:VEVENT/g)).toHaveLength(2);
+		expect(timed).toContain("DTSTART:20300110T160000Z\r\nDTEND:20300110T213000Z");
+		expect(timed).toContain("DTSTART:20300111T200000Z\r\nDTEND:20300111T204500Z");
+	});
 });

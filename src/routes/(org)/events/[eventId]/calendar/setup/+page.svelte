@@ -271,7 +271,7 @@
 						<Segmented
 							value={config.icsMode}
 							labelledBy="ics-label"
-							options={[{ value: "combined", label: "One combined event" }, { value: "separate", label: "One per selection" }]}
+							options={[{ value: "per_day", label: "One per day" }, { value: "separate", label: "One per selection" }, { value: "combined", label: "All in one" }]}
 							onchange={(value) => setField("icsMode", value)}
 						/>
 					{/if}

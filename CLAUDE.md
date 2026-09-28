@@ -153,7 +153,7 @@ Other protections:
   - Public data (`buildPublicCalendar`) includes only *available* offerings.
   - `createBooking`: form validation, then per-offering advisory locks, then the idempotency key, then `evaluateSelections` (shared with organizer edits), then insert with snapshots.
   - Conflicts return per-selection reasons (`SELECTION_REASON`); the page drops only the failed ones.
-  - Confirmation at `/[code]/calendar/confirmation/[ref]` (32-byte ref, full link from `PUBLIC_BASE_URL`), plus `calendar.ics` (combined or separate; UTC; folded).
+  - Confirmation at `/[code]/calendar/confirmation/[ref]` (32-byte ref, full link from `PUBLIC_BASE_URL`), plus `calendar.ics` (per_day (default) / separate / combined; UTC; folded).
   - Mail transport `log`/`smtp` (`src/lib/server/mail/mailer.js`); a mail failure never fails a booking.
 - **0.6 organizer bookings and export (done):**
   - **Bookings table:** one row per booking per date, latest first. Columns: Date, Item(s), Name, Phone, Contact, WhatsApp, Notes, and a details link. Search, Item, and when filters; paged; on phones each row becomes a labeled card.

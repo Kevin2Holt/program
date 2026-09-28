@@ -2,7 +2,8 @@
 	Calendar files (RFC 5545) for the confirmation page. Timed selections are
 	converted from the event's time zone to UTC, so every calendar app shows the
 	right moment; date-only selections are all-day events.
-	Modes: "combined" = one event covering every selection (default);
+	Modes: "combined" = one event covering every selection;
+	"per_day" = one event per date (the default for new calendars);
 	"separate" = one event per selection.
 */
 import { DateTime } from "luxon";
@@ -86,6 +87,30 @@ function buildSelectionSpan(selection, timeZone) {
 	return { allDay: false, start: formatUtcStamp(start), end: formatUtcStamp(start.plus({ minutes: selection.durationMinutes })) };
 }
 
+// One event covering a group of sorted selections: all-day if any is date-only, else earliest start to latest end.
+function buildGroupSpan(group, timeZone) {
+
+	if (group.some((selection) => !selection.startTime)) {
+		return { allDay: true, start: formatDateValue(group[0].date), end: formatDateValue(addDays(group.at(-1).date, 1)) };
+	}
+	const spans = group.map((selection) => buildSelectionSpan(selection, timeZone));
+	return { allDay: false, start: spans.map((entry) => entry.start).sort()[0], end: spans.map((entry) => entry.end).sort().at(-1) };
+}
+
+function groupSelectionsByDate(sorted) {
+
+	const groups = [];
+	for (const selection of sorted) {
+		if (groups.at(-1)?.[0].date === selection.date) {
+			groups.at(-1).push(selection);
+		}
+		else {
+			groups.push([selection]);
+		}
+	}
+	return groups;
+}
+
 /*
 	selections: [{ itemName, date, startTime|null, durationMinutes|null }]
 	Returns the full .ics text.
@@ -109,19 +134,17 @@ export function buildIcs({ eventName, calendarTitle, timeZone, reference, confir
 		});
 	}
 	else {
-		const allDay = sorted.some((selection) => !selection.startTime);
-		const spans = sorted.map((selection) => buildSelectionSpan(selection, timeZone));
-		const span = allDay
-			? { allDay: true, start: formatDateValue(sorted[0].date), end: formatDateValue(addDays(sorted.at(-1).date, 1)) }
-			: { allDay: false, start: spans.map((entry) => entry.start).sort()[0], end: spans.map((entry) => entry.end).sort().at(-1) };
-		lines.push(...buildEventLines({
-			uid: `${reference}@progr.am`,
-			stamp,
-			summary: sorted.length === 1 ? `${sorted[0].itemName} · ${eventName}` : `${calendarTitle} · ${eventName}`,
-			description: `${sorted.map(describeSelection).join("\n")}\n${confirmationUrl}`,
-			url: confirmationUrl,
-			...span
-		}));
+		const groups = mode === "per_day" ? groupSelectionsByDate(sorted) : [sorted];
+		groups.forEach((group) => {
+			lines.push(...buildEventLines({
+				uid: groups.length === 1 ? `${reference}@progr.am` : `${reference}-${group[0].date}@progr.am`,
+				stamp,
+				summary: group.length === 1 ? `${group[0].itemName} · ${eventName}` : `${calendarTitle} · ${eventName}`,
+				description: `${group.map(describeSelection).join("\n")}\n${confirmationUrl}`,
+				url: confirmationUrl,
+				...buildGroupSpan(group, timeZone)
+			}));
+		});
 	}
 
 	lines.push("END:VCALENDAR");
