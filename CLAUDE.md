@@ -145,4 +145,12 @@ Other protections:
     - Items: drawer with color, shape, and times.
     - Availability: drawer, toggle, and delete confirmation.
   - The JSON API is under `/api/events/[eventId]/calendar/…`.
-- Next: 0.5 public signup.
+- **0.5 public signup (done):**
+  - `/[code]/calendar`: paper-calendar grid (`CalendarGrid`), day panel (desktop side / phone bottom sheet), `PicksSummary`, and the details step through shallow routing.
+  - One `picks` list drives markers, panel, and summary. It persists in `sessionStorage` until submit.
+  - Public data (`buildPublicCalendar`) includes only *available* offerings.
+  - `createBooking`: form validation, then per-offering advisory locks, then the idempotency key, then `evaluateSelections` (shared with organizer edits), then insert with snapshots.
+  - Conflicts return per-selection reasons (`SELECTION_REASON`); the page drops only the failed ones.
+  - Confirmation at `/[code]/calendar/confirmation/[ref]` (32-byte ref, full link from `PUBLIC_BASE_URL`), plus `calendar.ics` (combined or separate; UTC; folded).
+  - Mail transport `log`/`smtp` (`src/lib/server/mail/mailer.js`); a mail failure never fails a booking.
+- Next: 0.6 organizer bookings and export.
