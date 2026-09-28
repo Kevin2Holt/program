@@ -20,6 +20,7 @@
 	import { sendJson } from "$lib/api.js";
 	import { findOverlapWith } from "$lib/calendar/overlap.js";
 	import { formatDateShort } from "$lib/dates.js";
+	import { createUuid } from "$lib/randomIds.js";
 	import { formatTime12 } from "$lib/times.js";
 	import { buildGridWeeks, buildPick, describeTimeZone, readStoredPicks, sortPicks, storePicks } from "$lib/components/calendar/publicCalendar.js";
 
@@ -107,7 +108,7 @@
 
 	async function goToDetails() {
 
-		idempotencyKey ||= crypto.randomUUID();
+		idempotencyKey ||= createUuid();
 		conflictMessages = [];
 		pushState("", { signupStep: "details" });
 		await tick();

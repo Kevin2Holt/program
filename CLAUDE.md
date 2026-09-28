@@ -38,6 +38,8 @@ Tests reset `progr_am_test` from migrations each run. Never point tests at the d
 
 Aliases: `$lib` → `src/lib`, `$server` → `src/lib/server` (server-only; SvelteKit refuses to bundle it for the browser).
 
+Browser code must also work over plain HTTP on the LAN (`npm run dev -- --host`, testing from a phone), where secure-context APIs don't exist. Use `createUuid()` from `$lib/randomIds.js`, never `crypto.randomUUID()`, and wrap `navigator.clipboard` in try/catch with a fallback message.
+
 ### Request pipeline (`src/hooks.server.js`)
 
 1. Theme cookie → `<html data-theme>`, so the page never flashes the wrong theme.
