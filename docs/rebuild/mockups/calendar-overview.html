@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Calendar overview · progr.am</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+</head>
+<body data-shell="organizer" data-nav="overview" data-crumbs="Ward Missionary Meals|Calendar">
+	<template data-topbar-actions>
+		<a class="btn btn--sm" href="calendar.html" target="_blank"><svg class="icon"><use href="#i-external"/></svg><span>Public page</span></a>
+	</template>
+
+	<div class="content" data-shell-content>
+		<div class="page-head">
+			<div>
+				<h1 class="page-head__title">Missionary meals</h1>
+				<p class="page-head__sub">This week + 3 weeks · America/Denver · <span class="row" style="display: inline-flex; --row-gap: 4px; color: var(--color-success)"><span class="dot"></span>Open</span></p>
+			</div>
+		</div>
+
+		<div class="stats" style="margin-bottom: var(--space-5)">
+			<div class="stat"><div class="stat__label">Upcoming signups</div><div class="stat__value">31</div></div>
+			<div class="stat"><div class="stat__label">Open this week</div><div class="stat__value">9</div></div>
+			<div class="stat"><div class="stat__label">Filled this week</div><div class="stat__value">67%</div></div>
+			<div class="stat"><div class="stat__label">New in 7 days</div><div class="stat__value">12</div></div>
+		</div>
+
+		<section class="card" aria-labelledby="wk-h">
+			<div class="card__head">
+				<div class="row">
+					<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Previous week"><svg class="icon"><use href="#i-chev-left"/></svg></button>
+					<h2 class="card__title tabular" id="wk-h">Oct 4 – 10, 2026</h2>
+					<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Next week"><svg class="icon"><use href="#i-chev-right"/></svg></button>
+				</div>
+				<div class="row row--wrap" style="--row-gap: var(--space-3)">
+					<span class="status status--available">Available</span>
+					<span class="status status--full">Full</span>
+					<span class="status status--blocked">Blocked</span>
+					<span class="status status--out">Out of window</span>
+				</div>
+			</div>
+			<div style="overflow-x: auto">
+				<div class="ovw" style="min-width: 44rem">
+					<div class="ovw__head" style="text-align: left">Item</div>
+					<div class="ovw__head">Sun<b>4</b></div><div class="ovw__head">Mon<b>5</b></div><div class="ovw__head">Tue<b>6</b></div><div class="ovw__head">Wed<b>7</b></div><div class="ovw__head">Thu<b>8</b></div><div class="ovw__head">Fri<b>9</b></div><div class="ovw__head">Sat<b>10</b></div>
+
+					<div class="ovw__item"><span class="item-chip"><span class="marker" data-color="blue" data-shape="circle"></span>Ramos &amp; Chen</span></div>
+					<div class="ovw__cell"><span class="status status--blocked" title="Fast Sunday">Blocked</span></div><div class="ovw__cell"><span class="status status--blocked">Blocked</span></div><div class="ovw__cell"><span class="status status--available">Open</span></div><div class="ovw__cell"><span class="status status--full">Full</span></div><div class="ovw__cell"><span class="status status--available">Open</span></div><div class="ovw__cell"><span class="status status--full">Full</span></div><div class="ovw__cell"><span class="status status--blocked">Blocked</span></div>
+
+					<div class="ovw__item"><span class="item-chip"><span class="marker" data-color="amber" data-shape="triangle"></span>Tuilagi &amp; Brooks</span></div>
+					<div class="ovw__cell"><span class="status status--blocked">Blocked</span></div><div class="ovw__cell"><span class="status status--blocked">Blocked</span></div><div class="ovw__cell"><span class="status status--full">Full</span></div><div class="ovw__cell"><span class="status status--available">Open</span></div><div class="ovw__cell"><span class="status status--available">Open</span></div><div class="ovw__cell"><span class="status status--available">Open</span></div><div class="ovw__cell"><span class="status status--blocked">Blocked</span></div>
+
+					<div class="ovw__item"><span class="item-chip"><span class="marker" data-color="green" data-shape="square"></span>Okafor &amp; Lind</span></div>
+					<div class="ovw__cell"><span class="status status--blocked">Blocked</span></div><div class="ovw__cell"><span class="status status--blocked">Blocked</span></div><div class="ovw__cell"><span class="status status--available">Open</span></div><div class="ovw__cell"><span class="status status--full">Full</span></div><div class="ovw__cell"><span class="status status--full">Full</span></div><div class="ovw__cell"><span class="status status--available">Open</span></div><div class="ovw__cell"><span class="status status--blocked">Blocked</span></div>
+
+					<div class="ovw__item"><span class="item-chip"><span class="marker" data-color="pink" data-shape="diamond"></span>Park &amp; Moreau</span></div>
+					<div class="ovw__cell"><span class="status status--blocked">Blocked</span></div><div class="ovw__cell"><span class="status status--blocked">Blocked</span></div><div class="ovw__cell"><span class="status status--available">Open</span></div><div class="ovw__cell"><span class="status status--blocked" title="Not an allowed day">Blocked</span></div><div class="ovw__cell"><span class="status status--full">Full</span></div><div class="ovw__cell"><span class="status status--blocked">Blocked</span></div><div class="ovw__cell"><span class="status status--blocked">Blocked</span></div>
+				</div>
+			</div>
+		</section>
+		<p class="hint" style="margin-top: var(--space-2)">Hover or focus a cell to see why: which rule blocked it, or who filled it.</p>
+	</div>
+
+	<script src="assets/mock.js"></script>
+</body>
+</html>

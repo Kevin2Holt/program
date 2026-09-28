@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title>Calendar · progr.am mockup</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+</head>
+<body class="is-public">
+	<header class="pub-header">
+		<div class="pub-header__inner">
+			<span class="pub-header__title">Elm Ward</span>
+			<nav class="pub-tabs" aria-label="Event">
+				<a class="pub-tab" href="program.html">Program</a>
+				<a class="pub-tab" href="calendar.html" aria-current="page">Sign up</a>
+			</nav>
+			<button class="btn btn--ghost btn--icon" type="button" data-theme-toggle></button>
+		</div>
+	</header>
+
+	<main class="cal-page">
+		<div class="cal-head">
+			<div>
+				<h1 class="cal-head__title" data-title></h1>
+				<p class="cal-head__sub" data-subtitle></p>
+			</div>
+		</div>
+
+		<div class="cal-legend" data-legend aria-label="Show or hide items" style="margin-bottom: var(--space-4)"></div>
+
+		<div class="cal-layout">
+			<section class="cal-grid" aria-label="Signup calendar" role="grid" data-grid></section>
+
+			<div class="cal-side">
+				<section class="day-panel" data-panel aria-live="polite"></section>
+				<section class="picks" data-picks aria-label="Your selections"></section>
+			</div>
+		</div>
+
+		<div class="pick-bar" data-pick-bar hidden></div>
+	</main>
+
+	<script src="assets/mock.js"></script>
+	<script src="assets/calendar-mock.js"></script>
+</body>
+</html>

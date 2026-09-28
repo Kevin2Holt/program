@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title>Elm Ward Sacrament Meeting · progr.am</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+</head>
+<body class="is-public">
+	<header class="pub-header">
+		<div class="pub-header__inner">
+			<span class="pub-header__title">Elm Ward</span>
+			<nav class="pub-tabs" aria-label="Event">
+				<a class="pub-tab" href="program.html" aria-current="page">Program</a>
+				<a class="pub-tab" href="calendar.html">Sign up</a>
+			</nav>
+			<button class="btn btn--ghost btn--icon" type="button" data-theme-toggle></button>
+		</div>
+	</header>
+
+	<main>
+		<article class="program">
+			<p class="program__eyebrow caps">Sacrament Meeting</p>
+			<h1 class="program__title">Elm Ward</h1>
+			<div class="program__meta">
+				<span><svg class="icon"><use href="#i-calendar"/></svg>Sunday, October 4, 2026</span>
+				<span><svg class="icon"><use href="#i-clock"/></svg>10:00 am</span>
+				<span><svg class="icon"><use href="#i-pin"/></svg>Elm Chapel</span>
+			</div>
+
+			<div class="program__blocks">
+				<dl class="pblock-lv">
+					<dt>Presiding</dt>
+					<dd>Bishop Daniel Arroyo</dd>
+					<dt>Conducting</dt>
+					<dd>Brother Marcus Lee</dd>
+					<dt>Organist</dt>
+					<dd>Sister Ana Kealoha</dd>
+					<dt>Chorister</dt>
+					<dd>Sister Grace Whitfield</dd>
+				</dl>
+
+				<hr class="pblock-sep">
+
+				<dl class="pblock-lv">
+					<dt>Opening Hymn</dt>
+					<dd>#2 The Spirit of God</dd>
+					<dt>Invocation</dt>
+					<dd>Sister Priya Natarajan</dd>
+					<dt>Ward Business</dt>
+					<dd>Releases and sustainings</dd>
+					<dt>Sacrament Hymn</dt>
+					<dd>#169 As Now We Take the Sacrament</dd>
+				</dl>
+
+				<div class="pblock-text">
+					<h2>Speakers</h2>
+					<p>This week our youth speakers share what they learned at <strong>youth conference</strong>, followed by a musical number from the Primary children.</p>
+				</div>
+
+				<dl class="pblock-lv">
+					<dt>Youth Speaker</dt>
+					<dd>Eli Thompson</dd>
+					<dt>Musical Number</dt>
+					<dd>Primary Children<small>“I Love to See the Temple”</small></dd>
+					<dt>Concluding Speaker</dt>
+					<dd>Sister Ruth Adeyemi</dd>
+					<dt>Closing Hymn</dt>
+					<dd>#85 How Firm a Foundation</dd>
+					<dt>Benediction</dt>
+					<dd>Brother Sam Oduya</dd>
+				</dl>
+
+				<div class="pblock-space" aria-hidden="true"></div>
+
+				<div class="pblock-text">
+					<h3>Announcements</h3>
+					<ul>
+						<li>Ward temple night is Thursday at 7:00 pm.</li>
+						<li>Help feed the missionaries: <a href="calendar.html">sign up on the meal calendar</a>.</li>
+						<li>Questions? Email <a href="mailto:clerk@example.org">the ward clerk</a>.</li>
+					</ul>
+				</div>
+			</div>
+
+			<a class="program-cta" href="calendar.html">
+				<span class="program-cta__icon"><svg class="icon"><use href="#i-calendar-plus"/></svg></span>
+				<span class="grow">
+					<strong>Missionary meal calendar</strong><br>
+					<span class="muted" style="font-size: var(--text-md)">Pick a day to feed the missionaries</span>
+				</span>
+				<svg class="icon subtle"><use href="#i-chev-right"/></svg>
+			</a>
+		</article>
+	</main>
+
+	<footer class="pub-foot">Made with <a href="#">progr.am</a></footer>
+
+	<script src="assets/mock.js"></script>
+</body>
+</html>

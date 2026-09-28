@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Export · progr.am</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+	<style>
+		.export-layout { display: grid; grid-template-columns: minmax(0, 24rem) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+		.level { display: flex; gap: var(--space-3); align-items: flex-start; height: auto; padding: var(--space-3); text-align: left; }
+		.level small { display: block; font-weight: var(--weight-regular); color: var(--color-text-subtle); font-size: var(--text-xs); }
+		.level-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+		#pv-h ~ * td, .export-layout .table td { white-space: nowrap; }
+		@media (max-width: 960px) { .export-layout { grid-template-columns: minmax(0, 1fr); } }
+	</style>
+</head>
+<body data-shell="organizer" data-nav="export" data-crumbs="Ward Missionary Meals|Calendar|Export">
+	<div class="content content--wide" data-shell-content style="max-width: 72rem">
+		<div class="page-head">
+			<div>
+				<h1 class="page-head__title">Export</h1>
+				<p class="page-head__sub">Download bookings as a CSV file. Only the fields you choose are included.</p>
+			</div>
+			<div class="segmented" role="radiogroup" aria-label="Mockup: calendar mode" data-group="mode" title="Mockup only">
+				<button class="segmented__opt" role="radio" aria-checked="true" data-value="date">Date-only</button>
+				<button class="segmented__opt" role="radio" aria-checked="false" data-value="timed">Timed</button>
+			</div>
+		</div>
+
+		<div class="export-layout">
+			<div class="card">
+				<div class="card__body stack" style="--stack-gap: var(--space-5)">
+					<div class="field">
+						<span class="label" id="ex-items">Items</span>
+						<div class="stack" style="--stack-gap: var(--space-2)" role="group" aria-labelledby="ex-items">
+							<label class="check"><input type="checkbox" checked><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span><span class="item-chip"><span class="marker" data-color="blue" data-shape="circle"></span>Elders Ramos &amp; Chen</span></label>
+							<label class="check"><input type="checkbox" checked><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span><span class="item-chip"><span class="marker" data-color="amber" data-shape="triangle"></span>Elders Tuilagi &amp; Brooks</span></label>
+							<label class="check"><input type="checkbox" checked><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span><span class="item-chip"><span class="marker" data-color="green" data-shape="square"></span>Sisters Okafor &amp; Lind</span></label>
+							<label class="check"><input type="checkbox" checked><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span><span class="item-chip"><span class="marker" data-color="pink" data-shape="diamond"></span>Sisters Park &amp; Moreau</span></label>
+							<label class="check"><input type="checkbox"><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span><span class="item-chip is-archived"><span class="marker" data-color="teal" data-shape="glyph">E</span>Elders Nakamura &amp; Ruiz (archived)</span></label>
+						</div>
+					</div>
+
+					<div class="field">
+						<span class="label">Dates</span>
+						<div class="segmented segmented--block" role="radiogroup" aria-label="Date range" data-group="range">
+							<button class="segmented__opt" role="radio" aria-checked="true" data-value="upcoming">Upcoming</button>
+							<button class="segmented__opt" role="radio" aria-checked="false" data-value="past">Past</button>
+							<button class="segmented__opt" role="radio" aria-checked="false" data-value="all">All</button>
+							<button class="segmented__opt" role="radio" aria-checked="false" data-value="custom">Custom</button>
+						</div>
+						<div class="reveal" data-when="range:custom">
+							<div class="form-grid" style="margin-top: var(--space-1)">
+								<div class="select" data-datepicker="2026-10-01"><button class="select-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="From" data-popover-trigger><span class="select-trigger__value">Oct 1, 2026</span><svg class="icon"><use href="#i-calendar"/></svg></button><div class="popover datepicker" hidden role="dialog" aria-label="From"></div></div>
+								<div class="select" data-datepicker="2026-10-31"><button class="select-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="To" data-popover-trigger><span class="select-trigger__value">Oct 31, 2026</span><svg class="icon"><use href="#i-calendar"/></svg></button><div class="popover datepicker popover--right" hidden role="dialog" aria-label="To"></div></div>
+							</div>
+						</div>
+					</div>
+
+					<div class="field" data-when="mode:timed" hidden>
+						<span class="label">Time of day</span>
+						<div class="row">
+							<input class="input tabular" value="8:00 am" aria-label="From time" style="width: 7rem">
+							<span class="muted">to</span>
+							<input class="input tabular" value="12:00 pm" aria-label="To time" style="width: 7rem">
+						</div>
+						<span class="hint">Includes times that start in this range.</span>
+					</div>
+
+					<div class="field">
+						<span class="label" id="lvl-l">Detail</span>
+						<div class="level-grid" role="radiogroup" aria-labelledby="lvl-l" data-group="level">
+							<button class="choice-card level" type="button" role="radio" aria-checked="false" data-value="count"><svg class="icon"><use href="#i-hash"/></svg><span>Count only<small>How many per item and date</small></span></button>
+							<button class="choice-card level" type="button" role="radio" aria-checked="false" data-value="names"><svg class="icon"><use href="#i-user"/></svg><span>Names only<small>Who, no counts</small></span></button>
+							<button class="choice-card level" type="button" role="radio" aria-checked="false" data-value="count-names"><svg class="icon"><use href="#i-users"/></svg><span>Count + names<small>Totals plus who</small></span></button>
+							<button class="choice-card level" type="button" role="radio" aria-checked="true" data-value="contact"><svg class="icon"><use href="#i-phone"/></svg><span>Names + contact<small>Pick the fields below</small></span></button>
+						</div>
+					</div>
+
+					<div class="reveal" data-when="level:contact">
+						<div class="field">
+							<span class="label" id="fields-l">Include</span>
+							<div class="stack" style="--stack-gap: var(--space-2)" role="group" aria-labelledby="fields-l">
+								<label class="check"><input type="checkbox" checked><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span>Phone</label>
+								<label class="check"><input type="checkbox" checked><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span>Call or text</label>
+								<label class="check"><input type="checkbox" checked><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span>Cell or WhatsApp</label>
+								<label class="check"><input type="checkbox"><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span>Email</label>
+								<label class="check"><input type="checkbox" checked><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span>Notes</label>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="card__foot" style="justify-content: space-between">
+					<span class="hint tabular">31 rows</span>
+					<button class="btn btn--primary" type="button" data-toast="elm-ward-meals-bookings-2026-09-28.csv downloaded" data-toast-icon="download"><svg class="icon"><use href="#i-download"/></svg>Download CSV</button>
+				</div>
+			</div>
+
+			<section class="card" aria-labelledby="pv-h">
+				<div class="card__head">
+					<div><h2 class="card__title" id="pv-h">Preview</h2><p class="card__desc">First rows of the file, exactly as exported.</p></div>
+				</div>
+				<div class="table-wrap" style="border: 0; border-radius: 0 0 var(--radius-lg) var(--radius-lg)">
+					<table class="table" style="font-size: var(--text-sm)">
+						<thead><tr><th>Date</th><th>Item</th><th>Name</th><th>Phone</th><th>Contact</th><th>Number type</th><th>Notes</th></tr></thead>
+						<tbody>
+							<tr><td class="tabular nowrap">2026-10-01</td><td>Elders Ramos &amp; Chen</td><td>Jordan Whitaker</td><td class="tabular nowrap">801-555-0123</td><td>Text</td><td>Cell</td><td></td></tr>
+							<tr><td class="tabular nowrap">2026-10-02</td><td>Elders Tuilagi &amp; Brooks</td><td>Sione Fifita</td><td class="tabular nowrap">+676 555 0190</td><td>Text</td><td>WhatsApp</td><td>Bringing lu pulu</td></tr>
+							<tr><td class="tabular nowrap">2026-10-03</td><td>Sisters Park &amp; Moreau</td><td>Grace Whitfield</td><td class="tabular nowrap">801-555-0165</td><td>Text</td><td>Cell</td><td></td></tr>
+							<tr><td class="tabular nowrap">2026-10-06</td><td>Sisters Okafor &amp; Lind</td><td>Maya Castillo</td><td class="tabular nowrap">801-555-0148</td><td>Text</td><td>Cell</td><td>Can pick them up</td></tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+		</div>
+	</div>
+
+	<script src="assets/mock.js"></script>
+</body>
+</html>

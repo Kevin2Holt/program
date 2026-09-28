@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Items · progr.am</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+</head>
+<body data-shell="organizer" data-nav="items" data-crumbs="Ward Missionary Meals|Calendar|Items">
+	<div class="content" data-shell-content style="max-width: 60rem">
+		<div class="page-head">
+			<div>
+				<h1 class="page-head__title">Items</h1>
+				<p class="page-head__sub">What people sign up for. Drag to reorder.</p>
+			</div>
+			<div class="row">
+				<div class="segmented" role="radiogroup" aria-label="Mockup: calendar mode" data-group="mode" title="Mockup only">
+					<button class="segmented__opt" role="radio" aria-checked="true" data-value="date">Date-only</button>
+					<button class="segmented__opt" role="radio" aria-checked="false" data-value="timed">Timed</button>
+				</div>
+				<button class="btn btn--primary" type="button" data-open="item-drawer"><svg class="icon"><use href="#i-plus"/></svg>Add item</button>
+			</div>
+		</div>
+
+		<div class="card item-list">
+			<div class="item-row">
+				<span class="item-row__grip" aria-hidden="true"><svg class="icon"><use href="#i-grip"/></svg></span>
+				<span class="marker marker--lg" data-color="blue" data-shape="circle"></span>
+				<div><div style="font-weight: var(--weight-semibold)">Elders Ramos &amp; Chen</div><div class="subtle" style="font-size: var(--text-xs)" data-when="mode:timed" hidden>5:30 pm · 90 min</div></div>
+				<span class="item-row__hide-sm muted tabular">1 per day</span>
+				<span class="item-row__hide-sm muted tabular">11 upcoming</span>
+				<div class="select">
+					<button class="btn btn--ghost btn--icon btn--sm" type="button" data-popover-trigger aria-haspopup="menu" aria-expanded="false" aria-label="Actions for Elders Ramos &amp; Chen"><svg class="icon"><use href="#i-more"/></svg></button>
+					<div class="popover popover--right menu" hidden role="menu">
+						<button class="menu__item" role="menuitem" data-open="item-drawer"><svg class="icon"><use href="#i-pencil"/></svg>Edit</button>
+						<button class="menu__item" role="menuitem" data-toast="Item duplicated"><svg class="icon"><use href="#i-copy"/></svg>Duplicate</button>
+						<button class="menu__item menu__item--danger" role="menuitem" data-open="archive-dialog"><svg class="icon"><use href="#i-archive"/></svg>Archive</button>
+					</div>
+				</div>
+			</div>
+			<div class="item-row">
+				<span class="item-row__grip" aria-hidden="true"><svg class="icon"><use href="#i-grip"/></svg></span>
+				<span class="marker marker--lg" data-color="amber" data-shape="triangle"></span>
+				<div><div style="font-weight: var(--weight-semibold)">Elders Tuilagi &amp; Brooks</div><div class="subtle" style="font-size: var(--text-xs)" data-when="mode:timed" hidden>5:30 pm · 90 min</div></div>
+				<span class="item-row__hide-sm muted tabular">1 per day</span>
+				<span class="item-row__hide-sm muted tabular">9 upcoming</span>
+				<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Actions"><svg class="icon"><use href="#i-more"/></svg></button>
+			</div>
+			<div class="item-row">
+				<span class="item-row__grip" aria-hidden="true"><svg class="icon"><use href="#i-grip"/></svg></span>
+				<span class="marker marker--lg" data-color="green" data-shape="square"></span>
+				<div><div style="font-weight: var(--weight-semibold)">Sisters Okafor &amp; Lind</div><div class="subtle" style="font-size: var(--text-xs)" data-when="mode:timed" hidden>12:00 pm, 5:30 pm · 60 min</div></div>
+				<span class="item-row__hide-sm muted tabular">1 per day</span>
+				<span class="item-row__hide-sm muted tabular">10 upcoming</span>
+				<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Actions"><svg class="icon"><use href="#i-more"/></svg></button>
+			</div>
+			<div class="item-row">
+				<span class="item-row__grip" aria-hidden="true"><svg class="icon"><use href="#i-grip"/></svg></span>
+				<span class="marker marker--lg" data-color="pink" data-shape="diamond"></span>
+				<div><div style="font-weight: var(--weight-semibold)">Sisters Park &amp; Moreau</div><div class="subtle" style="font-size: var(--text-xs)">Tue, Thu, Sat only · 1 allow rule</div></div>
+				<span class="item-row__hide-sm muted tabular">1 per day</span>
+				<span class="item-row__hide-sm muted tabular">8 upcoming</span>
+				<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Actions"><svg class="icon"><use href="#i-more"/></svg></button>
+			</div>
+		</div>
+
+		<button class="disclosure" type="button" aria-expanded="false" aria-controls="archived" style="margin: var(--space-4) 0 var(--space-2)"><svg class="icon"><use href="#i-chev-right"/></svg>Archived (1)</button>
+		<div class="reveal is-collapsed" id="archived" inert>
+			<div>
+				<div class="card item-list">
+					<div class="item-row is-archived">
+						<span class="item-row__grip"></span>
+						<span class="marker marker--lg" data-color="teal" data-shape="glyph">E</span>
+						<div><div style="font-weight: var(--weight-semibold)">Elders Nakamura &amp; Ruiz</div><div style="font-size: var(--text-xs)">Archived Aug 30 · bookings kept</div></div>
+						<span class="item-row__hide-sm tabular">1 per day</span>
+						<span class="item-row__hide-sm tabular">24 past</span>
+						<button class="btn btn--sm" type="button" data-toast="Item restored"><svg class="icon"><use href="#i-undo"/></svg>Restore</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="overlay" id="item-drawer" hidden>
+		<aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="item-drawer-title">
+			<div class="drawer__head">
+				<h2 class="dialog__title" id="item-drawer-title">Edit item</h2>
+				<button class="btn btn--ghost btn--icon" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+			</div>
+			<div class="drawer__body stack" style="--stack-gap: var(--space-5)">
+				<div class="row" style="--row-gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius-lg); background: var(--color-surface-2)">
+					<span class="marker marker--xl" data-color="blue" data-shape="circle" id="preview-marker"></span>
+					<div><div style="font-weight: var(--weight-semibold)">Elders Ramos &amp; Chen</div><div class="subtle" style="font-size: var(--text-xs)">How it appears on the calendar</div></div>
+				</div>
+
+				<div class="field">
+					<label class="label" for="item-name">Name</label>
+					<input class="input" id="item-name" value="Elders Ramos &amp; Chen" data-autofocus>
+				</div>
+
+				<div class="field">
+					<label class="label" for="item-cap">Capacity</label>
+					<div class="row">
+						<div class="row" style="--row-gap: 0">
+							<button class="btn btn--icon" type="button" aria-label="Decrease" style="border-radius: var(--radius-md) 0 0 var(--radius-md)"><svg class="icon"><use href="#i-minus"/></svg></button>
+							<input class="input tabular" id="item-cap" value="1" inputmode="numeric" style="width: 3.5rem; text-align: center; border-radius: 0; border-left: 0; border-right: 0">
+							<button class="btn btn--icon" type="button" aria-label="Increase" style="border-radius: 0 var(--radius-md) var(--radius-md) 0"><svg class="icon"><use href="#i-plus"/></svg></button>
+						</div>
+						<span class="hint">signups per day</span>
+					</div>
+				</div>
+
+				<div class="field">
+					<span class="label" id="color-l">Color</span>
+					<div class="swatches" role="radiogroup" aria-labelledby="color-l">
+						<button class="swatch" type="button" role="radio" aria-checked="false" data-color="red" aria-label="Red"></button>
+						<button class="swatch" type="button" role="radio" aria-checked="false" data-color="orange" aria-label="Orange"></button>
+						<button class="swatch" type="button" role="radio" aria-checked="false" data-color="amber" aria-label="Amber"></button>
+						<button class="swatch" type="button" role="radio" aria-checked="false" data-color="lime" aria-label="Lime"></button>
+						<button class="swatch" type="button" role="radio" aria-checked="false" data-color="green" aria-label="Green"></button>
+						<button class="swatch" type="button" role="radio" aria-checked="false" data-color="teal" aria-label="Teal"></button>
+						<button class="swatch" type="button" role="radio" aria-checked="false" data-color="sky" aria-label="Sky"></button>
+						<button class="swatch" type="button" role="radio" aria-checked="true" data-color="blue" aria-label="Blue"></button>
+						<button class="swatch" type="button" role="radio" aria-checked="false" data-color="violet" aria-label="Violet"></button>
+						<button class="swatch" type="button" role="radio" aria-checked="false" data-color="pink" aria-label="Pink"></button>
+						<button class="swatch" type="button" role="radio" aria-checked="false" data-color="brown" aria-label="Brown"></button>
+						<button class="swatch" type="button" role="radio" aria-checked="false" data-color="slate" aria-label="Slate"></button>
+					</div>
+				</div>
+
+				<div class="field">
+					<span class="label" id="shape-l">Shape</span>
+					<div class="shape-grid" role="radiogroup" aria-labelledby="shape-l">
+						<button class="shape-opt" type="button" role="radio" aria-checked="true" data-shape-value="circle" aria-label="Circle"><span class="marker marker--lg" data-color="slate" data-shape="circle"></span></button>
+						<button class="shape-opt" type="button" role="radio" aria-checked="false" data-shape-value="square" aria-label="Square"><span class="marker marker--lg" data-color="slate" data-shape="square"></span></button>
+						<button class="shape-opt" type="button" role="radio" aria-checked="false" data-shape-value="triangle" aria-label="Triangle"><span class="marker marker--lg" data-color="slate" data-shape="triangle"></span></button>
+						<button class="shape-opt" type="button" role="radio" aria-checked="false" data-shape-value="diamond" aria-label="Diamond"><span class="marker marker--lg" data-color="slate" data-shape="diamond"></span></button>
+						<button class="shape-opt" type="button" role="radio" aria-checked="false" data-shape-value="hexagon" aria-label="Hexagon"><span class="marker marker--lg" data-color="slate" data-shape="hexagon"></span></button>
+						<button class="shape-opt" type="button" role="radio" aria-checked="false" data-shape-value="star" aria-label="Star"><span class="marker marker--lg" data-color="slate" data-shape="star"></span></button>
+						<button class="shape-opt" type="button" role="radio" aria-checked="false" data-shape-value="glyph:A" aria-label="Letter A"><span class="marker marker--lg" data-color="slate" data-shape="glyph">A</span></button>
+						<button class="shape-opt" type="button" role="radio" aria-checked="false" data-shape-value="glyph:B" aria-label="Letter B"><span class="marker marker--lg" data-color="slate" data-shape="glyph">B</span></button>
+						<button class="shape-opt" type="button" role="radio" aria-checked="false" data-shape-value="glyph:1" aria-label="Number 1"><span class="marker marker--lg" data-color="slate" data-shape="glyph">1</span></button>
+						<button class="shape-opt" type="button" role="radio" aria-checked="false" data-shape-value="glyph:2" aria-label="Number 2"><span class="marker marker--lg" data-color="slate" data-shape="glyph">2</span></button>
+					</div>
+					<span class="hint">Letters A–Z and numbers 0–9: type one to pick it.</span>
+				</div>
+
+				<div class="field" data-when="mode:timed" hidden>
+					<div class="row row--between"><span class="label">Times</span><button class="btn btn--sm" type="button"><svg class="icon"><use href="#i-plus"/></svg>Add time</button></div>
+					<div class="card">
+						<div class="lv-rows" style="padding: var(--space-2)">
+							<div class="row">
+								<input class="input tabular" value="12:00 pm" aria-label="Start time" style="width: 6.5rem">
+								<input class="input tabular" value="60" aria-label="Minutes" style="width: 4rem">
+								<span class="hint">min</span>
+								<span class="grow hint">Every open day</span>
+								<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Remove time"><svg class="icon"><use href="#i-x"/></svg></button>
+							</div>
+							<div class="row">
+								<input class="input tabular" value="5:30 pm" aria-label="Start time" style="width: 6.5rem">
+								<input class="input tabular" value="60" aria-label="Minutes" style="width: 4rem">
+								<span class="hint">min</span>
+								<span class="grow hint">Every open day</span>
+								<button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Remove time"><svg class="icon"><use href="#i-x"/></svg></button>
+							</div>
+						</div>
+					</div>
+					<span class="hint">Capacity counts per time. A time can also be limited to one date.</span>
+				</div>
+			</div>
+			<div class="drawer__foot">
+				<button class="btn btn--ghost" type="button" data-close>Cancel</button>
+				<button class="btn btn--primary" type="button" data-close data-toast="Item saved">Save item</button>
+			</div>
+		</aside>
+	</div>
+
+	<div class="overlay" id="archive-dialog" hidden>
+		<div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="arch-t" aria-describedby="arch-d">
+			<div class="dialog__body">
+				<div class="dialog__icon" style="background: var(--color-warning-tint); color: var(--color-warning)"><svg class="icon"><use href="#i-archive"/></svg></div>
+				<h2 class="dialog__title" id="arch-t">Archive Elders Ramos &amp; Chen?</h2>
+				<p class="dialog__text" id="arch-d">It stops appearing on the public calendar. Its 11 upcoming bookings stay, and you can still see and export them. You can restore it any time.</p>
+			</div>
+			<div class="dialog__foot">
+				<button class="btn btn--ghost" type="button" data-close data-autofocus>Cancel</button>
+				<button class="btn btn--primary" type="button" data-close data-toast="Item archived" data-toast-action="Undo">Archive</button>
+			</div>
+		</div>
+	</div>
+
+	<script src="assets/mock.js"></script>
+	<script>
+		// Mockup: swatch/shape choices update the preview marker.
+		document.addEventListener("segmented:change", (event) => {
+			const marker = document.getElementById("preview-marker");
+			const opt = event.target.querySelector('[aria-checked="true"]');
+			if (opt?.dataset.color && opt.classList.contains("swatch")) {
+				marker.dataset.color = opt.dataset.color;
+			}
+			if (opt?.dataset.shapeValue) {
+				const [shape, glyph] = opt.dataset.shapeValue.split(":");
+				marker.dataset.shape = shape;
+				marker.textContent = glyph || "";
+			}
+		});
+	</script>
+</body>
+</html>

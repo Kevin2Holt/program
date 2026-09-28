@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title>Your details · Missionary meals</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+</head>
+<body class="is-public">
+	<header class="pub-header">
+		<div class="pub-header__inner">
+			<span class="pub-header__title">Elm Ward</span>
+			<nav class="pub-tabs" aria-label="Event">
+				<a class="pub-tab" href="program.html">Program</a>
+				<a class="pub-tab" href="calendar.html" aria-current="page">Sign up</a>
+			</nav>
+			<button class="btn btn--ghost btn--icon" type="button" data-theme-toggle></button>
+		</div>
+	</header>
+
+	<main class="narrow">
+		<a class="step-back" href="calendar.html?demo=selected"><svg class="icon"><use href="#i-arrow-left"/></svg>Back to calendar</a>
+		<h1 class="cal-head__title">Almost done</h1>
+		<p class="cal-head__sub" style="margin-bottom: var(--space-5)">Check your selections and add your details.</p>
+
+		<section class="picks" aria-label="Your selections" style="margin-bottom: var(--space-6)">
+			<div class="picks__head">
+				<span class="picks__title">Your selections</span>
+				<a class="btn btn--ghost btn--sm" href="calendar.html?demo=selected">Edit</a>
+			</div>
+			<ul class="picks__list">
+				<li class="pick">
+					<span class="marker marker--lg" data-color="blue" data-shape="circle"></span>
+					<div class="pick__main"><div class="pick__name">Elders Ramos &amp; Chen</div><div class="pick__when">Thu, Oct 1</div></div>
+				</li>
+				<li class="pick">
+					<span class="marker marker--lg" data-color="amber" data-shape="triangle"></span>
+					<div class="pick__main"><div class="pick__name">Elders Tuilagi &amp; Brooks</div><div class="pick__when">Wed, Oct 7</div></div>
+				</li>
+			</ul>
+		</section>
+
+		<div class="alert alert--warning" role="alert" style="margin-bottom: var(--space-5)" id="conflict-demo" hidden>
+			<svg class="icon"><use href="#i-alert-triangle"/></svg>
+			<div>
+				<div class="alert__title">One selection was just taken</div>
+				<div class="muted">Someone else signed up for <strong>Elders Tuilagi &amp; Brooks on Wed, Oct 7</strong>. Your other selection is still saved. <a href="calendar.html">Pick another day</a> or submit without it.</div>
+			</div>
+		</div>
+
+		<form class="stack" style="--stack-gap: var(--space-4)" novalidate onsubmit="event.preventDefault(); this.querySelector('[type=submit]').classList.add('is-loading'); setTimeout(() => location.href = 'confirmation.html', 700);">
+			<h2 class="section-title" style="margin-bottom: 0">Your details</h2>
+
+			<div class="field">
+				<label class="label" for="name">Name<span class="label__req" aria-hidden="true">*</span></label>
+				<input class="input" id="name" autocomplete="name" value="Jordan Whitaker">
+			</div>
+
+			<div class="field has-error">
+				<label class="label" for="phone">Phone<span class="label__req" aria-hidden="true">*</span></label>
+				<input class="input" id="phone" type="tel" autocomplete="tel" inputmode="tel" value="801-555-01" aria-invalid="true" aria-describedby="phone-err">
+				<span class="error-msg" id="phone-err"><svg class="icon"><use href="#i-alert-circle"/></svg>Enter a full phone number, like 801-555-0123.</span>
+			</div>
+
+			<div class="field">
+				<span class="label" id="contact-label">How should they reach you?</span>
+				<div class="choice-cards" role="radiogroup" aria-labelledby="contact-label">
+					<button class="choice-card" type="button" role="radio" aria-checked="true" data-value="text"><svg class="icon"><use href="#i-message"/></svg>Text</button>
+					<button class="choice-card" type="button" role="radio" aria-checked="false" data-value="call"><svg class="icon"><use href="#i-phone"/></svg>Call</button>
+				</div>
+			</div>
+
+			<div class="field">
+				<span class="label" id="numtype-label">Number type</span>
+				<div class="choice-cards" role="radiogroup" aria-labelledby="numtype-label">
+					<button class="choice-card" type="button" role="radio" aria-checked="true" data-value="cell"><svg class="icon"><use href="#i-phoneDevice"/></svg>Cell</button>
+					<button class="choice-card" type="button" role="radio" aria-checked="false" data-value="whatsapp"><svg class="icon"><use href="#i-message-circle"/></svg>WhatsApp</button>
+				</div>
+			</div>
+
+			<div class="field">
+				<label class="label" for="email">Email <span class="label__opt">(optional)</span></label>
+				<input class="input" id="email" type="email" autocomplete="email" placeholder="you@example.com">
+				<span class="hint">We'll email you a confirmation.</span>
+			</div>
+
+			<div class="field">
+				<label class="label" for="notes">Notes <span class="label__opt">(optional)</span></label>
+				<textarea class="textarea" id="notes" placeholder="Allergies, what you're bringing, anything the missionaries should know"></textarea>
+			</div>
+
+			<button class="btn btn--primary btn--lg btn--block" type="submit" style="margin-top: var(--space-2)">Sign up for 2 meals</button>
+			<button class="btn btn--ghost btn--sm" type="button" onclick="document.getElementById('conflict-demo').hidden = false; window.scrollTo({ top: 0, behavior: 'smooth' });" style="align-self: center">Mockup: show a conflict</button>
+		</form>
+	</main>
+
+	<script src="assets/mock.js"></script>
+</body>
+</html>

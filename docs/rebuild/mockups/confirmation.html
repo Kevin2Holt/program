@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title>You're signed up · Missionary meals</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+</head>
+<body class="is-public">
+	<header class="pub-header">
+		<div class="pub-header__inner">
+			<span class="pub-header__title">Elm Ward</span>
+			<nav class="pub-tabs" aria-label="Event">
+				<a class="pub-tab" href="program.html">Program</a>
+				<a class="pub-tab" href="calendar.html" aria-current="page">Sign up</a>
+			</nav>
+			<button class="btn btn--ghost btn--icon" type="button" data-theme-toggle></button>
+		</div>
+	</header>
+
+	<main class="narrow">
+		<div class="confirm-hero">
+			<div class="confirm-hero__icon"><svg class="icon"><use href="#i-check"/></svg></div>
+			<h1 class="confirm-hero__title">You're signed up, Jordan</h1>
+			<p class="muted">Missionary meals · Elm Ward</p>
+		</div>
+
+		<section class="picks" aria-label="Your signups" style="margin-bottom: var(--space-4)">
+			<div class="picks__head">
+				<span class="picks__title">Your signups</span>
+				<span class="badge badge--success">2 confirmed</span>
+			</div>
+			<ul class="picks__list">
+				<li class="pick">
+					<span class="marker marker--lg" data-color="blue" data-shape="circle"></span>
+					<div class="pick__main"><div class="pick__name">Elders Ramos &amp; Chen</div><div class="pick__when">Thursday, October 1, 2026</div></div>
+				</li>
+				<li class="pick">
+					<span class="marker marker--lg" data-color="amber" data-shape="triangle"></span>
+					<div class="pick__main"><div class="pick__name">Elders Tuilagi &amp; Brooks</div><div class="pick__when">Wednesday, October 7, 2026</div></div>
+				</li>
+			</ul>
+			<div class="picks__foot">
+				<a class="btn btn--lg btn--block" href="#" data-toast="Calendar file downloaded" data-toast-icon="download"><svg class="icon"><use href="#i-calendar-plus"/></svg>Add to my calendar</a>
+			</div>
+		</section>
+
+		<div class="alert alert--info" style="margin-bottom: var(--space-4)">
+			<svg class="icon"><use href="#i-mail"/></svg>
+			<div>We sent a confirmation to <strong>jordan@example.com</strong>.</div>
+		</div>
+
+		<div class="card">
+			<div class="card__body stack" style="--stack-gap: var(--space-2)">
+				<div class="label">Your confirmation link</div>
+				<p class="hint" style="font-size: var(--text-sm)">Save this link to see your signups later. Anyone with the link can view them.</p>
+				<div class="link-box">
+					<a href="#">https://progr.am/elm-ward-meals/calendar/confirmation/q7Jx2mVfK9d-TzR4bW0nLpE8sYcH1uAa6gNeXoQ3iUk</a>
+					<button class="btn btn--sm" type="button" data-toast="Link copied"><svg class="icon"><use href="#i-copy"/></svg>Copy</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="row" style="justify-content: center; margin-top: var(--space-6)">
+			<a class="btn btn--ghost" href="calendar.html"><svg class="icon"><use href="#i-arrow-left"/></svg>Back to the calendar</a>
+		</div>
+	</main>
+
+	<script src="assets/mock.js"></script>
+</body>
+</html>

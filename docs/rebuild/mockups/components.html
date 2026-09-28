@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Components · progr.am</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+	<link rel="stylesheet" href="assets/tokens.css">
+	<link rel="stylesheet" href="assets/components.css">
+	<script src="assets/theme-boot.js"></script>
+	<style>
+		.demo { display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: var(--space-4); padding: var(--space-4); border-bottom: var(--border-width) solid var(--color-divider); align-items: start; }
+		.demo:last-child { border-bottom: 0; }
+		.type-scale span { display: block; line-height: var(--leading-snug); }
+		@media (max-width: 640px) { .demo { grid-template-columns: minmax(0, 1fr); } }
+	</style>
+</head>
+<body data-shell="organizer" data-nav="none" data-event="none" data-crumbs="Design system">
+	<div class="content" data-shell-content style="max-width: 60rem">
+		<div class="page-head"><div><h1 class="page-head__title">Components and states</h1><p class="page-head__sub">One of everything, from the shared tokens.</p></div></div>
+
+		<div class="card">
+			<div class="demo"><div class="caps">Type</div>
+				<div class="type-scale">
+					<span style="font-size: var(--text-4xl); font-weight: 700; letter-spacing: -0.025em">Event title 36</span>
+					<span style="font-size: var(--text-2xl); font-weight: 600">Page title 24</span>
+					<span style="font-size: var(--text-lg); font-weight: 600">Section 18</span>
+					<span style="font-size: var(--text-base)">Public body 16: readable during the event.</span>
+					<span style="font-size: var(--text-md)">Organizer body 14: compact and efficient.</span>
+					<span style="font-size: var(--text-xs)" class="subtle">Caption 12 · <span class="tabular">10:30 am – 12:00 pm</span></span>
+				</div>
+			</div>
+			<div class="demo"><div class="caps">Buttons</div>
+				<div class="row row--wrap">
+					<button class="btn btn--primary" type="button">Primary</button>
+					<button class="btn" type="button">Secondary</button>
+					<button class="btn btn--ghost" type="button">Ghost</button>
+					<button class="btn btn--danger" type="button">Danger</button>
+					<button class="btn btn--danger-quiet" type="button">Quiet danger</button>
+					<button class="btn btn--primary is-loading" type="button">Saving</button>
+					<button class="btn" type="button" disabled>Disabled</button>
+					<button class="btn btn--icon" type="button" aria-label="Edit"><svg class="icon"><use href="#i-pencil"/></svg></button>
+				</div>
+			</div>
+			<div class="demo"><div class="caps">Inputs</div>
+				<div class="form-grid">
+					<div class="field"><label class="label" for="c1">Text</label><input class="input" id="c1" placeholder="Placeholder"><span class="hint">Hint text sits under the field.</span></div>
+					<div class="field has-error"><label class="label" for="c2">With error</label><input class="input" id="c2" value="not-an-email" aria-invalid="true"><span class="error-msg"><svg class="icon"><use href="#i-alert-circle"/></svg>Enter an email like name@example.com.</span></div>
+					<div class="field"><span class="label" id="c3l">Select</span>
+						<div class="select"><button class="select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="c3l"><span class="select-trigger__value is-placeholder">Choose one</span><svg class="icon icon--chev"><use href="#i-chev-down"/></svg></button>
+							<div class="popover" hidden><ul class="listbox" role="listbox" aria-labelledby="c3l"><li class="option" role="option" aria-selected="false" data-value="a">Option A<svg class="icon option__check"><use href="#i-check"/></svg></li><li class="option" role="option" aria-selected="false" data-value="b">Option B<svg class="icon option__check"><use href="#i-check"/></svg></li><li class="option" role="option" aria-selected="false" data-value="c">Option C<svg class="icon option__check"><use href="#i-check"/></svg></li></ul></div></div>
+					</div>
+					<div class="field"><span class="label" id="c4l">Date</span>
+						<div class="select" data-datepicker="2026-10-04"><button class="select-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="c4l" data-popover-trigger><span class="select-trigger__value is-placeholder">Pick a date</span><svg class="icon"><use href="#i-calendar"/></svg></button><div class="popover datepicker" hidden role="dialog" aria-label="Choose date"></div></div>
+					</div>
+				</div>
+			</div>
+			<div class="demo"><div class="caps">Choices</div>
+				<div class="stack">
+					<div class="row row--wrap" style="--row-gap: var(--space-5)">
+						<label class="check"><input type="checkbox" checked><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span>Checkbox</label>
+						<label class="check check--radio"><input type="radio" name="r" checked><span class="check__box"></span>Radio one</label>
+						<label class="check check--radio"><input type="radio" name="r"><span class="check__box"></span>Radio two</label>
+						<label class="switch"><input type="checkbox" checked><span class="switch__track"></span><span class="switch__text">Toggle</span></label>
+					</div>
+					<div class="segmented" role="radiogroup" aria-label="Segmented"><button class="segmented__opt" role="radio" aria-checked="true" data-value="a">Day</button><button class="segmented__opt" role="radio" aria-checked="false" data-value="b">Week</button><button class="segmented__opt" role="radio" aria-checked="false" data-value="c">Month</button></div>
+					<div class="weekdays"><button class="weekday" type="button" aria-pressed="false">S</button><button class="weekday" type="button" aria-pressed="true">M</button><button class="weekday" type="button" aria-pressed="false">T</button><button class="weekday" type="button" aria-pressed="true">W</button><button class="weekday" type="button" aria-pressed="false">T</button><button class="weekday" type="button" aria-pressed="false">F</button><button class="weekday" type="button" aria-pressed="false">S</button></div>
+				</div>
+			</div>
+			<div class="demo"><div class="caps">Item markers</div>
+				<div class="stack">
+					<div class="row row--wrap" style="--row-gap: var(--space-3)">
+						<span class="marker marker--xl" data-color="red" data-shape="circle"></span>
+						<span class="marker marker--xl" data-color="orange" data-shape="square"></span>
+						<span class="marker marker--xl" data-color="amber" data-shape="triangle"></span>
+						<span class="marker marker--xl" data-color="lime" data-shape="diamond"></span>
+						<span class="marker marker--xl" data-color="green" data-shape="hexagon"></span>
+						<span class="marker marker--xl" data-color="teal" data-shape="star"></span>
+						<span class="marker marker--xl" data-color="sky" data-shape="glyph">A</span>
+						<span class="marker marker--xl" data-color="blue" data-shape="glyph">B</span>
+						<span class="marker marker--xl" data-color="violet" data-shape="glyph">7</span>
+						<span class="marker marker--xl" data-color="pink" data-shape="circle"></span>
+						<span class="marker marker--xl" data-color="brown" data-shape="square"></span>
+						<span class="marker marker--xl" data-color="slate" data-shape="triangle"></span>
+					</div>
+					<p class="hint">12 palette keys × 6 shapes + A–Z + 0–9. Auto-assignment walks colors and shapes together so neighbors never share both.</p>
+				</div>
+			</div>
+			<div class="demo"><div class="caps">Statuses</div>
+				<div class="row row--wrap" style="--row-gap: var(--space-4)">
+					<span class="status status--available">Available</span><span class="status status--full">Full</span><span class="status status--blocked">Blocked</span><span class="status status--out">Out of window</span><span class="status status--archived">Archived</span>
+					<span class="badge">Neutral</span><span class="badge badge--accent">Accent</span><span class="badge badge--success">Success</span><span class="badge badge--warning">Warning</span><span class="badge badge--danger">Danger</span>
+				</div>
+			</div>
+			<div class="demo"><div class="caps">Feedback</div>
+				<div class="stack">
+					<div class="alert alert--danger"><svg class="icon"><use href="#i-alert-circle"/></svg><div><div class="alert__title">Couldn't save</div><div class="muted">You're offline. We'll retry when you reconnect.</div></div></div>
+					<div class="alert alert--info"><svg class="icon"><use href="#i-info"/></svg><div>Informational message.</div></div>
+					<div class="row row--wrap" style="--row-gap: var(--space-4)">
+						<span class="save-state is-saving"><svg class="icon"><use href="#i-loader"/></svg>Saving…</span>
+						<span class="save-state is-saved"><svg class="icon"><use href="#i-cloud-check"/></svg>Saved</span>
+						<span class="save-state is-error"><svg class="icon"><use href="#i-alert-circle"/></svg>Not saved · Retry</span>
+					</div>
+					<div class="row row--wrap">
+						<button class="btn" type="button" data-toast="Changes saved">Show toast</button>
+						<button class="btn" type="button" data-open="demo-dialog">Open confirm dialog</button>
+					</div>
+					<div class="stack" style="--stack-gap: 6px; max-width: 20rem" aria-hidden="true"><span class="skeleton" style="height: 0.875rem; width: 70%"></span><span class="skeleton" style="height: 0.875rem"></span><span class="skeleton" style="height: 0.875rem; width: 40%"></span></div>
+				</div>
+			</div>
+			<div class="demo"><div class="caps">Error page</div>
+				<div class="empty" style="border-style: solid">
+					<div class="empty__icon"><svg class="icon"><use href="#i-alert-triangle"/></svg></div>
+					<div class="empty__title">Something went wrong</div>
+					<p class="empty__text">We couldn't load this page. Try again in a moment. Reference: <span class="tabular" style="font-family: var(--font-mono); font-size: var(--text-xs)">e7f2a1</span></p>
+					<button class="btn btn--sm" type="button">Try again</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="overlay" id="demo-dialog" hidden>
+		<div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dd-t" aria-describedby="dd-d">
+			<div class="dialog__body">
+				<div class="dialog__icon"><svg class="icon"><use href="#i-trash"/></svg></div>
+				<h2 class="dialog__title" id="dd-t">Delete this block?</h2>
+				<p class="dialog__text" id="dd-d">Custom confirm dialog: focus is trapped, Escape cancels, and the safe choice is focused first.</p>
+			</div>
+			<div class="dialog__foot"><button class="btn btn--ghost" type="button" data-close data-autofocus>Cancel</button><button class="btn btn--danger" type="button" data-close data-toast="Deleted" data-toast-icon="trash">Delete</button></div>
+		</div>
+	</div>
+
+	<script src="assets/mock.js"></script>
+</body>
+</html>
