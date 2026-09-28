@@ -39,7 +39,8 @@ export default defineConfig({
 			PORT: String(PORT),
 			ORIGIN: BASE_URL,
 			PUBLIC_BASE_URL: "https://progr.am",
-			MAIL_TRANSPORT: "log"
+			MAIL_TRANSPORT: "log",
+			RATE_LIMIT_SCALE: "100"
 		}
 	}
 });

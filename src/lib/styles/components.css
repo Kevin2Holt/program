@@ -33,7 +33,7 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 }
 
-body.is-public {
+.is-public {
 	font-size: var(--text-base);
 }
 
@@ -3907,4 +3907,23 @@ button.cal-day:hover {
 
 .select-trigger[data-invalid] {
 	border-color: var(--color-danger);
+}
+
+.event-switch-wrap .event-switch {
+	cursor: default;
+	padding-right: var(--space-1);
+}
+
+.code-status--ok {
+	color: var(--color-success);
+}
+
+.event-switch__name,
+.event-switch__code {
+	display: inline-block;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	vertical-align: bottom;
 }
