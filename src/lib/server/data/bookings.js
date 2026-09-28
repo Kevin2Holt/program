@@ -103,3 +103,88 @@ export async function markEmailSent(db, bookingId) {
 
 	await db`update calendar_bookings set email_sent_at = now() where id = ${bookingId}`;
 }
+
+/* ---------- Organizer listing ---------- */
+
+const LIST_WHEN = { upcoming: "upcoming", past: "past" };
+
+/*
+	One row per booking per booked date, with that date's Items grouped.
+	filters: { when: all|upcoming|past, status: active|canceled, itemId, search, today, sortDirection: asc|desc, limit, offset }
+*/
+export async function listBookingDateRows(db, eventId, filters) {
+
+	const search = filters.search ? `%${filters.search.replace(/[\\%_]/g, "\\$&")}%` : null;
+	const direction = filters.sortDirection === "asc" ? db`asc` : db`desc`;
+	const rows = await db`
+		with grouped as (
+			select b.id as booking_id, s.service_date, b.name, b.phone, b.contact_method, b.number_type, b.notes, b.status,
+				json_agg(json_build_object('itemId', s.item_id, 'itemName', s.item_name, 'startTime', s.start_time, 'durationMinutes', s.duration_minutes)
+					order by s.start_time nulls first, s.item_name) as selections,
+				min(s.start_time) as first_start
+			from calendar_bookings b join calendar_selections s on s.booking_id = b.id
+			where b.event_id = ${eventId}
+				and b.status = ${filters.status}
+				and (${filters.when === LIST_WHEN.upcoming} = false or s.service_date >= ${filters.today})
+				and (${filters.when === LIST_WHEN.past} = false or s.service_date < ${filters.today})
+				and (${search}::text is null or b.name ilike ${search} or b.phone ilike ${search} or b.notes ilike ${search} or b.email ilike ${search})
+			group by b.id, s.service_date
+			having (${filters.itemId}::int is null or bool_or(s.item_id = ${filters.itemId}))
+		)
+		select *, count(*) over ()::int as total_count
+		from grouped
+		order by service_date ${direction}, first_start ${direction} nulls first, booking_id
+		limit ${filters.limit} offset ${filters.offset}`;
+	return rows;
+}
+
+export async function listBookingLog(db, bookingId) {
+
+	return db`
+		select l.action, l.detail, l.at, u.display_name as actor_name
+		from calendar_booking_log l left join users u on u.id = l.actor_user_id
+		where l.booking_id = ${bookingId}
+		order by l.at desc, l.id desc`;
+}
+
+export async function updateBookingRegistrant(db, bookingId, registrant) {
+
+	await db`
+		update calendar_bookings set name = ${registrant.name}, phone = ${registrant.phone}, contact_method = ${registrant.contactMethod},
+			number_type = ${registrant.numberType}, email = ${registrant.email}, notes = ${registrant.notes}, updated_at = now()
+		where id = ${bookingId}`;
+}
+
+export async function deleteSelectionsByIds(db, selectionIds) {
+
+	if (selectionIds.length) {
+		await db`delete from calendar_selections where id = any(${selectionIds}::int[])`;
+	}
+}
+
+export async function setBookingStatus(db, bookingId, status) {
+
+	await db`
+		update calendar_bookings set status = ${status}, canceled_at = ${status === "canceled" ? db`now()` : null}, updated_at = now()
+		where id = ${bookingId}`;
+}
+
+
+/* ---------- Export ---------- */
+
+// Every selection matching the filters, with its booking's fields (the service decides what leaves).
+export async function listExportRows(db, eventId, filters) {
+
+	return db`
+		select s.id as selection_id, s.service_date, s.item_id, s.item_name, s.time_id, s.start_time, s.duration_minutes, s.time_label,
+			b.id as booking_id, b.name, b.phone, b.contact_method, b.number_type, b.email, b.notes, b.status, b.created_at
+		from calendar_selections s join calendar_bookings b on b.id = s.booking_id
+		where s.event_id = ${eventId}
+			and (${filters.includeCanceled} or b.status = 'active')
+			and (${filters.fromDate}::date is null or s.service_date >= ${filters.fromDate})
+			and (${filters.toDate}::date is null or s.service_date <= ${filters.toDate})
+			and (${filters.itemIds.length === 0} or s.item_id = any(${filters.itemIds}::int[]))
+			and (${filters.fromTime}::time is null or s.start_time >= ${filters.fromTime})
+			and (${filters.toTime}::time is null or s.start_time < ${filters.toTime})
+		order by s.service_date, s.start_time nulls first, s.item_name, b.name, s.id`;
+}
