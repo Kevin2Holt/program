@@ -1,6 +1,6 @@
 {
 	"name": "progr-am",
-	"version": "0.5.0",
+	"version": "0.6.0",
 	"private": true,
 	"description": "progr.am: event programs and signup calendars",
 	"type": "module",

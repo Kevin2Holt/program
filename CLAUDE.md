@@ -153,4 +153,13 @@ Other protections:
   - Conflicts return per-selection reasons (`SELECTION_REASON`); the page drops only the failed ones.
   - Confirmation at `/[code]/calendar/confirmation/[ref]` (32-byte ref, full link from `PUBLIC_BASE_URL`), plus `calendar.ics` (combined or separate; UTC; folded).
   - Mail transport `log`/`smtp` (`src/lib/server/mail/mailer.js`); a mail failure never fails a booking.
-- Next: 0.6 organizer bookings and export.
+- **0.6 organizer bookings and export (done):**
+  - **Bookings table:** one row per booking per date, latest first. Columns: Date, Item(s), Name, Phone, Contact, WhatsApp, Notes, and a details link. Search, Item, and when filters; paged; on phones each row becomes a labeled card.
+  - **Details page:** signups, contact, notes, confirmation link, and activity log (`calendar_booking_log`).
+  - **`calendarBookingAdminService`:**
+    - `updateBooking`: reschedules through `evaluateSelections` (unchanged selections exempt; organizers aren't window-limited, but full, blocked, archived, or overlapping targets are refused with reasons).
+    - `cancelBooking`: soft cancel.
+    - `restoreBooking`: only if every spot is still free. The cancel toast offers Undo, which calls restore.
+  - **`calendarExportService`:** fixed columns per detail level (count / names / count_names / contact + chosen fields); contact details can't leak at other levels; CSV cells beginning with `= + - @` are neutralized.
+  - The export page previews exactly the exported columns and downloads through the API.
+- Next: 0.7 seeds, polish, handoff.
