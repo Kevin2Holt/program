@@ -130,4 +130,19 @@ Other protections:
   - **Reordering:** pointer drag, or keyboard (focus grip, Space, arrows, Space).
   - The live preview and the public `/[code]` both render with `ProgramView`.
   - The JSON API is under `/api/events/[eventId]/program/…` (client helper: `src/lib/api.js`).
-- Next: 0.4 calendar engine and organizer setup.
+- **0.4 calendar engine and organizer setup (done):**
+  - **Pure engine** in `src/lib/calendar/` (shared by browser and server; exhaustively tested in `tests/unit/calendarEngine.test.js`):
+    - `dateWindow` (fixed / rolling = current period + N, minimum days ahead)
+    - `recurrence`
+    - `availability` (the approved Allow/Block order; recurring Allows whitelist only within their bounds)
+    - `capacity` (usage keys)
+    - `overlap`, `palette`, `formFields`, `describeRule`
+  - **Schema** (`004_calendar`): calendar tables with composite `(event_id, id)` foreign keys, so nothing crosses events. The bookings and selections tables exist now.
+  - **Services:** `calendarConfigService` (partial updates, whole-config validation), `calendarItemService` (Items with times; removed times are archived), `calendarRuleService` (`Applies to` normalized: none or all checked = all), and `calendarAvailabilityService` (loads context and usage, runs the engine).
+  - **Organizer pages:**
+    - Overview: stats and a weekly status grid, with the reason on hover or focus.
+    - Setup: autosave, progressive disclosure, searchable Event Time Zone.
+    - Items: drawer with color, shape, and times.
+    - Availability: drawer, toggle, and delete confirmation.
+  - The JSON API is under `/api/events/[eventId]/calendar/…`.
+- Next: 0.5 public signup.
