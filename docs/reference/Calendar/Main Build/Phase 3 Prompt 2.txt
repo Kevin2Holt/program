@@ -1,0 +1,235 @@
+# Part 2 of 3 — What Phase 3 must produce
+
+Your job in Phase 3 is to write the **full implementation planning specification** for the `progr.am` calendar signup module.
+
+Think of this as the document that sits between product definition and coding.
+
+It should translate the Phase 2 product spec into a concrete, build-ready plan that fits the real `progr.am` architecture.
+
+---
+
+## Main goal of Phase 3
+
+Produce a complete implementation plan that defines:
+- how the module should be structured inside the existing app
+- what data model pieces are needed
+- what routes/pages/APIs are needed
+- what organizer/public views are needed
+- how permissions should be enforced
+- how booking and availability logic should be structured
+- how exports should be handled
+- what should be built first
+- how the work should be phased for actual coding
+- what risks and edge cases need explicit protection
+
+This should be specific enough that a coding agent could start implementation from it.
+
+---
+
+## What your output should include
+
+At minimum, include the following sections.
+
+### 1. Phase 3 overview
+Explain:
+- what Phase 3 is for
+- how it relates to the main app
+- how it uses the Phase 2 product spec
+- what it prepares for in the coding phase
+
+### 2. Module placement inside `progr.am`
+Define the intended place of this module inside the existing app structure, including:
+- public route placement
+- organizer route placement
+- how it fits under an event
+- how it should align with the existing routing conventions
+- merge-friendly assumptions for standalone vs merged state
+
+### 3. Domain model translation
+Translate the product concepts into implementation-level entities and relationships.
+
+This should cover at a planning level:
+- calendar module/config record(s)
+- Items
+- Item occurrences / timeslots if applicable
+- bookings / signup records
+- booking selections
+- availability/unavailability rules
+- export-related considerations
+- organizer permission surface
+- any supporting tables/entities needed
+
+Do not write SQL, but define the entities clearly enough that schema design is straightforward.
+
+### 4. Data model plan
+Describe the proposed database-layer structure in practical detail.
+
+Include:
+- core tables or table groups that should exist
+- key columns/fields at a high level
+- important relationships
+- what belongs at the event level vs item level vs occurrence level vs booking level
+- what should be normalized vs stored as config
+- archival vs deletion expectations
+- how merge compatibility with the main PostgreSQL app should be preserved
+
+### 5. Routing plan
+Define the route plan for both public and organizer sides.
+
+Include:
+- public calendar display routes
+- public submission routes
+- organizer management routes
+- organizer configuration routes
+- any API routes needed for dynamic interactions
+- route naming conventions
+- how routes should avoid collision with the main `/:code` route model
+- what should be server-rendered vs what can be enhanced client-side
+
+### 6. Controller / service / model responsibility plan
+Map out responsibilities across:
+- routes
+- controllers
+- services
+- models
+- views
+- client-side JS
+
+The goal is to avoid muddy architecture.
+Be explicit about which kinds of logic belong where.
+
+### 7. View and template plan
+Define the page/template structure needed.
+
+Include likely views/partials for:
+- public calendar page
+- public confirmation page
+- organizer setup/configuration pages
+- organizer bookings list/detail/edit pages
+- organizer availability management UI
+- organizer export UI
+- reusable partials/components
+- empty states / errors / validation states
+
+### 8. Booking logic plan
+Define how implementation should handle:
+- availability checks
+- capacity checks
+- full vs blocked
+- multi-item selection
+- multi-day selection
+- time overlap detection
+- stale availability at submit time
+- organizer rescheduling/editing
+- conflict handling rules
+
+This section should be detailed.
+
+### 9. Time/occurrence plan
+Define the implementation approach for:
+- date-only Items
+- fixed scheduled occurrences
+- selectable timeslots
+- repeated occurrences in one day
+- duration and overlap requirements
+- occurrence-level capacity
+
+### 10. Availability-rule plan
+Define the implementation approach for:
+- one-time blocking
+- recurring rules
+- rule targeting (single item / selected items / all items)
+- precedence behavior
+- organizer-visible status derivation
+- public-visible availability derivation
+
+### 11. Form and submission plan
+Define:
+- supported structured fields
+- how field configuration should be stored
+- conditional field behavior
+- validation approach
+- submission payload expectations
+- confirmation behavior
+- optional email confirmation
+- public add-to-calendar behavior
+
+### 12. Permissions and access-control plan
+Define how the `calendar.*` permissions should be applied in practice.
+
+Include:
+- which views/actions require which permissions
+- what “view” vs “view.details” means in UI terms
+- editing splits
+- export access
+- standalone-period simplification assumptions
+
+### 13. Export plan
+Define the implementation plan for organizer export.
+
+Include:
+- expected export scopes
+- filters
+- detail-level options
+- likely baseline format(s)
+- whether export should be synchronous or deferred
+- how sensitive fields should be controlled
+
+### 14. Build phases for coding
+Break the eventual coding work into practical implementation phases or milestones.
+
+For example:
+- schema + models
+- organizer setup
+- public calendar browsing
+- public submission
+- organizer booking management
+- availability rules
+- exports
+- polish/testing
+
+The exact breakdown is up to you, but it should be practical and sequenced.
+
+### 15. Testing plan
+Define what needs to be tested.
+
+Include:
+- model/service tests
+- integration tests
+- routing tests
+- permission tests
+- booking conflict tests
+- recurrence/unavailability tests
+- export tests
+- public-flow tests
+- edge-case tests
+
+### 16. Risk areas
+Identify the highest-risk technical and product implementation areas.
+
+Examples might include:
+- route collisions
+- stale booking conflicts
+- recurring-rule complexity
+- time overlap logic
+- merge compatibility
+- editing existing bookings after settings change
+- preserving history when Items/occurrences are archived
+
+### 17. Open implementation questions
+Only include this section if there are still true implementation-level gaps that cannot be responsibly resolved from the two source files.
+
+If you can give a strong recommended implementation direction, do that instead of leaving avoidable ambiguity.
+
+---
+
+## Output quality standard
+
+Your Phase 3 output should feel like a real internal implementation spec / engineering handoff document.
+
+It should be:
+- concrete
+- organized
+- consistent with the existing architecture
+- detailed enough for coding
+- free of unnecessary fluff

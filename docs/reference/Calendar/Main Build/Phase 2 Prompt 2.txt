@@ -1,0 +1,381 @@
+# Part 2 of 3 — Locked calendar module decisions for `progr.am`
+
+You are defining a calendar signup module for `progr.am`.
+
+Treat everything in this message as already decided unless a later message explicitly says otherwise.
+
+---
+
+## Calendar module concept
+
+This module is a **calendar-based signup system** for scheduling signups on dates and, when needed, times.
+
+It originated from a missionary meal calendar use case, but it must support broader use cases too, such as:
+- missionary meal calendar
+- meal train
+- breakout session signup
+- RSVP-like date-based signups
+- similar scheduling/sign-up scenarios
+
+The system should be:
+- simple
+- broadly useful
+- understandable for public users
+- understandable for organizers
+- clean in presentation
+- compatible with the main `progr.am` app
+
+---
+
+## Core abstraction: Item
+
+The core abstraction is an **Item**.
+
+An Item is something a public user can sign up for on a date or a time-based occurrence.
+
+Examples:
+- a missionary companionship
+- a breakout session
+- a seminar
+- a meal-train need
+- an RSVP target
+
+Each Item can have:
+- a name
+- a capacity
+- a color
+- a shape
+- availability/unavailability rules
+- optional scheduled time information
+- optional multiple offered times on a given day
+
+### Capacity meaning
+Capacity means how many bookings/signups an Item can take for a given date or occurrence.
+
+Examples:
+- missionary companionship meal: 1 booking per day
+- breakout session: 30 or 50 attendees
+- RSVP target: venue capacity
+- meal train need: 1
+
+---
+
+## Number of Items
+
+There is no fixed number of Items.
+The current missionary use case has 4 companionships, but the system must support any number of Items.
+
+Organizers define and manage Item names.
+
+---
+
+## Item visual identity
+
+Each Item must have:
+- an identifying color
+- an identifying shape
+
+### Default behavior
+- colors and shapes can be auto-assigned by default
+- organizers can change them
+
+### Color requirements
+- colors should be distinct for most users
+- colors should remain visible in dark mode
+- colors should remain visible in light mode
+- contrast against the background should be sufficient
+- outlines or similar treatments may be used if helpful
+- dark/light variants may be needed
+
+### Shape requirements
+Shapes should be:
+- simple
+- recognizable
+- distinguishable
+- abstract where appropriate
+
+Allowed shape options should include:
+- capital letters A-Z
+- numbers 0-9
+- basic shapes such as circle, square, triangle
+
+Default shape assignment can be automatic as long as it is sensible.
+
+---
+
+## Public indicator behavior
+
+The public calendar should show **one indicator per Item**, not one indicator per remaining slot.
+
+If an Item still has availability for that date or occurrence, its indicator should show as available.
+
+If an Item is full or unavailable, the indicator should appear faded, disabled, grayed out, or otherwise unavailable.
+
+This is intentional so higher-capacity use cases do not become visually noisy.
+
+---
+
+## Date range model
+
+Organizers can configure the calendar date range.
+
+Supported modes:
+- fixed date range
+- ongoing rolling window
+
+### Ongoing window behavior
+If the organizer chooses an ongoing window, they should be able to define:
+- how far in the future signups are allowed
+- how large the available signup window is
+
+The available window can be defined in:
+- days
+- weeks
+- months
+
+### Snap behavior
+When using weeks or months, the window should snap to those natural boundaries.
+
+Example:
+- if the setting is "1 month"
+- the current month and next month are selectable
+- the third month becomes available on the first day of the second month
+
+This behavior is intentional and should be preserved.
+
+---
+
+## Public signup selection behavior
+
+A public user must be able to:
+- select multiple Items on the same day
+- select Items across multiple different days in the same signup flow
+
+This is important for use cases such as multi-day conferences.
+
+---
+
+## Time behavior
+
+Time behavior is optional and only appears when enabled or relevant.
+
+The system must support:
+- date-only signups
+- organizer-defined specific time slots
+- fixed Item times using start time + duration
+- Items offered multiple times in a day
+- overlap prevention for conflicting selections
+
+This is important for use cases such as:
+- overlapping breakout sessions
+- seminars repeated multiple times in one day
+- signups where a user should not be able to book two sessions happening at the same time
+
+In some cases, an Item may simply have one scheduled occurrence.
+In others, an Item may require both:
+- Item selection
+- time choice
+
+---
+
+## Capacity and double-booking behavior
+
+For the missionary use case:
+- one meal per Item per day
+- no double booking for the same Item on the same day
+
+More generally:
+- capacity determines whether more signups are allowed
+- capacity may apply per day or per scheduled occurrence, depending on configuration
+- overlap rules should prevent a single user from choosing incompatible simultaneous selections
+
+---
+
+## Public form system
+
+The form system should use a **structured approach**, not a freeform form builder.
+
+That means organizers choose from predefined field types/options rather than building arbitrary fields from scratch.
+
+### Missionary use-case baseline fields
+For the missionary use case, the desired fields are:
+- name
+- phone number
+
+For phone number, include dropdown metadata:
+- preferred contact method: call / text
+- number type: cell / WhatsApp
+
+More generally, organizers should be able to configure which supported fields are collected.
+
+### Notes
+Free-form notes should be allowed only if the organizer enables them.
+
+### Validation / friction
+Validation or additional friction should be organizer-configurable as appropriate for enabled fields/settings.
+
+---
+
+## Confirmation behavior
+
+There should always be a confirmation screen after successful signup.
+
+Email confirmation is optional.
+
+There may also be an "add to calendar" action on the confirmation page.
+
+### Public calendar export mode
+The organizer should be able to choose how the public confirmation-page calendar export behaves:
+- single combined event
+- separate event per selected Item
+
+Default:
+- single combined event
+
+---
+
+## Availability and visibility behavior
+
+### Public visibility
+Public users should only see:
+- available
+- unavailable
+
+### Organizer visibility
+Organizers with the appropriate permission should be able to see more detailed internal states such as:
+- available
+- full
+- blocked
+
+---
+
+## Unavailability rules
+
+Organizers need to be able to mark certain dates or patterns as unavailable for selected Items.
+
+### One-time unavailability
+One-time unavailability should be applicable to:
+- one Item
+- multiple selected Items
+- all Items
+
+### Recurring unavailability
+Recurring unavailability should support a reasonably flexible recurrence model, such as:
+- daily
+- weekly with selected weekday(s)
+- bi-weekly
+- monthly by date
+- monthly by weekday pattern (example: first Monday)
+- custom interval if needed
+
+The goal is flexibility without overcomplicating the product.
+
+---
+
+## Organizer abilities
+
+Organizers should be able to:
+- create/configure the calendar signup module
+- define the date range
+- define Items
+- set Item names
+- adjust capacity
+- assign/edit Item color and shape
+- configure time behavior
+- define time slots or fixed scheduled Item times
+- define repeated Item times in a day where needed
+- configure public form fields
+- configure notes
+- view all signups
+- edit signups
+- move/reschedule signups
+- change selected Items in a signup
+- update notes
+- manage recurring and one-time unavailability
+- view detailed statuses
+- export signup information
+
+---
+
+## Organizer export feature
+
+Organizers need an export feature so information can be shared with people who cannot access the website.
+
+The export system should support options such as:
+- which Items to include
+- which date range to include
+- what registrant information to include
+
+Examples of selectable detail levels:
+- count only
+- count + names
+- names only
+- names + contact info
+- other sensible structured variants
+
+This is a real feature requirement, not just a future idea.
+
+---
+
+## Permissions assumptions
+
+The main project is moving toward pre-made roles with editable permissions.
+
+Each module can define its own permission list.
+
+For this calendar module:
+- use a `calendar.*` namespace
+- do not go deeper than 3 permission layers
+
+Examples of acceptable permissions:
+- `calendar.view`
+- `calendar.view.details`
+- `calendar.edit`
+- `calendar.edit.availability`
+- `calendar.edit.bookings`
+- `calendar.edit.items`
+- `calendar.export`
+
+Until the merge happens, the standalone version can treat all authenticated organizers as having all calendar permissions.
+However, the module should still be conceptually designed around explicit permissions so merge later is easy.
+
+---
+
+## Auth during standalone period
+
+Until later integration with the main project account/role system:
+- organizers will use a simple username + password login for this standalone module
+
+The final merged system will instead use the main `progr.am` account and event-role model.
+
+---
+
+## Route and integration assumption
+
+Assume the intended eventual route for this module is:
+
+- `progr.am/<EVENT CODE>/calendar`
+
+This module should be designed as if it already belongs in the main `progr.am` event experience.
+
+Potential future integration surfaces include:
+- a dedicated calendar tab/page on the event
+- a smaller summary card/module shown in the main event itinerary
+
+Do not assume the exact final integration UI has been decided.
+Do assume the module must remain merge-friendly.
+
+---
+
+## UI principle: progressive disclosure
+
+The user explicitly wants the interface to remain clean and simple.
+
+Therefore:
+- related options should appear only when needed
+- advanced options should be progressively disclosed
+- time settings should only appear when relevant
+- multi-day and multi-item flows should remain understandable
+- organizer export options should not clutter the default workflow
+
+This simplicity principle should be treated as a core product requirement.

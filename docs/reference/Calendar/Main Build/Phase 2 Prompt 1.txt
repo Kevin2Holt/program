@@ -1,0 +1,170 @@
+# Part 1 of 3 — Main project context for `progr.am`
+
+You are working on a side project intended to merge later into the main `progr.am` codebase.
+
+Treat everything in this message as binding project context.
+
+---
+
+## Main project overview
+
+`progr.am` is a web application for creating and viewing event programs and itineraries.
+
+The application has two primary experiences:
+- public viewing of an event program
+- organizer creation, editing, and administration of an event program
+
+The intended public-facing URL model is code-based:
+- `progr.am/<EVENT CODE>`
+
+The eventual production domain is:
+- `progr.am`
+
+The brand/project name should be treated as **program**, spelled correctly, with `.am` split off as the top-level domain:
+- `progr.am`
+
+Do not use:
+- `prog.am`
+
+---
+
+## Core stack and architecture
+
+The established application stack is:
+- Frontend: HTML, CSS, JavaScript
+- Backend: Node.js
+- Framework: Express
+- Templating engine: EJS
+- Database: PostgreSQL
+
+The app is intentionally server-rendered.
+
+The project already has major infrastructure and early product work in place, including:
+- bootstrap/infrastructure
+- authentication/account flows
+- dashboard/event management scaffold
+- event codes and routing
+- an in-progress block editor system
+
+The current codebase conventions and architecture should be preserved.
+
+This side project is **not** meant to reinvent the app architecture.
+It must be designed as a mergeable subsystem.
+
+---
+
+## Public routing model
+
+The main app is built around short event-code URLs.
+
+Important routing truths:
+- public event access is route-first and code-first
+- the core route model is `/:code`
+- system routes must be mounted before the catch-all public code route
+- public access must continue to support active-code resolution, old-code redirects, and not-found behavior
+
+The side project must respect this routing philosophy.
+
+---
+
+## Rendering and UI philosophy
+
+The application is server-rendered using EJS templates, layouts, and partials.
+
+The visual/product direction is:
+- clean
+- elegant
+- simple
+- readable
+- useful for real events
+- mobile-usable
+- distraction-light on public pages
+- dependable rather than flashy
+
+Public pages should prioritize:
+- readability
+- speed
+- mobile usability
+- low friction
+
+Dark mode is the default theme.
+Light mode is available.
+
+The styling approach uses shared CSS custom properties.
+
+The calendar side project should match the same overall aesthetic and design logic as the main `progr.am` app.
+
+---
+
+## Security and request handling assumptions
+
+The main app architecture already includes:
+- session-backed authentication
+- PostgreSQL-backed session storage
+- CSRF protection
+- rate limiting
+- attach-user middleware
+- require-auth middleware
+
+Rich text sanitization is server-side in the main project where relevant.
+
+Do not assume a frontend SPA architecture.
+Do not assume an ORM.
+Do not assume a rewrite of the existing stack.
+
+---
+
+## Data and product architecture assumptions
+
+The main app already includes core concepts such as:
+- users
+- sessions
+- events
+- event members
+- old codes
+- reserved words
+- event versions
+- blocks
+
+The event architecture includes draft vs published distinctions.
+The side project must not collapse established product boundaries in a way that would make merge difficult.
+
+The side project should be compatible with:
+- Express + EJS + PostgreSQL
+- server-rendered pages
+- existing route/controller/model/view organization
+- additive migrations and merge-friendly design
+- later integration into event/team roles and permissions
+
+---
+
+## Merge philosophy
+
+This calendar side project is being built first as its own website only because it is more urgent.
+
+However, it must be designed as if it already belongs in the main `progr.am` system.
+
+That means:
+- route structure should be merge-friendly
+- code structure should be merge-friendly
+- data should survive the merge
+- design decisions should match the main app
+- it should behave like a module or subsystem, not a separate product with a conflicting architecture
+
+The future intended route for this module is:
+
+- `progr.am/<EVENT CODE>/calendar`
+
+The module may later appear in the main event experience in one or more ways, such as:
+- its own optional event tab/page
+- a smaller summary card or module inside the main event itinerary
+
+Do not assume the exact final integration UI is settled.
+Do assume easy migration is a core requirement.
+
+---
+
+## Important boundary for your work
+
+You are **not** to invent a different overall product architecture.
+You are to work within the established `progr.am` direction and preserve merge compatibility.

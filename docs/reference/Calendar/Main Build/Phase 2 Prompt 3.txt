@@ -1,0 +1,241 @@
+# Part 3 of 3 — Phase 2 assignment for the `progr.am` calendar signup module
+
+You have already been given:
+- Part 1: main `progr.am` project context
+- Part 2: locked calendar module decisions
+
+Treat both earlier parts as binding context.
+
+Your task now is to complete **Phase 2**.
+
+---
+
+## Your assignment
+
+Write the **full Phase 2 product specification** for the `progr.am` calendar signup module.
+
+This should be a complete written product specification that another AI agent or developer can use as the basis for the next phase.
+
+The output should be:
+- highly organized
+- product-focused
+- specific
+- thorough
+- implementation-aware but not implementation-heavy
+- suitable for handoff
+
+Do not write code.
+
+Do not create a detailed technical architecture unless needed to clarify product behavior.
+
+Do not silently override or ignore any prior locked decision.
+
+If something truly must remain open, label it clearly as an open question or recommendation rather than assuming.
+
+---
+
+## What your Phase 2 output must include
+
+At minimum, include the following sections.
+
+### 1. Product overview
+Explain:
+- what the module is
+- why it exists
+- how it fits inside `progr.am`
+- which use cases it supports
+
+### 2. Goals and non-goals
+Include:
+- primary product goals
+- simplicity goals
+- flexibility goals
+- mergeability goals
+- explicit non-goals where helpful
+
+### 3. User types
+Define:
+- public user
+- organizer
+- permission-aware organizer distinctions
+
+### 4. Core concepts / terminology
+Define and standardize terms such as:
+- Item
+- capacity
+- availability
+- unavailability
+- booking / signup
+- date window
+- timeslot
+- scheduled occurrence
+- overlapping conflict
+- public status
+- organizer status
+- calendar export mode
+- organizer export
+
+### 5. Configuration model
+Document what organizers can configure, including:
+- fixed or ongoing date window
+- Item definitions
+- capacity
+- colors
+- shapes
+- filters
+- date-only vs time-enabled behavior
+- time slots
+- fixed scheduled Item times
+- repeated Item times in the same day
+- form fields
+- notes
+- email confirmation
+- public confirmation-page calendar export mode
+- organizer export options
+- availability rules
+
+### 6. Public experience
+Specify:
+- how users browse the calendar
+- what they see
+- how filters work
+- how single-day and multi-day selection works
+- how multiple Item selection works
+- how time selection works when relevant
+- how overlap prevention should behave
+- how submission works
+- how confirmation works
+- how add-to-calendar should behave
+
+### 7. Organizer experience
+Specify:
+- organizer setup/configuration flow
+- managing Items
+- managing time-related behavior
+- reviewing signups
+- editing signups
+- managing recurring and one-time unavailability
+- viewing detailed statuses
+- permission-aware visibility/editing distinctions
+- organizer export workflow and options
+
+### 8. Booking and capacity rules
+Specify:
+- what makes an Item available
+- what makes it unavailable
+- how capacity is applied
+- how full behaves
+- how blocked behaves
+- how multi-Item selection works
+- how cross-day selection works
+- how overlapping time conflicts work
+- conflict prevention expectations at the product level
+
+### 9. Time behavior
+Specify:
+- what changes when time-based scheduling is enabled
+- how fixed Item times work
+- how organizer-defined time slots work
+- how repeated Item times in the same day work
+- how capacity behaves per day vs per occurrence
+- how overlap logic applies
+- any assumptions or constraints needed
+
+### 10. Availability rule behavior
+Specify:
+- recurring rule model
+- one-time rule model
+- Item targeting
+- precedence / override logic if needed
+- effect on public visibility
+- effect on organizer visibility
+
+### 11. Form system
+Specify the structured field system, including:
+- supported field types
+- required vs optional behavior
+- notes toggle
+- phone metadata dropdowns
+- validation expectations at the product level
+
+### 12. Confirmation and notifications
+Specify:
+- confirmation page behavior
+- optional email confirmation behavior
+- organizer-selectable public calendar export mode
+- combined vs separate event export behavior
+
+### 13. Organizer export
+Specify:
+- export purpose
+- export filters
+- export scope controls
+- selectable information/detail levels
+- any recommended product-level export formats or structures if useful
+
+### 14. Permissions
+Provide a sensible module permission list using the `calendar.*` namespace with at most 3 layers.
+
+### 15. Merge and integration considerations
+At the product level, explain:
+- how this module fits into the event experience
+- how it might later appear as:
+  - a dedicated event tab/page
+  - a smaller itinerary card/module
+- how to preserve mergeability
+
+### 16. Edge cases
+List and define important edge cases and the intended product behavior.
+
+Examples may include:
+- last remaining slot taken before submission completes
+- organizer edits a signup into a conflicting slot
+- Item becomes blocked after someone has signed up
+- date falls out of the rolling window
+- time slot removed after bookings exist
+- Item deleted or archived
+- overlapping breakout-session choices
+- repeated seminar times on one day
+- differences between combined vs separate calendar export modes
+- organizer export filtering scenarios
+- public filter state when a selected Item becomes unavailable
+
+### 17. Open questions / recommendations
+Only include this section if something truly remains unresolved after using Parts 1 and 2.
+
+If a complete Phase 2 spec can be written without new questions, do that.
+
+---
+
+## Constraints
+
+- Do not rewrite the app into a new architecture.
+- Do not assume a frontend SPA.
+- Do not assume a different auth model than given.
+- Do not replace the Item abstraction.
+- Do not introduce a freeform form builder.
+- Do not create permission nesting deeper than 3 layers.
+- Do not optimize only for the missionary use case.
+- Do not forget multi-day multi-item selection.
+- Do not forget time-overlap prevention.
+- Do not forget organizer export requirements.
+- Do not forget progressive disclosure / conditional option visibility.
+- Do not contradict Parts 1 and 2.
+
+---
+
+## Writing style
+
+Use headings and subheadings.
+
+Use tables where they improve clarity.
+
+Be explicit about product rules.
+
+Keep the document organized enough that the next phase can proceed with little or no additional clarification.
+
+---
+
+## Final instruction
+
+Write the **full Phase 2 product specification** for this calendar signup module using Parts 1 and 2 as binding context.

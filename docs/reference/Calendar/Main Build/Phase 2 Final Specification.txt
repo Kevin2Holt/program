@@ -1,0 +1,647 @@
+# Phase 2 Product Specification — `progr.am` Calendar Signup Module
+
+The `progr.am` calendar signup module is a merge-ready, server-rendered event submodule for date-based and optional time-based signups, designed to support missionary meal calendars, meal trains, breakout-session registration, RSVP-style capacity tracking, and similar scheduling scenarios without breaking the main app’s route-first, code-first architecture.[web:10][web:16][web:28] It should behave like a natural extension of `progr.am`’s event experience, with a public-facing calendar flow for attendees and a permission-aware organizer interface for configuration, booking management, availability control, and export.[web:16][web:21]
+
+## Product overview
+
+### Purpose
+
+The calendar signup module exists to let an event organizer publish a calendar surface where public users can sign up for one or more Items on one or more dates, optionally choosing times when time-based scheduling is enabled.[web:10][web:26] The product must stay simple enough for low-friction public use while remaining flexible enough to cover both one-per-day signups and higher-capacity or repeated-occurrence scheduling patterns.[web:21][web:26]
+
+### Fit within `progr.am`
+
+The module belongs inside the `progr.am` event ecosystem and should be designed as if its long-term route is `/:code/calendar`, with merge-friendly boundaries that preserve the main app’s server-rendered Express + EJS + PostgreSQL model and existing event architecture.[web:16] It may later surface either as a dedicated event tab/page or as a smaller summary card/module inside a broader event itinerary, so product definitions should not assume only one final presentation pattern.[web:24]
+
+### Supported use cases
+
+The module must support at least the following product scenarios:
+
+- Missionary meal calendar, one booking per Item per day, usually date-only.
+- Meal train, one need per date with optional notes and contact details.
+- Breakout session signup, often time-based with overlap prevention and higher per-occurrence capacity.
+- Seminar signup, including repeated offerings of the same Item on one day.
+- RSVP-like date-based signup, where capacity reflects attendance limits rather than one-host-per-date behavior.[web:10][web:21][web:26]
+
+## Goals and non-goals
+
+### Product goals
+
+- Provide a clean public calendar signup flow for date-based and optional time-based registration.[web:16][web:28]
+- Allow organizers to define Items, capacities, availability rules, and form requirements without needing a custom-built structure per event.[web:16][web:26]
+- Support multi-item and multi-day selection in one public flow so conference-style and multi-day scenarios work naturally.[web:10]
+- Support organizer review, editing, rescheduling, unavailability management, and export as first-class product features.[web:21][web:23]
+
+### Simplicity goals
+
+- Public users should primarily see availability, not internal scheduling complexity or slot-by-slot noise.[web:10][web:23]
+- Advanced options should appear only when relevant, especially time settings, recurring unavailability controls, and export detail controls.[web:16][web:28]
+- Organizers should start from a simple date-based setup and progressively enable more advanced behavior instead of facing a dense configuration screen upfront.[web:16][web:28]
+
+### Flexibility goals
+
+- The module must support any number of Items and must not assume the missionary use case’s current count of four Items.[web:21]
+- It must support both per-day and per-occurrence capacity models depending on whether time-based scheduling is enabled.[web:21][web:26]
+- It must support one-time and recurring unavailability rules with practical recurrence patterns rather than only one-off date blocking.[web:16][web:20]
+
+### Mergeability goals
+
+- Product concepts and settings should map cleanly into the main `progr.am` event model rather than behaving like a separate product.[web:16]
+- Permission naming should align to a `calendar.*` namespace and remain shallow enough to fit future role/permission infrastructure.[web:16]
+- Standalone organizer auth may be simplified for now, but product behavior should still be described in permission-aware terms for later merge compatibility.[web:16]
+
+### Non-goals
+
+- This module is not a freeform form builder.[web:16]
+- This module is not a general-purpose appointment marketplace or personal scheduling assistant.[web:28]
+- This module is not a replacement for the main `progr.am` itinerary/block editor system.[web:24]
+- This module should not introduce a conflicting frontend architecture such as a SPA-first workflow.[web:16]
+
+## User types
+
+| User type | Definition | Product capabilities |
+|---|---|---|
+| Public user | A visitor using the event’s public calendar page without organizer access. | Browse dates, see available/unavailable Item indicators, select Items across dates, submit signup, view confirmation, optionally use add-to-calendar.[web:10][web:28] |
+| Organizer | An authenticated event-side user managing the calendar module. | Configure module settings, manage Items and availability, review and edit signups, export data.[web:16][web:23] |
+| Permission-aware organizer | An organizer whose access may later be limited by event-role permissions in the merged app. | View-only, details, edit setup, edit bookings, edit availability, edit Items, export, based on `calendar.*` permissions.[web:16] |
+
+During the standalone phase, all authenticated organizers may temporarily hold all calendar permissions, but the product should still define permission boundaries clearly so a later merge does not require rethinking access rules.[web:16]
+
+## Core concepts
+
+| Term | Definition |
+|---|---|
+| Item | The core thing a public user signs up for on a date or occurrence, such as a missionary companionship, breakout session, seminar, meal need, or RSVP target. |
+| Capacity | The maximum number of signups an Item can accept for a specific day or scheduled occurrence.[web:21][web:26] |
+| Availability | A state where an Item can still accept at least one more signup for the relevant date or occurrence and is not blocked by rule. |
+| Unavailability | A state imposed by organizer-configured blocking rules, either one-time or recurring, that makes an Item not bookable for targeted dates or occurrences.[web:16][web:20] |
+| Booking / signup | A public submission reserving one or more Item selections, possibly across multiple days and times, together with the configured registrant fields. |
+| Date window | The organizer-defined range of dates the public may view/select, either fixed or rolling into the future.[web:28] |
+| Timeslot | A discrete organizer-defined time option a public user can choose when time-based scheduling requires a separate time choice. |
+| Scheduled occurrence | A specific bookable instance of an Item on a given date and time, including fixed Item times or repeated offerings within a day.[web:22][web:24] |
+| Overlapping conflict | A scheduling conflict where one public user attempts to select two occurrences that overlap in time and such overlap is not allowed.[web:10][web:13] |
+| Public status | The simplified public-facing state shown as available or unavailable. |
+| Organizer status | The detailed internal state shown to authorized organizers, including available, full, and blocked. |
+| Calendar export mode | The organizer-selected behavior for confirmation-page calendar downloads: one combined event or separate event per selected Item.[web:19][web:24] |
+| Organizer export | A structured data export of signups filtered by Item/date/detail level for sharing outside the app.[web:23] |
+
+## Configuration model
+
+### Calendar setup
+
+Organizers can configure the module at the event level with a setup model that should remain progressively disclosed rather than fully expanded by default.[web:16] The configuration model should include:
+
+- Calendar title or label as presented within the event.
+- Public visibility / publication state aligned with the event’s draft vs published boundaries.
+- Date window mode: fixed range or ongoing rolling window.[web:28]
+- Public time behavior mode: date-only or time-enabled.
+- Public form field configuration.
+- Notes toggle.
+- Email confirmation toggle.
+- Confirmation-page calendar export mode.
+- Organizer export defaults or saved export preferences, if supported later.
+
+### Date window configuration
+
+Two supported modes are required:
+
+1. Fixed date range.
+- Organizer chooses explicit start and end date.
+- Public users can browse and select only dates inside that range.
+
+2. Ongoing rolling window.
+- Organizer chooses how far into the future signups are allowed.
+- Organizer chooses window size using days, weeks, or months.[web:28]
+- When configured in weeks or months, the available window snaps to natural boundaries rather than rolling by raw day count, preserving the locked product behavior.
+
+Recommended product rule for rolling windows:
+- Days mode may use a literal day count.
+- Weeks mode should expose the current week plus the configured number of future whole weeks.
+- Months mode should expose the current month plus the configured number of future whole months, with the next month becoming available at the next natural month boundary.
+
+### Item definitions
+
+Each Item must support the following organizer-configurable fields:
+
+- Name, required.
+- Capacity, required, positive integer.
+- Color, required, auto-assigned by default, editable later.
+- Shape, required, auto-assigned by default, editable later.
+- Optional availability or unavailability targeting.
+- Optional time behavior, depending on module mode.
+- Optional status such as active/archived for organizer management.
+
+### Item visual identity
+
+Each Item must have one identifying color and one identifying shape so it remains distinguishable even when many Items appear in the same calendar view. This aligns with common booking/calendar UIs where visual coding improves scanning, but the design must also remain accessible and legible in both light and dark themes.[web:16][web:23]
+
+Supported shape set:
+- Capital letters A–Z.
+- Numbers 0–9.
+- Basic shapes such as circle, square, triangle.
+
+Product rules:
+- Default assignment may be automatic.
+- Organizer may override both color and shape.
+- Visual treatment should preserve visibility against light and dark surfaces, potentially using outlines or contrasting borders where needed.
+- Item indicators should remain recognizable even when disabled/faded.
+
+### Filters
+
+The public experience may offer simple filters to reduce visual load when there are many Items, but filters must not be required for core use. Appropriate public filters may include:
+- Item filter.
+- Date-range-position filters when useful.
+- Availability-only view, if later needed.
+
+Organizer-facing filters are broader and may include:
+- Item(s).
+- Date range.
+- Signup status.
+- Availability state.
+- Presence of notes.
+- Time-based occurrence filters.[web:23]
+
+### Time configuration
+
+The module must support:
+- Date-only behavior.
+- Organizer-defined timeslots.
+- Fixed Item times via start time + duration.
+- Repeated Item times within the same day.
+- Overlap prevention for incompatible choices.[web:10][web:13][web:22]
+
+Time-related settings should appear only when time-enabled behavior is selected.
+
+### Form fields
+
+Organizers can choose from supported structured fields rather than building arbitrary custom fields. Baseline supported fields should include:
+- Name.
+- Phone number.
+- Preferred contact method for phone: call / text.
+- Number type: cell / WhatsApp.
+- Optional notes toggle.
+
+Each supported field should allow organizer-level required/optional behavior where appropriate.
+
+### Confirmation settings
+
+Organizers can configure:
+- Whether email confirmation is sent.
+- Whether the confirmation page offers add-to-calendar.
+- Whether calendar export uses a single combined event or separate events per selected Item, with single combined event as default.[web:19][web:24]
+
+### Organizer export settings
+
+Organizers need a real export feature with configurable scope:
+- Which Items to include.
+- Which date range to include.
+- Which registrant fields to include.
+- Which detail level to include, such as count only, names only, names + contact info, or similar structured options.[web:23]
+
+### Availability rules
+
+Organizers can define:
+- One-time unavailability.
+- Recurring unavailability.
+- Targeting to one Item, multiple Items, or all Items.[web:16][web:20]
+
+## Public experience
+
+### Browsing the calendar
+
+Public users access the calendar from the event’s public route context and should encounter a readable, mobile-usable calendar interface consistent with `progr.am`’s clean, dark-first aesthetic. The calendar should prioritize fast scanning of days and Item indicators over dense administrative detail.[web:23]
+
+For each visible date, the public calendar should show one indicator per Item, not one indicator per remaining slot. If an Item still has capacity, its indicator appears available; if it is full or blocked, the indicator appears unavailable through a faded, disabled, or grayed-out presentation. This keeps high-capacity cases from becoming visually noisy while preserving the simple public mental model.[web:21][web:23]
+
+### Public-visible information
+
+Public users should only see:
+- Date.
+- Item indicators.
+- Availability state as available or unavailable.
+- Time choices only when relevant.
+- Selected choices in their current signup flow.
+- The configured form at submission time.
+
+Public users should not see organizer-only distinctions such as whether unavailability is caused by blocking versus fullness.
+
+### Filters
+
+If Item filters are shown publicly, they should be lightweight and optional. Filtering should narrow what is emphasized or shown in the calendar without clearing already selected valid choices. If a filter hides a selected Item, the selection should remain active in the user’s pending signup summary unless it becomes invalid.
+
+### Selection behavior
+
+The public user must be able to:
+- Select multiple Items on the same day.
+- Select Items on multiple different dates within one flow.
+- Add, remove, and review selections before final submission.
+
+Recommended mental model:
+- The user builds a “selection cart” of dated Item selections.
+- Each entry in that cart corresponds to a date-only Item or a date + occurrence choice.
+- The cart remains visible enough to support multi-day conference-like use.
+
+### Time selection behavior
+
+When time is not enabled:
+- Selecting an available Item for a date creates a date-only selection.
+
+When time is enabled and the Item uses fixed scheduled occurrences:
+- The public user selects the Item occurrence directly for that date.
+
+When time is enabled and the Item requires a separate time choice:
+- The public user first selects the Item, then chooses from the available timeslots for that date.
+
+Repeated Item offerings in one day should appear as distinct occurrence choices under the same Item identity rather than as separate Items.[web:22][web:24]
+
+### Overlap prevention
+
+If overlap prevention is enabled by the scheduling model, the user should be prevented from selecting two occurrences that overlap in time. Product behavior should be immediate and clear:
+- A conflicting selection should be blocked before submission where possible.[web:10][web:13]
+- The interface should explain why the new selection cannot be added.
+- Existing valid selections should remain intact.
+
+### Submission flow
+
+A public user’s submission flow should be:
+1. Browse and select Items/dates/occurrences.
+2. Review current selections.
+3. Complete the structured form fields required by the organizer.
+4. Submit signup.
+5. Receive confirmation page.
+
+Submission should validate current availability again at finalization so stale visible availability does not create invalid bookings when another user claimed the last remaining capacity in the meantime.[web:21][web:26]
+
+### Confirmation page
+
+A confirmation page is always required after successful signup. It should clearly show:
+- The booked selections.
+- The registrant’s submitted identifying details as appropriate.
+- Whether email confirmation has also been sent, when enabled.
+- Add-to-calendar option if enabled.
+
+### Add-to-calendar behavior
+
+If enabled, the confirmation page should offer calendar export according to the organizer-selected mode:
+- Single combined event, default.
+- Separate event per selected Item.[web:19][web:24]
+
+In combined mode, all selected Items become one calendar event, suitable for a grouped signup outcome. In separate mode, each selected Item/occurrence becomes its own calendar event, suitable for conferences or repeated sessions.[web:19][web:24]
+
+## Organizer experience
+
+### Setup flow
+
+The organizer experience should begin with a guided setup that defaults to the simplest viable configuration:
+1. Create or enable the calendar module for the event.
+2. Set date window.
+3. Add Items.
+4. Choose whether time scheduling is needed.
+5. Configure form fields.
+6. Review and publish.
+
+Advanced settings such as recurring unavailability, repeated daily occurrences, export detail presets, and optional email confirmation should remain collapsed until needed.[web:16][web:28]
+
+### Managing Items
+
+Organizers must be able to:
+- Create Items.
+- Rename Items.
+- Set capacity.
+- Auto-assign or edit color and shape.
+- Archive or deactivate Items without immediately destroying reporting history.
+- Adjust Item-level time setup where relevant.
+
+### Managing time-related behavior
+
+When time is enabled, organizers must be able to:
+- Set fixed Item start time and duration.
+- Define offered timeslots.
+- Define multiple repeated offerings in one day.
+- Adjust occurrence-level capacity if time-based capacity applies per occurrence.
+- View conflicts or overlap logic from the organizer side.[web:10][web:22][web:26]
+
+Time controls should remain hidden in date-only setups.
+
+### Reviewing signups
+
+Organizers need a list and/or calendar-oriented management view to review signups by:
+- Date.
+- Item.
+- Occurrence.
+- Registrant.
+- Status and notes, if collected.[web:23]
+
+Organizer views should surface detailed statuses unavailable to public users, including whether an Item/date is available, full, or blocked.
+
+### Editing signups
+
+Organizers must be able to:
+- Edit registrant information.
+- Update notes.
+- Change selected Items.
+- Move/reschedule a signup to a different date or occurrence.
+- Resolve conflicts when editing.
+
+When an organizer attempts to move a signup into a full or overlapping occurrence, the system should block the change unless a deliberate override policy is later defined. Since no override policy has been locked, the default Phase 2 rule should be prevention rather than silent overbooking.[web:10][web:26]
+
+### Managing unavailability
+
+Organizers must be able to:
+- Create one-time blocks.
+- Create recurring blocks.
+- Target one Item, selected Items, or all Items.
+- Review upcoming blocked dates.
+- Edit or remove blocking rules.[web:16][web:20]
+
+### Permission-aware distinctions
+
+The organizer experience should distinguish between:
+- Organizers who can view summary availability only.
+- Organizers who can view detailed signup information.
+- Organizers who can edit bookings.
+- Organizers who can edit Items/settings/availability.
+- Organizers who can export data.[web:16]
+
+### Organizer export workflow
+
+The export workflow should allow an organizer to:
+1. Open export panel from bookings view.
+2. Filter by Item(s), date range, and detail level.
+3. Choose which registrant fields are included.
+4. Generate export.
+
+This keeps export real and useful without crowding the default management workflow.[web:23]
+
+## Booking and capacity rules
+
+### Availability logic
+
+An Item is publicly available for a date or occurrence only when:
+- The date is inside the active public window.
+- The Item is active.
+- The Item is not blocked by one-time or recurring unavailability.
+- The relevant capacity has not been fully consumed.
+- The selection would not violate overlap rules for that user if selected.[web:10][web:16][web:26]
+
+### Unavailable logic
+
+An Item is publicly unavailable when:
+- It is blocked by rule.
+- It is full.
+- The date lies outside the selectable window.
+- The relevant occurrence no longer exists or is not offered.
+
+### Full vs blocked
+
+Organizer-visible states should distinguish:
+- Available: bookable and capacity remains.
+- Full: capacity reached.
+- Blocked: organizer-set unavailability prevents booking, regardless of capacity.[web:21][web:23]
+
+Public users should only see unavailable for both full and blocked states.
+
+### Capacity application
+
+Capacity applies per day for date-only signups unless a time-based occurrence model is enabled. When specific occurrences exist, capacity applies per occurrence unless the organizer configuration explicitly defines a daily cap pattern in a later phase. Phase 2 should treat occurrence-based capacity as the default for time-enabled occurrences because that maps cleanly to session-style signup behavior.[web:21][web:26]
+
+### Multi-Item and cross-day selection
+
+A single submission may contain:
+- Multiple Items on one date.
+- The same Item on different dates, subject to Item rules.
+- Different Items across different dates.
+
+For date-only mode, the same Item should not be selectable more than once on the same date unless a future rule explicitly permits multiple bookings by the same user for the same Item/date. The missionary baseline and the general Item model both imply one booking record per Item/date/occurrence choice within a user’s submission.
+
+### Conflict prevention
+
+At the product level, conflict prevention expectations are:
+- Detect known overlap conflicts as early as the user selects occurrences.[web:10][web:13]
+- Re-check at submission and organizer-edit time.[web:26]
+- Never silently accept a conflicting booking when overlap prevention is active.
+
+## Time behavior
+
+### When time is enabled
+
+Time-enabled mode changes the booking unit from day-only selection to occurrence-aware selection. Public users may need to choose a specific time, capacity may apply at the occurrence level, and overlap rules become meaningful across the user’s selected items.[web:10][web:22][web:26]
+
+### Fixed Item times
+
+Fixed Item times are appropriate when an Item itself carries a known scheduled occurrence, such as a seminar at 2:00 PM for 60 minutes. In this model, the organizer defines start time and duration for the Item occurrence, and the public user selects from those occurrences directly.[web:22]
+
+### Organizer-defined timeslots
+
+Organizer-defined timeslots are appropriate when an Item is offered through a set of selectable times on a given day rather than carrying one fixed default time. In this model, the public experience should prompt for time choice only after the relevant Item/date has been selected.
+
+### Repeated Item times in one day
+
+An Item may be offered multiple times on the same date. These are distinct scheduled occurrences sharing the same Item identity, such as a breakout session offered at 10:00 AM and 2:00 PM on the same day.[web:22][web:24] Each occurrence should be individually bookable and should carry its own capacity state.
+
+### Capacity behavior in time-enabled mode
+
+Recommended product rule:
+- Date-only mode: capacity applies per Item per date.
+- Time-enabled occurrence mode: capacity applies per Item occurrence.
+- Timeslot selection mode: each timeslot behaves as a scheduled occurrence for capacity and conflict purposes.[web:21][web:26]
+
+### Overlap logic
+
+Overlap logic should compare the time ranges of all selected occurrences in the current signup and prevent impossible combinations when overlap prevention is active. Two occurrences conflict when their time ranges intersect such that attendance at both would not be possible.[web:10][web:13]
+
+### Constraints
+
+To keep the product understandable:
+- Duration should be required whenever overlap prevention depends on time ranges.
+- Date-only Items should not participate in overlap logic.
+- Repeated offerings should remain grouped under one Item identity rather than becoming separate Items.
+
+## Availability rule behavior
+
+### One-time rules
+
+One-time unavailability should let organizers block:
+- One Item on one date.
+- Multiple selected Items on one date.
+- All Items on one date.
+
+A one-time rule may optionally target a specific occurrence in a future enhancement, but because Parts 1 and 2 only lock date/pattern support broadly, Phase 2 should define date-level one-time blocking as required and occurrence-level granularity as a recommendation only if later needed.[web:16][web:20]
+
+### Recurring rules
+
+Recurring unavailability should support a reasonably flexible recurrence model, including:
+- Daily.
+- Weekly with selected weekday(s).
+- Bi-weekly.
+- Monthly by date.
+- Monthly by weekday pattern such as first Monday.
+- Custom interval if needed.[web:16][web:20]
+
+### Item targeting
+
+Every unavailability rule must target one of:
+- Single Item.
+- Selected Items.
+- All Items.
+
+### Precedence
+
+Recommended product precedence:
+1. Date window boundaries apply first.
+2. Item active/archive status applies next.
+3. One-time and recurring block rules apply next.
+4. Remaining capacity determines available vs full.
+
+If both a recurring rule and a one-time exception exist on the same date and no exception model has been locked, Phase 2 should treat one-time rules as higher-precedence explicit directives. That is a recommendation to keep future behavior intuitive.
+
+### Visibility effects
+
+- Public visibility collapses blocked and full to unavailable.
+- Organizer visibility shows blocked vs full distinctly.
+- Existing bookings on a blocked date remain visible to organizers and should not disappear from reports simply because future booking was disabled.[web:23]
+
+## Form system
+
+The module must use a structured form system, not a freeform builder. Organizers choose from supported fields and configure requirement levels where allowed, keeping the public form predictable and clean.[web:16]
+
+### Required supported fields
+
+Baseline supported fields:
+- Name.
+- Phone number.
+- Preferred contact method: call / text.
+- Number type: cell / WhatsApp.
+- Notes, organizer-enabled only.
+
+### Product rules
+
+- Name should be supported as required by default.
+- Phone number may be required or optional depending on organizer configuration.
+- Phone metadata fields should appear only when phone number collection is enabled.
+- Notes should be hidden unless enabled.
+- Validation should be field-aware and proportionate, minimizing friction while preserving contact usefulness.
+
+### Validation expectations
+
+At the product level:
+- Required fields must be completed before submission.
+- Phone number input should be validated to a reasonable usability standard rather than excessively strict regional parsing.
+- Conditional fields should validate only when shown.
+- Submission should fail gracefully with field-level guidance rather than a vague generic error.
+
+## Confirmation and notifications
+
+### Confirmation page
+
+A successful signup must always land on a confirmation page that summarizes:
+- Selected Item/date/occurrence entries.
+- Submitted registrant identity details as appropriate.
+- Optional next actions such as calendar export.
+
+### Optional email confirmation
+
+If enabled by the organizer, the module should also send an email confirmation containing a clear summary of the signup. Email is optional, but the confirmation page is mandatory.
+
+### Calendar export mode
+
+The organizer chooses one of two public export modes:
+- Single combined event, default.[web:19]
+- Separate event per selected Item.[web:24]
+
+Product guidance:
+- Combined mode works best for grouped commitments like hosting one missionary companionship across selected dates.
+- Separate mode works best for conference/session schedules where each occurrence should appear independently on a personal calendar.[web:19][web:24]
+
+## Organizer export
+
+### Purpose
+
+Organizer export exists so signup information can be shared with people who do not have access to the website and so coordinators can use schedules outside the app.[web:23]
+
+### Export controls
+
+The export workflow should support:
+- Item filter.
+- Date-range filter.
+- Booking-scope filter if needed later.
+- Field-inclusion selection for registrant data.
+
+### Detail levels
+
+At minimum, sensible detail levels should include:
+- Count only.
+- Names only.
+- Count + names.
+- Names + contact info.
+
+Additional structured variants are acceptable if they remain understandable and do not create a bespoke report builder.
+
+### Recommended export formats
+
+At the product level, CSV is the most practical baseline because it is widely shareable and easy to open in spreadsheets. A print-friendly view or simple on-screen summary export may also be useful later, but CSV should be treated as the core recommended format for Phase 2 handoff.[web:23]
+
+## Permissions
+
+The module should define a permission set using the `calendar.*` namespace with no more than three layers.
+
+| Permission | Purpose |
+|---|---|
+| `calendar.view` | View calendar module in organizer context. |
+| `calendar.view.details` | View booking-level details, registrant data, and organizer-only statuses. |
+| `calendar.edit` | General calendar editing access. |
+| `calendar.edit.items` | Create/edit/archive Items, capacities, colors, shapes, and time setup. |
+| `calendar.edit.availability` | Manage one-time and recurring unavailability rules. |
+| `calendar.edit.bookings` | Edit, reschedule, and update signup records. |
+| `calendar.export` | Export signup data. |
+
+These permissions fit the locked naming model and remain shallow enough for future role integration.[web:16]
+
+## Merge and integration considerations
+
+### Event experience fit
+
+The module should behave like an event subsystem rather than a sidecar product. Publicly, it belongs under the event code route family; organizer-side, it should align with existing event administration patterns and eventual team-role integration.[web:16]
+
+### Possible future surfaces
+
+The product should remain compatible with both likely future integrations:
+- Dedicated event tab/page: full calendar experience with browsing, selecting, and booking.
+- Smaller itinerary card/module: summary of next available dates, signup counts, or a link into the full calendar flow.[web:24]
+
+### Merge-preservation rules
+
+To preserve mergeability:
+- Keep terminology event-oriented and consistent with `progr.am`.
+- Keep permissions modular under `calendar.*`.
+- Avoid product assumptions that require a separate identity, route model, or data worldview.
+- Treat standalone auth as temporary, not as a long-term product concept.[web:16]
+
+## Edge cases
+
+| Edge case | Intended behavior |
+|---|---|
+| Last remaining slot is taken before submission completes | Submission must re-check availability and return a clear conflict message, preserving the user’s other still-valid selections where possible.[web:21][web:26] |
+| Organizer edits a signup into a conflicting slot | System should block the edit and explain the overlap or capacity conflict unless a later override policy is explicitly added.[web:10][web:26] |
+| Item becomes blocked after someone has already signed up | Existing bookings remain in organizer view and exports; public users can no longer create new bookings for that blocked target.[web:16][web:23] |
+| Date falls out of rolling window | It should stop accepting new public signups while preserving existing bookings for organizer management and export.[web:28] |
+| Time slot or occurrence is removed after bookings exist | Existing bookings should remain attached for organizer review; the occurrence should no longer be offered publicly. |
+| Item is deleted or archived | Archive is preferred to hard deletion so history and reporting remain intact; archived Items are not publicly selectable. |
+| Overlapping breakout-session choices selected together | Conflict should be prevented during selection and revalidated at submission.[web:10][web:13] |
+| Repeated seminar times on one day | Each occurrence should be separately selectable with its own capacity, while still grouped under one Item identity.[web:22][web:24] |
+| Combined vs separate calendar export modes | Combined mode creates one event spanning or summarizing the user’s chosen selections; separate mode creates one calendar event per selected Item/occurrence.[web:19][web:24] |
+| Organizer export with filters | Export output should reflect the chosen Item/date/detail filters exactly and should not leak omitted registrant fields. |
+| Public filter hides a selected Item | The pending selection should remain in the current signup summary unless it becomes invalid. |
+| Item shows available when page loaded but becomes full moments later | Final submission must fail gracefully for that affected selection and prompt the user to revise. |
+| Same Item chosen on multiple days | Allowed, because cross-day multi-selection is a core requirement. |
+| Same Item chosen twice on same date in date-only mode | Not allowed unless future rules explicitly introduce multi-booking-per-user for one Item/date. |
+| Public user selects one timed occurrence and then tries another overlapping one on a different day | No conflict, because overlap only matters within the same time range, not across different dates. |
+| Public user selects date-only Items plus timed Items | Date-only Items do not create overlap conflicts unless a later policy explicitly says otherwise. |
+
+## Open questions / recommendations
+
+A largely complete Phase 2 spec can be written from the locked context, but the following should be treated as targeted recommendations rather than unapproved assumptions:
+
+- One-time unavailability granularity: whether one-time blocking should eventually support occurrence-level targeting in addition to date-level targeting.[web:16][web:20]
+- Organizer override policy: whether authorized organizers may ever force-save over capacity or overlap conflicts, or whether prevention remains absolute.[web:10][web:26]
+- Public filter breadth: whether the first public release should include Item filters only, or also availability-oriented quick filters for larger calendars.[web:23]
+- Export surface breadth: CSV is the recommended baseline, but a print-friendly organizer summary may also be worth defining in a later phase.[web:23]

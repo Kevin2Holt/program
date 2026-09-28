@@ -1,0 +1,82 @@
+# Part 3 of 3 — Constraints and final instruction for Phase 3
+
+Use the two provided files as binding context:
+- `Phase-2-Final-Specification.txt`
+- `program_project_specification.txt`
+
+Your job is to produce the **complete Phase 3 implementation planning specification** for the `progr.am` calendar signup module.
+
+---
+
+## Important constraints
+
+### Architecture constraints
+- Do not redesign the app into a SPA.
+- Do not replace Express + EJS + PostgreSQL.
+- Do not assume a different route model than the one already established.
+- Do not break the code-first public event access pattern.
+- Do not ignore merge compatibility.
+
+### Product constraints
+- Do not override the locked product behavior from Phase 2.
+- Do not simplify away multi-item or multi-day selection.
+- Do not simplify away time-based behavior.
+- Do not simplify away organizer export.
+- Do not remove permission awareness.
+- Do not replace the Item abstraction.
+
+### Planning constraints
+- Do not write actual code.
+- Do not write raw migrations.
+- Do not output pseudocode for every function unless truly helpful.
+- Do not stay too high-level.
+- Do not hand-wave the hard parts.
+- Do not ask broad follow-up questions unless absolutely necessary.
+
+### Data-model constraints
+- The implementation plan should fit a PostgreSQL-backed server-rendered app.
+- It should be realistic for the existing layered structure.
+- It should preserve history where appropriate.
+- It should prefer archival/deactivation over destructive deletion where that matters.
+
+### UI/UX constraints
+- The module should feel like part of `progr.am`.
+- Dark mode should remain the default.
+- Public pages should stay simple, readable, and mobile-usable.
+- Organizer views should be practical and clear, not overdesigned.
+- Progressive disclosure should be preserved.
+
+### Prompt behavior constraints
+- Assume the next phase after yours will be actual coding by another AI agent.
+- Therefore your output must be optimized for implementation usefulness, not just explanation.
+
+---
+
+## Recommended style for your output
+
+Use clear headings and subheadings.
+
+Use tables where they clarify:
+- routes
+- entities
+- permissions
+- phases
+- testing
+- edge cases
+
+Be explicit when making a recommendation.
+Differentiate clearly between:
+- required implementation decisions
+- recommended implementation decisions
+- truly unresolved questions
+
+Avoid filler.
+
+---
+
+## Final instruction
+
+Write the full **Phase 3 implementation planning specification** for this module so that a later AI coding agent could begin the build with minimal ambiguity, using only:
+- `Phase-2-Final-Specification.txt`
+- `program_project_specification.txt`
+- the instructions in these 3 prompt parts

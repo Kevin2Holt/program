@@ -1,0 +1,94 @@
+# Part 1 of 3 — Phase 3 context and source-of-truth files
+
+You are continuing a multi-phase planning process for the `progr.am` calendar signup module.
+
+The source material available to you is:
+- `Phase-2-Final-Specification.txt`
+- `program_project_specification.txt`
+
+Treat those two documents as the complete source of truth for this phase.
+
+Your work must stay compatible with the main `progr.am` application and with the Phase 2 product specification for the calendar module.
+
+---
+
+## What the main app is
+
+`progr.am` is a server-rendered web application for creating and viewing event programs and itineraries.
+
+Important architectural truths that must remain intact:
+- Frontend: HTML, CSS, JavaScript
+- Backend: Node.js
+- Framework: Express
+- Templating: EJS
+- Database: PostgreSQL
+- Public route model is code-first
+- Main public event route shape is `/:code`
+- The calendar module is intended to live under `/:code/calendar`
+- Dark mode is default
+- Light mode is available
+- The app uses server-rendered pages, not a SPA architecture
+- The app uses an established folder structure with routes/controllers/models/services/views/public assets
+- Merge compatibility with the main codebase is a core requirement
+
+---
+
+## What the calendar module is
+
+The calendar module is a merge-ready event submodule for:
+- date-based signups
+- optional time-based signups
+- missionary meal calendars
+- meal trains
+- breakout sessions
+- seminar/session registration
+- RSVP-like capacity tracking
+- similar event scheduling use cases
+
+It must support:
+- organizer-defined Items
+- capacity
+- availability and unavailability rules
+- date windows
+- optional timeslots / occurrences
+- multi-item selection
+- multi-day selection
+- organizer editing and rescheduling
+- organizer export
+- permission-aware organizer access
+- a public user flow and organizer management flow
+
+---
+
+## What this phase is
+
+This is **Phase 3**.
+
+Phase 1 established the idea and clarified requirements.
+Phase 2 produced the full product specification.
+
+Phase 3 should now convert that product specification into a **complete implementation plan / build specification** for the coding phase.
+
+This is still a planning/specification phase.
+Do not write application code.
+Do not produce migrations or actual schema files.
+Do not produce route/controller/model code.
+Do not skip ahead to implementation.
+
+Instead, produce the detailed build plan that a coding agent can follow in Phase 4.
+
+---
+
+## General expectation for this phase
+
+Your output should bridge the gap between:
+- product specification
+and
+- actual coding work
+
+The result should be detailed enough that a later coding agent can implement the module with minimal ambiguity.
+
+You must use the two provided files as the basis for your work.
+Do not assume any other hidden context exists.
+Do not replace previously established decisions.
+Do not redesign the app into a new architecture.

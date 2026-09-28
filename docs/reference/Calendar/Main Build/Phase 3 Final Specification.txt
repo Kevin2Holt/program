@@ -1,0 +1,836 @@
+# Phase 3 Implementation Planning Specification
+## `progr.am` Calendar Signup Module
+
+## 1. Phase 3 Overview
+
+Phase 3 is the engineering handoff between the Phase 2 product specification and the later coding phase.
+
+Its purpose is to translate product concepts into concrete module structure, entities, routes, services, templates, rules, sequencing, and testing expectations.
+
+This phase must prepare a later coding agent to implement the module with minimal ambiguity while keeping compatibility with the main app’s established layered structure, public route model, dark-default theme, and server-rendered design approach.
+
+The calendar module must behave as an event subsystem, not as a separate product. It must live inside the existing `progr.am` architecture and preserve the current stack:
+
+- Frontend: HTML, CSS, JavaScript
+- Backend: Node.js
+- Framework: Express
+- Templating: EJS
+- Database: PostgreSQL
+- Rendering model: server-rendered pages with progressive enhancement, not a SPA
+- Public route model: code-first
+- Main public event route shape: `/:code`
+- Calendar module public route shape: `/:code/calendar`
+
+The implementation may use client-side JavaScript for progressive enhancement and smoother interactions, but source-of-truth validation and booking behavior must remain server-side.
+
+## 2. Module Placement Inside `progr.am`
+
+The public calendar surface should live under the existing public event route family at:
+
+- `/:code/calendar`
+
+This preserves the event-code-first public routing model and keeps the calendar clearly scoped as a submodule of an event.
+
+Organizer pages should live under the authenticated event-management side of the app rather than under public event routes. The recommended organizer route family is:
+
+- `/events/:eventId/calendar`
+- `/events/:eventId/calendar/items`
+- `/events/:eventId/calendar/bookings`
+- `/events/:eventId/calendar/availability`
+- `/events/:eventId/calendar/export`
+
+This route structure aligns with the existing server-rendered event management patterns and avoids colliding with the public `/:code` route model.
+
+### Placement summary
+
+| Surface | Placement | Notes |
+|---|---|---|
+| Public calendar browsing | `/:code/calendar` | Main public calendar page |
+| Public selection updates | `POST /:code/calendar/selections` | Updates pending selection state |
+| Public submission | `POST /:code/calendar/submit` | Final booking submission |
+| Public confirmation | `/:code/calendar/confirmation/:ref` | Required post-submit page |
+| Organizer calendar management | `/events/:eventId/calendar/...` | Authenticated event-side management |
+| Future event summary integration | Partial or linked card in event UI | Must remain compatible with later summary-card use |
+
+### Merge-friendly assumption
+
+During a standalone or pre-merge phase, implementation may temporarily simplify how organizer access is granted, but route names, permission structure, and event scoping should still be built as if the module is already part of the main app.
+
+## 3. Domain Model Translation
+
+The product concepts should be translated into implementation-level entities that map cleanly to PostgreSQL-backed models.
+
+### Core entities
+
+| Entity | Purpose |
+|---|---|
+| CalendarConfig | Event-level configuration for the calendar module |
+| CalendarItem | Organizer-defined signup target |
+| CalendarOccurrence | Specific bookable occurrence for timed offerings |
+| CalendarBooking | One public submission containing registrant data |
+| CalendarBookingSelection | One selected item/date or occurrence within a booking |
+| CalendarAvailabilityRule | One-time or recurring blocking rule |
+| CalendarAvailabilityRuleTarget | Join structure for selected-item targeting |
+| CalendarExportPreference or preset | Optional saved organizer export defaults |
+| Calendar permission surface | Permission-aware access model for organizer features |
+
+### Required entity meanings
+
+- **CalendarConfig**: one event-level record that controls whether the module is enabled, visible, what date window is active, whether time behavior is enabled, which form fields are active, confirmation behavior, add-to-calendar behavior, time zone behavior, and export-related defaults.
+- **CalendarItem**: the core object a public user signs up for, such as a missionary companionship, meal need, breakout session, seminar, or RSVP-type item.
+- **CalendarOccurrence**: a specific offered instance of an item on a date and time. This is required for timed behavior, repeated same-day offerings, and occurrence-level capacity.
+- **CalendarBooking**: one public submission that groups registrant information and one or more selections.
+- **CalendarBookingSelection**: one selected booking unit inside the booking. This should represent either a date-only item selection or an occurrence selection.
+- **CalendarAvailabilityRule**: organizer-created blocking rule, either one-time or recurring.
+- **CalendarAvailabilityRuleTarget**: supports rules targeting a single item, selected items, or all items.
+
+### Required implementation decisions
+
+The booking unit must be modeled as:
+
+- one parent booking record
+- many child selection records
+
+This is necessary because a single public submission may include:
+
+- multiple items on the same day
+- multiple days
+- the same item across different dates
+- multiple timed occurrences
+
+Timed bookable offerings must use a unified occurrence model:
+
+- Date-only mode: no occurrence rows are required.
+- Timed mode: every actual publicly bookable timed offering should be represented by a real occurrence row.
+- Repeated same-day offerings should be represented by multiple occurrence rows under the same item.
+- Availability rules remain rules and should not be pre-generated into blackout occurrence rows.
+
+## 4. Data Model Plan
+
+The PostgreSQL model should separate event-level configuration from items, occurrences, bookings, and availability rules.
+
+The structure should preserve history, support exports, and avoid destructive deletion where reporting or organizer review would otherwise break.
+
+### Core table groups
+
+| Table group | Purpose |
+|---|---|
+| Calendar config table | Event-level module settings |
+| Calendar items table | Organizer-defined signable items |
+| Calendar occurrences table | Specific timed offerings |
+| Calendar bookings table | Public submission parent records |
+| Calendar booking selections table | Child records for selected units |
+| Calendar availability rules table | One-time and recurring rules |
+| Calendar availability rule targets table | Selected-item targeting for rules |
+| Optional export audit table | Tracks organizer exports if implemented |
+
+### High-level field planning
+
+#### Calendar config
+Should include, at minimum:
+
+- `event_id`
+- `title` or public label
+- `enabled`
+- `public_visibility_state`
+- `date_window_mode`
+- fixed-range fields or rolling-window fields
+- `time_behavior_mode`
+- canonical event time zone
+- structured form configuration
+- notes enabled flag
+- email confirmation enabled flag
+- add-to-calendar enabled flag
+- calendar export mode
+- optional export defaults
+- timestamps
+
+#### Calendar items
+Should include, at minimum:
+
+- `id`
+- `event_id` or `calendar_config_id`
+- `name`
+- default `capacity`
+- `color`
+- `shape`
+- `status` such as active/archived
+- optional item-level time behavior metadata
+- timestamps
+
+#### Calendar occurrences
+Should include, at minimum:
+
+- `id`
+- `item_id`
+- `service_date`
+- `start_time`
+- `end_time` or `duration_minutes`
+- optional occurrence label
+- occurrence-level capacity or capacity override
+- status such as active/archived/not-offered-publicly
+- timestamps
+
+#### Calendar bookings
+Should include, at minimum:
+
+- `id`
+- `event_id`
+- `calendar_config_id`
+- confirmation reference/token
+- submission token or equivalent dedupe field
+- registrant data snapshot
+- notes snapshot where relevant
+- email value if collected
+- confirmation metadata
+- booking status
+- created/updated timestamps
+
+#### Calendar booking selections
+Should include, at minimum:
+
+- `id`
+- `booking_id`
+- `item_id`
+- `selected_date`
+- nullable `occurrence_id`
+- selection type flag such as date-only vs occurrence
+- item snapshot fields
+- occurrence snapshot fields where relevant
+- timestamps
+
+### Booking selection snapshot rule
+
+Booking selections must preserve simple historical snapshot fields so old bookings remain understandable even if the live Item or occurrence later changes.
+
+At minimum, snapshot fields should include:
+
+- item name snapshot
+- selected date snapshot
+- occurrence label snapshot if applicable
+- occurrence start/end time or duration snapshot if applicable
+
+This is a lightweight history-preserving mechanism, not a full version-history system.
+
+#### Calendar availability rules
+Should include, at minimum:
+
+- `id`
+- `calendar_config_id`
+- rule type: one-time or recurring
+- target scope: single item, selected items, all items
+- active flag
+- recurrence pattern fields
+- recurrence boundaries
+- one-time blocked date if applicable
+- timestamps
+
+#### Calendar availability rule targets
+Should include, at minimum:
+
+- `rule_id`
+- `item_id`
+
+### Event-level vs item-level vs occurrence-level vs booking-level
+
+| Scope | What belongs there |
+|---|---|
+| Event/calendar level | Module enablement, visibility, date window mode, canonical time zone, form config, confirmation options, export defaults |
+| Item level | Name, default capacity, visual identity, archive status |
+| Occurrence level | Specific timed offerings, repeated same-day offerings, occurrence capacity, time ranges |
+| Booking level | Registrant data, confirmation data, submission metadata |
+| Booking selection level | Selected item/date/occurrence and history-preserving snapshots |
+
+### Normalization guidance
+
+Use relational tables for:
+
+- items
+- occurrences
+- bookings
+- booking selections
+- availability rules
+- rule targets
+
+Use config storage for bounded structured configuration such as:
+
+- public form field enablement and requiredness
+- export defaults
+- confirmation options
+
+### Archival and deletion rules
+
+Required implementation rules:
+
+- Items should be archived or deactivated, not hard-deleted, once they may affect history.
+- Occurrences that already have bookings should stop being offered publicly rather than being removed in a way that breaks existing booking history.
+- Existing bookings must remain reviewable and exportable even after item or occurrence archival.
+
+### Booking status rule
+
+To keep the first implementation simple, bookings should use a minimal status model:
+
+- `active`
+- `canceled`
+
+Selection changes and rescheduling may update the existing booking and selection records while preserving booking-selection snapshot fields.
+
+## 5. Routing Plan
+
+The route plan must preserve:
+
+- code-first public access
+- server-rendered page delivery
+- authenticated organizer administration
+- limited client-side enhancement rather than SPA behavior
+
+### Public routes
+
+| Route | Method | Purpose |
+|---|---|---|
+| `/:code/calendar` | GET | Main public calendar page |
+| `/:code/calendar` with query params | GET | Filtered or navigated view of calendar |
+| `/:code/calendar/selections` | POST | Update pending selection state |
+| `/:code/calendar/submit` | POST | Final booking submission |
+| `/:code/calendar/confirmation/:ref` | GET | Confirmation page |
+| `/:code/calendar/confirmation/:ref/calendar` | GET | Add-to-calendar output |
+
+### Organizer routes
+
+| Route | Method | Purpose |
+|---|---|---|
+| `/events/:eventId/calendar` | GET | Organizer module dashboard / summary |
+| `/events/:eventId/calendar/setup` | GET/POST | Event-level calendar configuration |
+| `/events/:eventId/calendar/items` | GET | Item management list |
+| `/events/:eventId/calendar/items/new` | GET/POST | Create item |
+| `/events/:eventId/calendar/items/:itemId/edit` | GET/POST | Edit item |
+| `/events/:eventId/calendar/items/:itemId/archive` | POST | Archive item |
+| `/events/:eventId/calendar/occurrences` | GET | Occurrence management view when needed |
+| `/events/:eventId/calendar/availability` | GET | Availability rule list / overview |
+| `/events/:eventId/calendar/availability/new` | GET/POST | Create rule |
+| `/events/:eventId/calendar/availability/:ruleId/edit` | GET/POST | Edit rule |
+| `/events/:eventId/calendar/availability/:ruleId/delete` | POST | Deactivate/remove rule |
+| `/events/:eventId/calendar/bookings` | GET | Bookings list |
+| `/events/:eventId/calendar/bookings/:bookingId` | GET | Booking detail |
+| `/events/:eventId/calendar/bookings/:bookingId/edit` | GET/POST | Booking edit/reschedule |
+| `/events/:eventId/calendar/export` | GET/POST | Export UI and generation |
+
+### Optional JSON/API endpoints
+
+These should be limited and used only where dynamic enhancement is truly useful.
+
+| Route | Method | Purpose |
+|---|---|---|
+| `/api/events/:eventId/calendar/...` | GET/POST | Organizer-side dynamic support endpoints |
+| `/:code/calendar/...fragment` | GET | Optional server-rendered fragment refresh |
+
+### Required routing rules
+
+- The `/:code/calendar` route must be registered in a way that does not collide with or get swallowed by generic `/:code` handling.
+- Primary flows should work through standard server-rendered pages and form posts.
+- Client-side JavaScript may enhance interaction, but it must not become the sole delivery model for booking behavior.
+
+### Confirmation reference rule
+
+The confirmation route reference must be:
+
+- opaque
+- non-sequential
+- scoped to one booking
+- safe for public viewing only by possession of the link
+- not usable as an edit link
+
+## 6. Controller / Service / Model Responsibility Plan
+
+The architecture should remain clean and layered.
+
+### Responsibility table
+
+| Layer | Responsibilities | Should not own |
+|---|---|---|
+| Routes | URL mapping, middleware, route-level guards | Business logic |
+| Controllers | Request orchestration, validation handoff, view selection, redirects, flash messages | Capacity math, overlap logic, recurrence logic |
+| Models | Data access and persistence | Cross-entity policy logic |
+| Services | Booking logic, availability derivation, date-window derivation, overlap detection, exports, transactional workflows | HTTP response handling |
+| Views | Rendering pages, forms, status output, empty states | Business logic |
+| Client-side JS | Progressive enhancement, UI interactions, optional refreshes, conflict display helpers | Source-of-truth validation, permission enforcement, final booking decisions |
+
+### Recommended service split
+
+- `calendarConfigService`
+- `calendarAvailabilityService`
+- `calendarBookingService`
+- `calendarOccurrenceService`
+- `calendarExportService`
+- `calendarPermissionService` or equivalent helper
+
+### Required service-layer rules
+
+The following logic must be centralized in services rather than duplicated across controllers or views:
+
+- booking finalization
+- pending selection normalization
+- availability derivation
+- capacity checks
+- overlap detection
+- organizer booking edits/reschedules
+- export filtering and field inclusion
+- rolling-window calculation
+- confirmation reference generation
+- submission idempotency / dedupe handling
+
+## 7. View and Template Plan
+
+The module should use the existing EJS layout and partial structure and feel like part of the main app.
+
+### Public views
+
+| View | Purpose |
+|---|---|
+| `public/calendar/index` | Main public calendar page |
+| `public/calendar/confirmation` | Confirmation page |
+| `public/calendar/_calendar_grid` | Calendar grid/list partial |
+| `public/calendar/_selection_summary` | Current selected items summary |
+| `public/calendar/_item_indicator` | Item identity/status partial |
+| `public/calendar/_occurrence_picker` | Time picker partial |
+| `public/calendar/_signup_form` | Structured registrant form |
+| `public/calendar/_errors` | Selection and submission errors |
+
+### Organizer views
+
+| View | Purpose |
+|---|---|
+| `events/calendar/index` | Organizer landing page |
+| `events/calendar/setup` | Guided setup/configuration |
+| `events/calendar/items/index` | Item list |
+| `events/calendar/items/form` | Item create/edit |
+| `events/calendar/availability/index` | Availability rule list |
+| `events/calendar/availability/form` | Rule create/edit |
+| `events/calendar/bookings/index` | Booking list |
+| `events/calendar/bookings/show` | Booking detail |
+| `events/calendar/bookings/edit` | Booking edit/reschedule |
+| `events/calendar/export` | Export UI |
+
+### Reusable partials/components
+
+Should include:
+
+- flash messages
+- validation messages
+- empty states
+- permission-denied states
+- item identity tokens
+- organizer status badges
+- date-window navigation
+- archived-item labels
+- mobile-friendly summary blocks
+
+### UI rules
+
+- Public pages should stay simple and mobile-usable.
+- Public users should see available vs unavailable, not blocked vs full.
+- Organizer views may show available, full, and blocked distinctly.
+- Dark mode remains default.
+- Progressive disclosure should be used in organizer setup and advanced configuration areas.
+- The email confirmation toggle should remain visible even when unavailable, but it should be disabled/grayed out when email collection is not enabled.
+
+## 8. Booking Logic Plan
+
+Booking logic is a critical implementation area and should be treated as transactional service logic.
+
+### Required booking rules
+
+| Rule | Behavior |
+|---|---|
+| Availability rule | A selection is bookable only if it is inside the active date window, the item is active, it is not blocked, capacity remains, and overlap rules are not violated |
+| Public visibility | Public sees only available / unavailable |
+| Organizer visibility | Organizer sees available / full / blocked |
+| Multi-item same day | Allowed |
+| Multi-day selection | Allowed |
+| Same item on multiple days | Allowed |
+| Same item twice on same date in date-only mode | Not allowed by default |
+| Timed overlap | Must be prevented when overlap prevention is active |
+| Date-only overlap | Date-only items do not participate in overlap logic |
+| Stale availability | Final submission must revalidate current state |
+| Organizer edit into conflict | Must be blocked by default |
+
+### Pending selection state rule
+
+The public flow should use **server session-backed pending selection state**.
+
+This state supports:
+
+- multi-item selection
+- multi-day selection
+- server-rendered interaction with optional JS enhancement
+
+The session-backed pending selection state is temporary interaction state only. It is not the source of truth for final availability or booking success.
+
+### Recommended booking flow
+
+1. Load event and calendar config.
+2. Load or update server session-backed pending selections.
+3. Normalize incoming selections into canonical booking units.
+4. Reject duplicate invalid same-day date-only selections.
+5. Re-resolve each selection against current item/occurrence/rule state.
+6. Compute current capacity usage.
+7. Run overlap detection across all timed selections in the submission.
+8. If any selection fails, preserve unaffected valid selections where possible.
+9. If all pass, create booking and booking selections transactionally.
+10. Mark submission token as consumed or otherwise dedupe the submission.
+11. Redirect to the confirmation page.
+12. Trigger optional confirmation email flow.
+
+### Capacity source of truth
+
+Capacity should be computed from persisted booking selections, not from cached UI state.
+
+- In date-only mode: capacity applies per item per date.
+- In time-enabled mode: capacity applies per occurrence.
+- In timeslot mode: each timeslot should behave like an occurrence.
+
+### Conflict handling rules
+
+- Public conflict should fail clearly and preserve valid selections when possible.
+- Organizer reschedule/edit conflict should be blocked and explained.
+- No silent overbooking or silent overlap acceptance should be allowed in the initial implementation.
+
+### Double-submit and idempotency rule
+
+Final submission should use:
+
+- `POST`
+- transactional booking creation
+- redirect-after-post to confirmation
+- submission token or equivalent dedupe protection
+
+Booking creation must be protected against accidental duplicate submits or browser refresh behavior.
+
+## 9. Time / Occurrence Plan
+
+The implementation must support:
+
+- date-only items
+- fixed scheduled occurrences
+- selectable timeslots
+- repeated same-day occurrences
+- duration-based overlap logic
+
+### Unified representation rule
+
+Timed bookable units should be modeled through a unified occurrence concept, even when the UI refers to “timeslots.”
+
+### Mode mapping
+
+| Product mode | Recommended implementation |
+|---|---|
+| Date-only item | Item + selected date |
+| Fixed time offering | Explicit occurrence row |
+| Timeslot offering | Explicit occurrence row |
+| Repeated same-day offering | Multiple occurrence rows under one item |
+
+### Required timing rules
+
+- Duration should be required whenever overlap prevention depends on time ranges.
+- Overlap logic should compare same-day occurrence time ranges.
+- Repeated offerings should remain grouped under one item identity.
+- Date-only items should not create overlap conflicts.
+- All time-based booking logic should use the canonical event time zone.
+
+### Occurrence-level capacity rule
+
+When time-based behavior is enabled, capacity should apply at the occurrence level by default.
+
+### Time zone rule
+
+For this side project, scheduling should use a **single canonical event time zone**.
+
+That time zone should be the authoritative basis for:
+
+- occurrence display
+- overlap detection
+- booking validation
+- confirmation output
+- add-to-calendar output
+
+Viewer-local fallback conversion should not be implemented in the side project unless there is already a clean reusable helper from the main app.
+
+## 10. Availability-Rule Plan
+
+Availability should be derived from a predictable precedence order.
+
+### Required precedence
+
+1. Date window boundary
+2. Item active/archive status
+3. One-time and recurring block rules
+4. Remaining capacity
+
+### One-time rules
+
+Must support blocking:
+
+- one item on one date
+- selected items on one date
+- all items on one date
+
+Initial implementation should use date-level one-time blocking. Occurrence-level one-time blocking may remain a later enhancement.
+
+### Recurring rules
+
+Should support, at minimum:
+
+- daily
+- weekly with selected weekdays
+- bi-weekly
+- monthly by date
+- monthly by weekday pattern
+
+Custom interval support is optional unless clearly needed during implementation.
+
+### Organizer vs public derivation
+
+| Audience | Derived output |
+|---|---|
+| Public | available / unavailable |
+| Organizer | available / full / blocked |
+
+### Recommended implementation rule
+
+Availability should be derived on demand for the visible or requested date range rather than materialized globally across all future dates.
+
+## 11. Form and Submission Plan
+
+The form system must be structured, not freeform.
+
+### Supported structured fields
+
+| Field | Support |
+|---|---|
+| Name | Required by default |
+| Phone number | Optional or required by organizer |
+| Preferred contact method | Available when phone is enabled |
+| Number type (cell / WhatsApp) | Available when phone is enabled |
+| Email | Optional or required when organizer enables email collection |
+| Notes | Optional, hidden unless enabled |
+
+### Form configuration storage
+
+Form configuration should live in event-level calendar config as structured configuration describing:
+
+- whether each supported field is enabled
+- whether it is required
+- whether related conditional fields appear
+- optional display ordering if needed
+
+### Validation rules
+
+- Required visible fields must be completed.
+- Conditional fields validate only when shown.
+- Phone validation should be practical and not excessively strict.
+- Submission errors should be field-level and understandable.
+
+### Submission payload expectations
+
+Submission should include:
+
+- all selected booking units
+- registrant structured data
+- any notes if enabled
+- confirmation-related metadata as needed
+
+### Confirmation behavior
+
+The confirmation page must show:
+
+- booked selections
+- registrant name
+- whether email confirmation was sent, if enabled
+- add-to-calendar option, if enabled
+
+Other submitted fields may be shown only where useful and appropriate.
+
+### Optional email confirmation
+
+Email confirmation is optional at the organizer-config level. Booking success must not depend on email delivery success.
+
+Email confirmation cannot be enabled unless email collection is enabled in the structured form configuration.
+
+When email confirmation is unavailable because email collection is not enabled:
+
+- the option should remain visible
+- but it should appear disabled/grayed out rather than hidden
+
+### Add-to-calendar behavior
+
+If enabled, confirmation should support:
+
+- single combined event mode
+- separate event per selected item/occurrence mode
+
+## 12. Permissions and Access-Control Plan
+
+The module must enforce the `calendar.*` permission surface in practice.
+
+### Permission definitions
+
+| Permission | Practical meaning |
+|---|---|
+| `calendar.view` | View organizer-side calendar area at summary level |
+| `calendar.view.details` | View booking-level details and registrant data |
+| `calendar.edit` | General calendar editing access |
+| `calendar.edit.items` | Create/edit/archive items and time setup |
+| `calendar.edit.availability` | Manage one-time and recurring rules |
+| `calendar.edit.bookings` | Edit and reschedule bookings |
+| `calendar.export` | Generate exports |
+
+### UI meaning of view vs view.details
+
+| UI area | `calendar.view` | `calendar.view.details` |
+|---|---|---|
+| Summary dashboard | Yes | Yes |
+| Availability summary | Yes | Yes |
+| Registrant names/contact info | No | Yes |
+| Booking detail page | Limited or no | Yes |
+| Organizer-only status detail | Limited | Yes |
+
+### Enforcement rules
+
+- Route middleware should enforce hard access control.
+- Templates should hide actions the current organizer cannot perform.
+- Services should still enforce permissions where sensitive actions occur.
+
+### Standalone-period rule
+
+Even if all authenticated organizers temporarily receive all calendar permissions in a standalone phase, implementation should still code explicit permission checks so later merge into role-aware permissions does not require redesign.
+
+## 13. Export Plan
+
+Organizer export is a required feature and should be planned as part of the first real implementation, not as optional polish.
+
+### Baseline export format
+
+- CSV should be the baseline export format.
+
+### Export controls
+
+| Dimension | Required support |
+|---|---|
+| Item filter | One, many, or all items |
+| Date range filter | Bounded range |
+| Detail level | Count only, names only, count + names, names + contact info |
+| Field inclusion | Include only selected registrant fields |
+| Time-related filtering | Support where relevant for timed calendars |
+
+### Export execution model
+
+Recommended initial implementation:
+
+- synchronous generation
+- immediate download response
+
+This is appropriate unless data volume proves too large later.
+
+### Sensitive-data protection rule
+
+Export output must reflect:
+
+- chosen detail level
+- chosen field inclusion
+- chosen filters
+
+Sensitive fields must be filtered at the service layer, not only hidden in the UI.
+
+### Recommended enhancement
+
+If practical, add lightweight export audit logging for organizer actions.
+
+## 14. Build Phases for Coding
+
+Implementation should be sequenced so later phases build on stable foundations.
+
+| Phase | Scope |
+|---|---|
+| 1 | Schema implementation, models, route skeletons, permission helpers |
+| 2 | Organizer setup and calendar config |
+| 3 | Item management |
+| 4 | Timed occurrence support |
+| 5 | Availability rule system |
+| 6 | Public calendar browsing and selection flow |
+| 7 | Public submission and confirmation |
+| 8 | Organizer booking management and rescheduling |
+| 9 | Export generation |
+| 10 | Testing, polish, merge-readiness review |
+
+### Sequencing rule
+
+Do not begin with public booking UI before the underlying booking, availability, occurrence logic, and submission protection are stable enough to support real validation.
+
+## 15. Testing Plan
+
+The implementation requires both logic-level and route/UI-level testing.
+
+### Required test categories
+
+| Area | What to test |
+|---|---|
+| Models | Persistence for config, items, occurrences, bookings, selections, rules |
+| Services | Date window logic, recurrence, availability, capacity, overlap, booking creation, rescheduling, dedupe handling |
+| Routes | Public access, organizer auth, route collision safety, redirects |
+| Permissions | Each `calendar.*` permission behavior |
+| Public flow | Multi-item selection, multi-day selection, timed selection, stale slot conflict, confirmation |
+| Conflict handling | Overlap prevention and capacity conflict prevention |
+| Availability rules | One-time rules, recurring rules, precedence behavior, target scope behavior |
+| Export | CSV filtering, field inclusion, detail levels, privacy control |
+| Archival/history | Archived items no longer public, old bookings still visible/exportable, snapshot preservation |
+| Rendering | Dark mode compatibility, mobile usability, organizer status rendering |
+
+### High-priority edge-case tests
+
+- Last remaining slot taken before submit
+- Organizer edit into full target
+- Organizer edit into overlap conflict
+- Date falls out of rolling window
+- Occurrence removed after existing bookings exist
+- Blocked item still preserved in organizer reporting
+- Public filter hides selected item but selection remains
+- Same item on multiple days allowed
+- Same item twice same day in date-only mode blocked
+- Timed overlap on different dates not treated as conflict
+- Date-only plus timed selections allowed together
+- Duplicate submit does not create duplicate booking
+- Confirmation reference cannot be guessed through sequential enumeration
+
+## 16. Risk Areas
+
+The following are the highest-risk implementation areas and require explicit protection.
+
+| Risk area | Why risky | Mitigation |
+|---|---|---|
+| Route collision | Public route model is already code-first | Register specific calendar routes carefully and test them |
+| Stale booking conflicts | Availability can change between page load and submit | Revalidate in transaction at final submission |
+| Recurring-rule complexity | Monthly/bi-weekly logic is easy to misimplement | Isolate recurrence logic and test heavily |
+| Time overlap logic | Same-day time math must stay consistent everywhere | Centralize overlap logic in one service |
+| Merge compatibility | Standalone shortcuts may diverge from main app patterns | Preserve event scoping, route style, permissions, and folder structure |
+| Editing after config changes | Items/occurrences may change after bookings exist | Snapshot booking selection data and prefer archival |
+| Export privacy mistakes | Detail levels and field inclusion can leak data if mishandled | Enforce filtering in export service |
+| Rolling-window correctness | Week/month natural-boundary behavior can be subtle | Centralize window derivation and test each mode |
+| Double-submit behavior | Browser or user repeat submit can create duplicates | Use token/dedupe protection and redirect-after-post |
+| Time zone inconsistency | Display/export/validation can diverge if time zone handling is unclear | Use one canonical event time zone across scheduling logic |
+
+## 17. Open Implementation Questions
+
+Only true implementation-level gaps should appear here.
+
+### Narrow open items and recommended directions
+
+| Topic | Status | Recommended direction |
+|---|---|---|
+| One-time blocking at occurrence granularity | Not required for initial Phase 3 planning | Implement date-level only in initial build |
+| Organizer override of conflicts | Not locked | Use strict prevention in initial build |
+| Public filter breadth | Item filtering clearly supported; broader quick filters less certain | Build item filters first |
+| Export beyond CSV | Not required initially | Implement CSV only in initial build |
+
+### Final implementation stance
+
+These open items should not block Phase 4 coding. The locked Phase 2 product behavior, the main app architecture, and the clarified Phase 3 decisions already provide enough direction for a concrete, build-ready implementation plan.
